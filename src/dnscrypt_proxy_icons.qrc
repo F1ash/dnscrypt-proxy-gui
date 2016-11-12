@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="index.theme">icons/index.theme</file>
+        <file alias="DNSCryptClient.png">icons/64x64/status/DNSCryptClient.png</file>
+        <file alias="reload.png">icons/64x64/status/DNSCryptClient_reload.png</file>
+        <file alias="exit.png">icons/64x64/status/exit.png</file>
+        <file alias="opened.png">icons/64x64/status/DNSCryptClient_opened.png</file>
+        <file alias="closed.png">icons/64x64/status/DNSCryptClient_closed.png</file>
+        <file alias="info.png">icons/64x64/actions/DNSCryptClient_info.png</file>
+        <file alias="add.png">icons/64x64/actions/DNSCryptClient_add.png</file>
+        <file alias="help.png">icons/64x64/actions/DNSCryptClient_help.png</file>
+        <file alias="settings.png">icons/64x64/actions/DNSCryptClient_settings.png</file>
+        <file alias="start.png">icons/64x64/actions/DNSCryptClient_start.png</file>
+        <file alias="write.png">icons/64x64/actions/DNSCryptClient_write.png</file>
+        <file alias="close.png">icons/128x128/actions/DNSCryptClient_close.png</file>
+        <file alias="open.png">icons/128x128/actions/DNSCryptClient_open.png</file>
+        <file alias="restore.png">icons/128x128/actions/DNSCryptClient_restore.png</file>
+    </qresource>
+</RCC>

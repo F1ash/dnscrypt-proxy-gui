@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=DNSCryptClient
+GenericName=Qt DNSCrypt proxy client
+Type=Application
+Categories=Utility;Network;Qt;
+Icon=DNSCryptClient
+Exec=DNSCryptClient
+Terminal=false
+StartupNotify=true

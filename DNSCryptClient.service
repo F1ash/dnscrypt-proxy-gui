@@ -1,0 +1,11 @@
+[Unit]
+Description=DNSCrypt proxy Unit
+
+[Service]
+Type=simple
+ExecStart=
+ExecStart=@/usr/sbin/dnscrypt-proxy "/usr/sbin/dnscrypt-proxy"
+ExecStop=/bin/kill -INT ${MAINPID}
+
+[Install]
+#WantedBy=multi-user.target

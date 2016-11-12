@@ -1,0 +1,17 @@
+[pro.russianfedora.dnscrypt_client.create]
+Name=Create DNSCrypt proxy service
+Description=User DNSCrypt
+Policy=yes
+Persistence=session
+
+[pro.russianfedora.dnscrypt_client.start]
+Name=Start DNSCrypt proxy service
+Description=User DNSCrypt
+Policy=yes
+Persistence=session
+
+[pro.russianfedora.dnscrypt_client.stop]
+Name=Stop DNSCrypt proxy service
+Description=User DNSCrypt
+Policy=yes
+Persistence=session
