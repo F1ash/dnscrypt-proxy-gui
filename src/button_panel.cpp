@@ -32,7 +32,7 @@ ButtonPanel::ButtonPanel(QWidget *parent) :
                 "", this);
     restore->setFlat(true);
     restore->setContentsMargins(0, 0, 0, 0);
-    restore->setToolTip("Stop proxing\nRestore system resolve settings");
+    restore->setToolTip("Stop proxing\nRestore system DNS resolver settings");
     restore->setSizePolicy(
                 QSizePolicy(
                     QSizePolicy::Ignored,
@@ -85,5 +85,6 @@ void ButtonPanel::resizeEvent(QResizeEvent *ev)
     stop->setIconSize(s);
     restore->setFixedSize(s);
     restore->setIconSize(s);
+    ev->accept();
 }
 

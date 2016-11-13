@@ -28,13 +28,48 @@ MainWindow::MainWindow(QWidget *parent) :
     baseLayout->addWidget(buttonsWdg, 5);
     baseWdg = new QWidget(this);
     baseWdg->setLayout(baseLayout);
-    setCentralWidget(baseWdg);
+
+    appSettings = new AppSettings(this);
+
+    commonWdg = new QStackedWidget(this);
+    commonWdg->addWidget(baseWdg);
+    commonWdg->addWidget(appSettings);
+
+    setCentralWidget(commonWdg);
 
     initTrayIcon();
 
-    restoreGeometry(settings.value("Geometry").toByteArray());
+    readSettings();
+
+    connect(serverWdg, SIGNAL(toSettings()),
+            this, SLOT(toSettings()));
+    connect(appSettings, SIGNAL(toBase()),
+            this, SLOT(toBase()));
 }
 
+void MainWindow::readSettings()
+{
+    restoreGeometry(settings.value("Geometry").toByteArray());
+    bool runAtStart = settings.value("RunAtStart").toBool();
+    appSettings->setRunAtStart(runAtStart);
+    if ( runAtStart ) {
+        startClientProcess();
+    };
+}
+void MainWindow::setSettings()
+{
+    settings.setValue("Geometry", saveGeometry());
+    settings.setValue("RunAtStart", appSettings->getRunAtStart());
+}
+
+void MainWindow::toSettings()
+{
+    commonWdg->setCurrentWidget(appSettings);
+}
+void MainWindow::toBase()
+{
+    commonWdg->setCurrentWidget(baseWdg);
+}
 void MainWindow::initTrayIcon()
 {
     trayIcon = new TrayIcon(this);
@@ -86,7 +121,7 @@ void MainWindow::closeEvent(QCloseEvent *ev)
 {
     if ( ev->type()==QEvent::Close ) {
         stopConnection();
-        settings.setValue("Geometry", saveGeometry());
+        setSettings();
         trayIcon->hide();
         ev->accept();
     };

@@ -3,12 +3,20 @@
 InfoPanel::InfoPanel(QWidget *parent) :
     QStackedWidget(parent)
 {
+    setSizePolicy(
+                QSizePolicy(
+                    QSizePolicy::Ignored,
+                    QSizePolicy::Ignored));
     name = new QLabel(this);
     location = new QLabel(this);
     servLayout = new QVBoxLayout(this);
     servLayout->addWidget(name);
     servLayout->addWidget(location);
     servInfo = new QWidget(this);
+    servInfo->setSizePolicy(
+                QSizePolicy(
+                    QSizePolicy::Ignored,
+                    QSizePolicy::Ignored));
     servInfo->setLayout(servLayout);
 
     attention = new QLabel(this);
@@ -16,6 +24,10 @@ InfoPanel::InfoPanel(QWidget *parent) :
     attentLayout = new QVBoxLayout(this);
     attentLayout->addWidget(attention);
     attentions = new QWidget(this);
+    attentions->setSizePolicy(
+                QSizePolicy(
+                    QSizePolicy::Ignored,
+                    QSizePolicy::Ignored));
     attentions->setLayout(attentLayout);
 
     addWidget(servInfo);

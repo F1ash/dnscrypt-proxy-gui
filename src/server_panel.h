@@ -5,6 +5,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QHBoxLayout>
+#include <QResizeEvent>
 #include "enums.h"
 
 class ServerPanel : public QWidget
@@ -14,15 +15,19 @@ public:
     explicit ServerPanel(QWidget *parent = nullptr);
 
 signals:
+    void             toSettings();
 
 private:
     QLabel          *servLabel;
     QComboBox       *servList;
-    QPushButton     *servInfo;
+    QPushButton     *servInfo, *appSettings;
     QHBoxLayout     *baseLayout;
 
 public slots:
     void             changeAppState(SRV_STATUS);
+
+private slots:
+    void             resizeEvent(QResizeEvent*);
 };
 
 #endif // SERVER_PANEL_H

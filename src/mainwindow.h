@@ -10,6 +10,7 @@
 #include "server_panel.h"
 #include "button_panel.h"
 #include "info_panel.h"
+#include "app_settings.h"
 #include "tray/traywidget.h"
 #include <kauth.h>
 #include <knotification.h>
@@ -20,6 +21,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
+    void                readSettings();
+    void                setSettings();
 
 signals:
     void                serviceStateChanged(SRV_STATUS);
@@ -33,6 +36,8 @@ private:
     TrayIcon           *trayIcon;
     QVBoxLayout        *baseLayout;
     QWidget            *baseWdg;
+    AppSettings        *appSettings;
+    QStackedWidget     *commonWdg;
     QSettings           settings;
     QDBusConnection     connection;
 
@@ -45,6 +50,8 @@ private:
     void                stopClientProcess();
 
 private slots:
+    void                toSettings();
+    void                toBase();
     void                trayIconActivated(QSystemTrayIcon::ActivationReason);
     void                servicePropertyChanged(QDBusMessage);
     void                closeEvent(QCloseEvent*);
