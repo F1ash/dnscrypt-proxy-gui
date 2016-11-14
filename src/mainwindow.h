@@ -21,14 +21,12 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    void                readSettings();
-    void                setSettings();
 
 signals:
     void                serviceStateChanged(SRV_STATUS);
 
 private:
-    bool                startFlag;
+    bool                runAtStart, findActiveService, stopManually;
     SRV_STATUS          srvStatus;
     ServerPanel        *serverWdg;
     ButtonPanel        *buttonsWdg;
@@ -40,23 +38,31 @@ private:
     QStackedWidget     *commonWdg;
     QSettings           settings;
     QDBusConnection     connection;
+    QStringList         resolverEntries;
 
+    void                readSettings();
+    void                setSettings();
     void                initTrayIcon();
     void                changeVisibility();
     void                connectToClientService();
     bool                checkServiceStatus();
     void                changeAppState();
-    void                startClientProcess();
-    void                stopClientProcess();
+    void                startServiceProcess();
+    void                stopServiceProcess();
+    void                findActiveServiceProcess();
+    void                addServerEnrty(const QString&);
 
 private slots:
     void                toSettings();
     void                toBase();
+    void                changeFindActiveServiceState(bool);
+    void                changeRunAtStartState(bool);
+    void                startService();
+    void                stopService();
+    void                restoreSystemSettings();
     void                trayIconActivated(QSystemTrayIcon::ActivationReason);
     void                servicePropertyChanged(QDBusMessage);
     void                closeEvent(QCloseEvent*);
-    void                startConnection();
-    void                stopConnection();
     void                receiveServiceStatus(QDBusMessage);
 };
 

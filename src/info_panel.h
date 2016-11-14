@@ -4,6 +4,7 @@
 #include <QStackedWidget>
 #include <QLabel>
 #include <QVBoxLayout>
+#include <QVariantMap>
 #include "enums.h"
 
 class InfoPanel : public QStackedWidget
@@ -15,12 +16,13 @@ public:
 signals:
 
 private:
-    QLabel          *location, *name, *attention;
+    QLabel          *location, *fullName, *attention;
     QVBoxLayout     *servLayout, *attentLayout;
     QWidget         *servInfo, *attentions;
 
 public slots:
     void             changeAppState(SRV_STATUS);
+    void             setServerDescription(const QVariantMap&);
 };
 
 #endif // INFO_PANEL_H

@@ -4,6 +4,7 @@
 #include <QtDBus/QDBusMessage>
 #include <private/qdbusmetatype_p.h>
 #include <private/qdbusutil_p.h>
+#include <QFile>
 
 #define CLIENT QString("DNSCryptClient")
 
@@ -39,6 +40,30 @@ QString DNSCryptClientHelper::get_key_varmap(const QVariantMap &args, const QStr
         value = QString();
     };
     return value;
+}
+QString DNSCryptClientHelper::readResolvConf() const
+{
+    QString ret;
+    QFile f("/etc/resolv.conf");
+    bool opened = f.open(QIODevice::ReadOnly);
+    if ( opened ) {
+        ret = QString:: fromUtf8( f.readAll() );
+        f.close();
+    };
+    return ret;
+}
+int DNSCryptClientHelper::writeResolvConf(QString &entry) const
+{
+    int ret = 0;
+    QFile f("/etc/resolv.conf");
+    bool opened = f.open(QIODevice::WriteOnly);
+    if ( opened ) {
+        ret = f.writeData(entry, entry.size());
+        f.close();
+    } else {
+        ret = -1;
+    };
+    return ret;
 }
 
 QDBusArgument &operator<<(QDBusArgument &argument, const PrimitivePair &pair)
@@ -193,34 +218,43 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
         return reply;
     };
 
+    int code = 0;
+    QString entry = readResolvConf();
+    if ( entry.startsWith("127.0.0.1\n") ) entry.clear();
+    //code = writeResolvConf("127.0.0.1\n");
     QVariantMap retdata;
-    QDBusMessage msg = QDBusMessage::createMethodCall(
-                "org.freedesktop.systemd1",
-                "/org/freedesktop/systemd1",
-                "org.freedesktop.systemd1.Manager",
-                "StartUnit");
-    QList<QVariant> _args;
-    _args<<QString("%1.service").arg(CLIENT)<<"fail";
-    msg.setArguments(_args);
-    QDBusMessage res = QDBusConnection::systemBus()
-            .call(msg, QDBus::Block);
-    QString str;
-    foreach (QVariant arg, res.arguments()) {
-        str.append(QDBusUtil::argumentToString(arg));
-        str.append("\n");
-    };
-    retdata["msg"]          = str;
-    switch (res.type()) {
-    case QDBusMessage::ReplyMessage:
-        retdata["code"]     = QString::number(0);
-        break;
-    case QDBusMessage::ErrorMessage:
-        retdata["code"]     = QString::number(1);
-        retdata["err"]      = res.errorMessage();
-        break;
-    default:
-        retdata["code"]     = QString::number(1);
-        break;
+    if ( code != -1 ) {
+        QDBusMessage msg = QDBusMessage::createMethodCall(
+                    "org.freedesktop.systemd1",
+                    "/org/freedesktop/systemd1",
+                    "org.freedesktop.systemd1.Manager",
+                    "StartUnit");
+        QList<QVariant> _args;
+        _args<<QString("%1.service").arg(CLIENT)<<"fail";
+        msg.setArguments(_args);
+        QDBusMessage res = QDBusConnection::systemBus()
+                .call(msg, QDBus::Block);
+        QString str;
+        foreach (QVariant arg, res.arguments()) {
+            str.append(QDBusUtil::argumentToString(arg));
+            str.append("\n");
+        };
+        retdata["msg"]          = str;
+        switch (res.type()) {
+        case QDBusMessage::ReplyMessage:
+            retdata["entry"]    = entry;
+            retdata["code"]     = QString::number(0);
+            break;
+        case QDBusMessage::ErrorMessage:
+        default:
+            retdata["code"]     = QString::number(1);
+            retdata["err"]      = res.errorMessage();
+            break;
+        };
+    } else {
+        retdata["msg"]    = "Start failed";
+        retdata["code"]   = QString::number(1);
+        retdata["err"]    = "Resolv.conf not changed";
     };
 
     reply.setData(retdata);
@@ -268,6 +302,33 @@ ActionReply DNSCryptClientHelper::stop(const QVariantMap args) const
         retdata["code"]     = QString::number(1);
         break;
     };
+
+    reply.setData(retdata);
+    return reply;
+}
+
+ActionReply DNSCryptClientHelper::restore(const QVariantMap args) const
+{
+    ActionReply reply;
+
+    const QString act = get_key_varmap(args, "action");
+    if ( act!="restore" ) {
+        QVariantMap err;
+        err["result"] = QString::number(-1);
+        reply.setData(err);
+        return reply;
+    };
+
+    int code = -1;
+    QString entry     = args["entry"].toString();
+    //code = writeResolvConf(entry);
+    QVariantMap retdata;
+    if ( code != -1 ) {
+        retdata["msg"]    = "Restore down";
+    } else {
+        retdata["msg"]    = "Restore failed";
+    };
+    retdata["code"]   = QString::number(code);
 
     reply.setData(retdata);
     return reply;

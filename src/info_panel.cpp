@@ -7,10 +7,10 @@ InfoPanel::InfoPanel(QWidget *parent) :
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
-    name = new QLabel(this);
+    fullName = new QLabel(this);
     location = new QLabel(this);
     servLayout = new QVBoxLayout(this);
-    servLayout->addWidget(name);
+    servLayout->addWidget(fullName);
     servLayout->addWidget(location);
     servInfo = new QWidget(this);
     servInfo->setSizePolicy(
@@ -37,26 +37,29 @@ InfoPanel::InfoPanel(QWidget *parent) :
 /* public slots */
 void InfoPanel::changeAppState(SRV_STATUS state)
 {
+    int idx = 0;
     switch (state) {
-    case INACTIVE:
-
-        break;
     case ACTIVE:
-
+        idx = 1;
+        attention->setText("You may need to restart the network and web applications");
+        break;
+    case RESTORED:
+        idx = 1;
+        attention->setText("System DNS resolver settings restoring");
         break;
     case ACTIVATING:
-
-        break;
+    case INACTIVE:
     case FAILED:
-
-        break;
     case DEACTIVATING:
-
-        break;
     case RELOADING:
-
-        break;
     default:
+        idx = 0;
         break;
-    }
+    };
+    setCurrentIndex(idx);
+}
+void InfoPanel::setServerDescription(const QVariantMap &_data)
+{
+    fullName->setText(_data.value("FullName").toString());
+    location->setText(_data.value("Location").toString());
 }

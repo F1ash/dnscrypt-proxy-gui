@@ -12,18 +12,20 @@ class AppSettings : public QWidget
     Q_OBJECT
 public:
     explicit AppSettings(QWidget *parent = nullptr);
-    bool            getRunAtStart() const;
-    void            setRunAtStart(bool);
+    void            setRunAtStartState(bool);
+    void            setFindActiveServiceState(bool);
 
 signals:
     void            toBase();
+    void            findActiveServiceStateChanged(bool);
+    void            runAtStartStateChanged(bool);
 
 private:
     QLabel         *setLabel, *nameLabel;
     QPushButton    *baseButton;
     QHBoxLayout    *headLayout;
     QVBoxLayout    *appSetLayout;
-    QCheckBox      *runAtStart;
+    QCheckBox      *runAtStart, *findActiveService;
     QWidget        *headWdg, *appSettings;
 
     QVBoxLayout    *commonLayout;

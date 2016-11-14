@@ -9,7 +9,8 @@ enum SRV_STATUS {
     FAILED,
     ACTIVATING,
     DEACTIVATING,
-    RELOADING
+    RELOADING,
+    RESTORED
 };
 
 #endif // ENUMS_H

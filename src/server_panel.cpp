@@ -1,4 +1,5 @@
 #include "server_panel.h"
+#include "help_thread.h"
 
 ServerPanel::ServerPanel(QWidget *parent) :
     QWidget(parent)
@@ -43,6 +44,23 @@ ServerPanel::ServerPanel(QWidget *parent) :
     setLayout(baseLayout);
     connect(appSettings, SIGNAL(released()),
             this, SIGNAL(toSettings()));
+    connect(servList, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(serverDataChanged(int)));
+}
+
+void ServerPanel::setLastServer(const QString &_server)
+{
+    lastServer = _server;
+    HelpThread *hlpThread = new HelpThread(this);
+    connect(hlpThread, SIGNAL(newDNSCryptSever(const QVariantMap&)),
+            this, SLOT(addServer(const QVariantMap&)));
+    connect(hlpThread, SIGNAL(finished()),
+            this, SLOT(findLastServer()));
+    hlpThread->start();
+}
+QString ServerPanel::getCurrentServer() const
+{
+    return servList->currentText();
 }
 
 /* public slots */
@@ -50,24 +68,16 @@ void ServerPanel::changeAppState(SRV_STATUS state)
 {
     switch (state) {
     case INACTIVE:
-
+    case RESTORED:
+        setEnabled(true);
         break;
     case ACTIVE:
-
-        break;
     case ACTIVATING:
-
-        break;
     case FAILED:
-
-        break;
     case DEACTIVATING:
-
-        break;
     case RELOADING:
-
-        break;
     default:
+        setEnabled(false);
         break;
     }
 }
@@ -85,4 +95,21 @@ void ServerPanel::resizeEvent(QResizeEvent *ev)
     appSettings->setFixedHeight(h);
     appSettings->setIconSize(s);
     ev->accept();
+}
+void ServerPanel::serverDataChanged(int idx)
+{
+    Q_UNUSED(idx)
+    QVariantMap servData = servList->currentData().toMap();
+    emit serverData(servData);
+}
+void ServerPanel::addServer(const QVariantMap &_data)
+{
+    servList->addItem(
+                _data.value("Name").toString(), _data);
+}
+void ServerPanel::findLastServer()
+{
+    servList->setCurrentText(lastServer);
+    QVariantMap _data = servList->currentData().toMap();
+    emit serverData(_data);
 }

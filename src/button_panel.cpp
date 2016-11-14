@@ -26,6 +26,7 @@ ButtonPanel::ButtonPanel(QWidget *parent) :
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
+    stop->setEnabled(false);
     restore = new QPushButton(
                 QIcon::fromTheme("DNSCryptClient_restore",
                                  QIcon(":/restore.png")),
@@ -37,37 +38,45 @@ ButtonPanel::ButtonPanel(QWidget *parent) :
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
+    restore->setEnabled(false);
 
     baseLayout = new QHBoxLayout(this);
     baseLayout->addWidget(start);
     baseLayout->addWidget(stop);
     baseLayout->addWidget(restore);
     setLayout(baseLayout);
+
+    connect(start, SIGNAL(released()),
+            this, SIGNAL(startProxing()));
+    connect(stop, SIGNAL(released()),
+            this, SIGNAL(stopProxing()));
+    connect(restore, SIGNAL(released()),
+            this, SIGNAL(restoreSettings()));
 }
 
 /* public slots */
 void ButtonPanel::changeAppState(SRV_STATUS state)
 {
     switch (state) {
-    case INACTIVE:
-
-        break;
     case ACTIVE:
-
-        break;
     case ACTIVATING:
-
+    case DEACTIVATING:
+    case RELOADING:
+        start->setDisabled(true);
+        stop->setEnabled(true);
+        restore->setEnabled(true);
+        break;
+    case RESTORED:
+        start->setEnabled(true);
+        stop->setDisabled(true);
+        restore->setDisabled(true);
         break;
     case FAILED:
-
-        break;
-    case DEACTIVATING:
-
-        break;
-    case RELOADING:
-
-        break;
+    case INACTIVE:
     default:
+        start->setEnabled(true);
+        stop->setDisabled(true);
+        restore->setEnabled(true);
         break;
     }
 }

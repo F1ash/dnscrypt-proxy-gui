@@ -40,9 +40,11 @@ AppSettings::AppSettings(QWidget *parent) :
     headWdg->setContentsMargins(0, 0, 0, 0);
     headWdg->setLayout(headLayout);
 
-    runAtStart = new QCheckBox("run DNSCrypt at start", this);
+    runAtStart = new QCheckBox("run service at start", this);
+    findActiveService = new QCheckBox("find the active service", this);
     appSetLayout = new QVBoxLayout(this);
     appSetLayout->addWidget(runAtStart);
+    appSetLayout->addWidget(findActiveService);
     appSettings = new QWidget(this);
     appSettings->setContentsMargins(0, 0, 0, 0);
     appSettings->setLayout(appSetLayout);
@@ -55,15 +57,19 @@ AppSettings::AppSettings(QWidget *parent) :
 
     connect(baseButton, SIGNAL(released()),
             this, SIGNAL(toBase()));
+    connect(findActiveService, SIGNAL(toggled(bool)),
+            this, SIGNAL(findActiveServiceStateChanged(bool)));
+    connect(runAtStart, SIGNAL(toggled(bool)),
+            this, SIGNAL(runAtStartStateChanged(bool)));
 }
 
-bool AppSettings::getRunAtStart() const
-{
-    return runAtStart->isChecked();
-}
-void AppSettings::setRunAtStart(bool state)
+void AppSettings::setRunAtStartState(bool state)
 {
     runAtStart->setChecked(state);
+}
+void AppSettings::setFindActiveServiceState(bool state)
+{
+    findActiveService->setChecked(state);
 }
 
 /* private slots */

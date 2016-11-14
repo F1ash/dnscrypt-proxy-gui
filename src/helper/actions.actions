@@ -15,3 +15,9 @@ Name=Stop DNSCrypt proxy service
 Description=User DNSCrypt
 Policy=yes
 Persistence=session
+
+[pro.russianfedora.dnscrypt_client.restore]
+Name=Stop DNSCrypt proxy service
+Description=User DNSCrypt
+Policy=yes
+Persistence=session
