@@ -11,10 +11,6 @@ class TrayIcon : public QSystemTrayIcon
   Q_OBJECT
 public :
   explicit TrayIcon(QWidget *parent = nullptr);
-/*
-  QAction   *startAction;
-  QAction   *stopAction;
-  */
   QAction   *closeAction;
 
 private :

@@ -11,7 +11,7 @@ QString HelpThread::readToNextComma(QString *_str)
 {
     QString item;
     if ( _str->startsWith(',') ) {
-        _str->remove(0, 1);
+        // empty item;
     } else if ( !_str->isEmpty() ) {
         item.append( _str->at(0) );
         _str->remove(0, 1);
@@ -36,12 +36,16 @@ QString HelpThread::readNextItem(QString *_str)
     QString item;
     if ( _str->startsWith(',') ) {
         _str->remove(0, 1);
-        item.append(readToNextComma(_str));
-    } else if ( _str->startsWith('"') ) {
+    };
+    if ( _str->startsWith('"') ) {
         _str->remove(0, 1);
         item.append(readToNextQuotes(_str));
     } else {
         item.append(readToNextComma(_str));
+    };
+    if ( item.isEmpty() || item.startsWith("\r") ) {
+        item.clear();
+        item.append("---");
     };
     return item;
 }

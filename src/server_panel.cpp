@@ -1,5 +1,6 @@
 #include "server_panel.h"
 #include "help_thread.h"
+#include "server_info.h"
 
 ServerPanel::ServerPanel(QWidget *parent) :
     QWidget(parent)
@@ -46,6 +47,8 @@ ServerPanel::ServerPanel(QWidget *parent) :
             this, SIGNAL(toSettings()));
     connect(servList, SIGNAL(currentIndexChanged(int)),
             this, SLOT(serverDataChanged(int)));
+    connect(servInfo, SIGNAL(released()),
+            this, SLOT(showServerInfo()));
 }
 
 void ServerPanel::setLastServer(const QString &_server)
@@ -69,7 +72,7 @@ void ServerPanel::changeAppState(SRV_STATUS state)
     switch (state) {
     case INACTIVE:
     case RESTORED:
-        setEnabled(true);
+        servList->setEnabled(true);
         break;
     case ACTIVE:
     case ACTIVATING:
@@ -77,7 +80,7 @@ void ServerPanel::changeAppState(SRV_STATUS state)
     case DEACTIVATING:
     case RELOADING:
     default:
-        setEnabled(false);
+        servList->setEnabled(false);
         break;
     }
 }
@@ -112,4 +115,11 @@ void ServerPanel::findLastServer()
     servList->setCurrentText(lastServer);
     QVariantMap _data = servList->currentData().toMap();
     emit serverData(_data);
+}
+void ServerPanel::showServerInfo()
+{
+    QVariantMap _map = servList->currentData().toMap();
+    ServerInfo *_d = new ServerInfo(this);
+    _d->setServerData(_map);
+    _d->exec();
 }

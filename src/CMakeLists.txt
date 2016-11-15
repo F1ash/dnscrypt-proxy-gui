@@ -11,6 +11,7 @@ set(HEADERS
     info_panel.h
     app_settings.h
     help_thread.h
+    server_info.h
     tray/traywidget.h)
 set(SOURCES
     main.cpp
@@ -20,6 +21,7 @@ set(SOURCES
     info_panel.cpp
     app_settings.cpp
     help_thread.cpp
+    server_info.cpp
     tray/traywidget.cpp)
 
 find_package(Qt5 COMPONENTS Widgets DBus REQUIRED)

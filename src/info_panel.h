@@ -16,7 +16,8 @@ public:
 signals:
 
 private:
-    QLabel          *location, *fullName, *attention;
+    QLabel          *location, *fullName,
+                    *description, *attention;
     QVBoxLayout     *servLayout, *attentLayout;
     QWidget         *servInfo, *attentions;
 

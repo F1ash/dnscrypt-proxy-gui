@@ -307,14 +307,15 @@ void MainWindow::restoreSystemSettings()
                    "DNSCryptClient",
                    QString("Restore exit code: %1\nMSG: %2\nERR: %3")
                    .arg(code).arg(msg).arg(err));
+        emit serviceStateChanged(RESTORED);
     } else {
         KNotification::event(
                    KNotification::Notification,
                    "DNSCryptClient",
                    QString("ERROR: %1\n%2")
                    .arg(job->error()).arg(job->errorText()));
+        emit serviceStateChanged(srvStatus);
     };
-    emit serviceStateChanged(RESTORED);
 }
 void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason r)
 {
