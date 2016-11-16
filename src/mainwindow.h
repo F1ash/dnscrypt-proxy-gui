@@ -24,9 +24,11 @@ public:
 
 signals:
     void                serviceStateChanged(SRV_STATUS);
+    void                nextServer(const QString);
 
 private:
     bool                runAtStart, findActiveService, stopManually;
+    int                 probeCount;
     SRV_STATUS          srvStatus;
     ServerPanel        *serverWdg;
     ButtonPanel        *buttonsWdg;
@@ -51,6 +53,7 @@ private:
     void                stopServiceProcess();
     void                findActiveServiceProcess();
     void                addServerEnrty(const QString&);
+    QString             showResolverEntries() const;
 
 private slots:
     void                toSettings();
@@ -64,6 +67,7 @@ private slots:
     void                servicePropertyChanged(QDBusMessage);
     void                closeEvent(QCloseEvent*);
     void                receiveServiceStatus(QDBusMessage);
+    void                probeNextServer(const QString);
 };
 
 #endif // MAINWINDOW_H

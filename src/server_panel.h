@@ -15,6 +15,8 @@ public:
     explicit ServerPanel(QWidget *parent = nullptr);
     void             setLastServer(const QString&);
     QString          getCurrentServer() const;
+    int              getServerListCount() const;
+    void             setNextServer();
 
 signals:
     void             toSettings();

@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "resolver_entries.h"
 #include <private/qdbusutil_p.h>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -20,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     srvStatus = INACTIVE;
     findActiveService = false;
     stopManually = false;
+    probeCount = 0;
 
     serverWdg = new ServerPanel(this);
     buttonsWdg = new ButtonPanel(this);
@@ -63,6 +65,8 @@ MainWindow::MainWindow(QWidget *parent) :
             infoWdg, SLOT(changeAppState(SRV_STATUS)));
     connect(serverWdg, SIGNAL(serverData(const QVariantMap&)),
             infoWdg, SLOT(setServerDescription(const QVariantMap&)));
+    connect(this, SIGNAL(nextServer(const QString)),
+            this, SLOT(probeNextServer(const QString)));
 
     readSettings();
 }
@@ -215,6 +219,7 @@ void MainWindow::startServiceProcess()
                     QIcon::fromTheme("DNSCryptClient_closed",
                                      QIcon(":/closed.png")));
         emit serviceStateChanged(srvStatus);
+        checkServiceStatus();
     };
 }
 void MainWindow::stopServiceProcess()
@@ -245,17 +250,40 @@ void MainWindow::stopServiceProcess()
                     QIcon::fromTheme("DNSCryptClient_close",
                                      QIcon(":/close.png")));
         emit serviceStateChanged(srvStatus);
+        checkServiceStatus();
     };
 }
 void MainWindow::findActiveServiceProcess()
 {
-
+    if ( srvStatus==FAILED || srvStatus==INACTIVE ) {
+        if ( ++probeCount <= serverWdg->getServerListCount() ) {
+            serverWdg->setNextServer();
+            QString _nextServer = serverWdg->getCurrentServer();
+            emit nextServer(_nextServer);
+        } else {
+            KNotification::event(
+                        KNotification::Notification,
+                        "DNSCryptClient",
+                        "All servers probed and failed");
+        };
+    } else if ( srvStatus==ACTIVE || srvStatus==RESTORED ) {
+        probeCount = 0;
+    }
 }
 void MainWindow::addServerEnrty(const QString &entry)
 {
     if ( entry.isEmpty() ) return;
     if ( resolverEntries.contains(entry) ) return;
     resolverEntries.append(entry);
+}
+QString MainWindow::showResolverEntries() const
+{
+    ResolverEntries *d = new ResolverEntries(serverWdg);
+    d->setEntries(resolverEntries);
+    d->exec();
+    QString ret = d->getEntry();
+    d->deleteLater();
+    return ret;
 }
 
 /* private slots */
@@ -281,18 +309,20 @@ void MainWindow::startService()
 }
 void MainWindow::stopService()
 {
+    probeCount = 0;
     stopManually = true;
     stopServiceProcess();
 }
 void MainWindow::restoreSystemSettings()
 {
     stopService();
-    // TODO: something for restore:
-    // show saved entries from resolv.conf
-    // and write selected entry
+    QString selectedEntry = showResolverEntries();
+    if ( selectedEntry.isEmpty() ) {
+        selectedEntry = "nameserver 8.8.8.8\n";
+    };
     QVariantMap args;
     args["action"] = "restore";
-    args["entry"]  = "nameserver 8.8.8.8\n";
+    args["entry"]  = selectedEntry;
     Action act("pro.russianfedora.dnscrypt_client.restore");
     act.setHelperId("pro.russianfedora.dnscrypt_client");
     act.setArguments(args);
@@ -307,15 +337,15 @@ void MainWindow::restoreSystemSettings()
                    "DNSCryptClient",
                    QString("Restore exit code: %1\nMSG: %2\nERR: %3")
                    .arg(code).arg(msg).arg(err));
-        emit serviceStateChanged(RESTORED);
+        srvStatus = RESTORED;
     } else {
         KNotification::event(
                    KNotification::Notification,
                    "DNSCryptClient",
                    QString("ERROR: %1\n%2")
                    .arg(job->error()).arg(job->errorText()));
-        emit serviceStateChanged(srvStatus);
     };
+    emit serviceStateChanged(srvStatus);
 }
 void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason r)
 {
@@ -365,11 +395,15 @@ void MainWindow::receiveServiceStatus(QDBusMessage _msg)
     } else {
         srvStatus = INACTIVE;
     };
-    stopManually = false;
     emit serviceStateChanged(srvStatus);
     changeAppState();
     if ( !stopManually && findActiveService ) {
         findActiveServiceProcess();
     };
     stopManually = false;
+}
+void MainWindow::probeNextServer(const QString _nextServer)
+{
+    // set next server to service parameter
+    startServiceProcess();
 }

@@ -65,6 +65,16 @@ QString ServerPanel::getCurrentServer() const
 {
     return servList->currentText();
 }
+int ServerPanel::getServerListCount() const
+{
+    servList->count();
+}
+void ServerPanel::setNextServer()
+{
+    int idx = servList->currentIndex() + 1;
+    if ( idx==servList->count() ) idx = 0;
+    servList->setCurrentIndex(idx);
+}
 
 /* public slots */
 void ServerPanel::changeAppState(SRV_STATUS state)
@@ -119,7 +129,8 @@ void ServerPanel::findLastServer()
 void ServerPanel::showServerInfo()
 {
     QVariantMap _map = servList->currentData().toMap();
-    ServerInfo *_d = new ServerInfo(this);
-    _d->setServerData(_map);
-    _d->exec();
+    ServerInfo *d = new ServerInfo(this);
+    d->setServerData(_map);
+    d->exec();
+    d->deleteLater();
 }

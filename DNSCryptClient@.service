@@ -1,0 +1,18 @@
+[Unit]
+Description=DNSCrypt client proxy
+Documentation=man:dnscrypt-proxy(8)
+Requires=dnscrypt-proxy.socket
+After=network.target
+Before=nss-lookup.target
+
+[Install]
+Also=dnscrypt-proxy.socket
+#WantedBy=multi-user.target
+
+[Service]
+Type=simple
+NonBlocking=true
+
+# Fill in the resolver name with one from dnscrypt-resolvers.csv file
+# with default 127.0.0.1:53 local-address
+ExecStart=/usr/sbin/dnscrypt-proxy -R %i
