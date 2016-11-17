@@ -123,6 +123,7 @@ void MainWindow::connectToClientService()
 }
 bool MainWindow::checkServiceStatus()
 {
+    connectToClientService();
     QDBusMessage msg = QDBusMessage::createMethodCall(
                 "org.freedesktop.systemd1",
                 "/org/freedesktop/systemd1/unit/DNSCryptClient_2eservice",
@@ -175,7 +176,6 @@ void MainWindow::changeAppState()
 }
 void MainWindow::startServiceProcess()
 {
-    connectToClientService();
     trayIcon->setIcon(
                 QIcon::fromTheme("DNSCryptClient_reload",
                                  QIcon(":/reload.png")));
@@ -184,32 +184,36 @@ void MainWindow::startServiceProcess()
     switch (srvStatus) {
     //case INACTIVE:
     //    args["action"] = "create";
-    //    act.setName("pro.russianfedora.dnscrypt_client.create");
+    //    act.setName("pro.russianfedora.dnscryptclient.create");
     //    break;
     case INACTIVE:
     case FAILED:
-        args["action"] = "start";
-        act.setName("pro.russianfedora.dnscrypt_client.start");
+        args["action"] = "create";
+        args["server"] = serverWdg->getCurrentServer();
+        act.setName("pro.russianfedora.dnscryptclient.create");
         break;
     default:
         return;
     };
-    act.setHelperId("pro.russianfedora.dnscrypt_client");
+    act.setHelperId("pro.russianfedora.dnscryptclient");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
     job->setAutoDelete(true);
     if (job->exec()) {
-        QString code    = job->data().value("code").toString();
-        QString msg     = job->data().value("msg").toString();
-        QString err     = job->data().value("err").toString();
-        QString entry   = job->data().value("entry").toString();
+        QString code        = job->data().value("code").toString();
+        QString msg         = job->data().value("msg").toString();
+        QString err         = job->data().value("err").toString();
+        QString entry       = job->data().value("entry").toString();
         addServerEnrty(entry);
+        currentUnitName.clear();
+        currentUnitName     = job->data().value("name").toString();
         KNotification::event(
                    KNotification::Notification,
                    "DNSCryptClient",
                    QString("Session open with exit code: %1\nMSG: %2\nERR: %3")
                    .arg(code).arg(msg).arg(err));
     } else {
+        currentUnitName.clear();
         KNotification::event(
                    KNotification::Notification,
                    "DNSCryptClient",
@@ -226,8 +230,9 @@ void MainWindow::stopServiceProcess()
 {
     QVariantMap args;
     args["action"] = "stop";
-    Action act("pro.russianfedora.dnscrypt_client.stop");
-    act.setHelperId("pro.russianfedora.dnscrypt_client");
+    args["server"] = serverWdg->getCurrentServer();
+    Action act("pro.russianfedora.dnscryptclient.stop");
+    act.setHelperId("pro.russianfedora.dnscryptclient");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
     job->setAutoDelete(true);
@@ -323,8 +328,8 @@ void MainWindow::restoreSystemSettings()
     QVariantMap args;
     args["action"] = "restore";
     args["entry"]  = selectedEntry;
-    Action act("pro.russianfedora.dnscrypt_client.restore");
-    act.setHelperId("pro.russianfedora.dnscrypt_client");
+    Action act("pro.russianfedora.dnscryptclient.restore");
+    act.setHelperId("pro.russianfedora.dnscryptclient");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
     job->setAutoDelete(true);

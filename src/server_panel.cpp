@@ -67,7 +67,7 @@ QString ServerPanel::getCurrentServer() const
 }
 int ServerPanel::getServerListCount() const
 {
-    servList->count();
+    return servList->count();
 }
 void ServerPanel::setNextServer()
 {

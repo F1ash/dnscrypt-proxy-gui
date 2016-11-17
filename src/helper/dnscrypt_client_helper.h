@@ -11,7 +11,7 @@ public slots:
     ActionReply     create(const QVariantMap args) const;
     ActionReply     start(const QVariantMap args) const;
     ActionReply     stop(const QVariantMap args) const;
-    ActionReply     resore(const QVariantMap args) const;
+    ActionReply     restore(const QVariantMap args) const;
 
 private:
     QString         get_key_varmap(const QVariantMap &args, const QString& key) const;

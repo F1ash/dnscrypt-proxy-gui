@@ -41,6 +41,7 @@ private:
     QSettings           settings;
     QDBusConnection     connection;
     QStringList         resolverEntries;
+    QString             currentUnitName;
 
     void                readSettings();
     void                setSettings();

@@ -1,4 +1,3 @@
-//#include <QProcess>
 #include "dnscrypt_client_helper.h"
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusMessage>
@@ -6,7 +5,7 @@
 #include <private/qdbusutil_p.h>
 #include <QFile>
 
-#define CLIENT QString("DNSCryptClient")
+#define UnitName QString("DNSCryptClient")
 
 struct PrimitivePair
 {
@@ -26,9 +25,24 @@ Q_DECLARE_METATYPE(ComplexPair)
 typedef QList<ComplexPair>      AuxParameters;
 Q_DECLARE_METATYPE(AuxParameters)
 
+
+QString getRandomHex(const int &length)
+{
+    QString randomHex;
+    for(int i = 0; i < length; i++) {
+        int n = qrand() % 16;
+        randomHex.append(QString::number(n,16));
+    };
+    return randomHex;
+}
+
 DNSCryptClientHelper::DNSCryptClientHelper(QObject *parent) :
     QObject(parent)
 {
+    qDBusRegisterMetaType<PrimitivePair>();
+    qDBusRegisterMetaType<SrvParameters>();
+    qDBusRegisterMetaType<ComplexPair>();
+    qDBusRegisterMetaType<AuxParameters>();
 }
 
 QString DNSCryptClientHelper::get_key_varmap(const QVariantMap &args, const QString& key) const
@@ -58,7 +72,7 @@ int DNSCryptClientHelper::writeResolvConf(QString &entry) const
     QFile f("/etc/resolv.conf");
     bool opened = f.open(QIODevice::WriteOnly);
     if ( opened ) {
-        ret = f.writeData(entry, entry.size());
+        ret = f.write(entry.toUtf8().data(), entry.size());
         f.close();
     } else {
         ret = -1;
@@ -80,6 +94,31 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, PrimitivePair &pa
     argument.endStructure();
     return argument;
 }
+QDBusArgument &operator<<(QDBusArgument &argument, const SrvParameters &list)
+{
+    int id = qMetaTypeId<PrimitivePair>();
+    argument.beginArray(id);
+    //foreach (PrimitivePair item, list) {
+    //    argument << item;
+    //};
+    SrvParameters::ConstIterator it = list.constBegin();
+    SrvParameters::ConstIterator end = list.constEnd();
+    for ( ; it != end; ++it)
+        argument << *it;
+    argument.endArray();
+    return argument;
+}
+const QDBusArgument &operator>>(const QDBusArgument &argument, SrvParameters &list)
+{
+    argument.beginArray();
+    while (!argument.atEnd()) {
+        PrimitivePair item;
+        argument >> item;
+        list.append(item);
+    };
+    argument.endArray();
+    return argument;
+}
 
 QDBusArgument &operator<<(QDBusArgument &argument, const ComplexPair &pair)
 {
@@ -95,22 +134,33 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, ComplexPair &pair
     argument.endStructure();
     return argument;
 }
-
-QVariantList &operator<<(QVariantList &list, const QDBusArgument &argument)
+QDBusArgument &operator<<(QDBusArgument &argument, const AuxParameters &list)
+{
+    int id = qMetaTypeId<ComplexPair>();
+    argument.beginArray(id);
+    //foreach (ComplexPair item, list) {
+    //    argument << item;
+    //};
+    AuxParameters::ConstIterator it = list.constBegin();
+    AuxParameters::ConstIterator end = list.constEnd();
+    for ( ; it != end; ++it)
+        argument << *it;
+    argument.endArray();
+    return argument;
+}
+const QDBusArgument &operator>>(const QDBusArgument &argument, AuxParameters &list)
 {
     argument.beginArray();
     while (!argument.atEnd()) {
-        QDBusVariant item;
+        ComplexPair item;
         argument >> item;
-        list.append(item.variant());
-    }
+        list.append(item);
+    };
     argument.endArray();
-
-    return list;
+    return argument;
 }
 
-// Not implemented;
-// used persistent DNSCryptClient.service systemd unit
+// create transient DNSCryptClient.service systemd unit
 ActionReply DNSCryptClientHelper::create(const QVariantMap args) const
 {
     ActionReply reply;
@@ -122,50 +172,36 @@ ActionReply DNSCryptClientHelper::create(const QVariantMap args) const
         reply.setData(err);
         return reply;
     };
-
-    QVariantMap retdata;
-    // Start new transient service unit: wvdialer.service
-
-    /*
-    QProcess proc;
-    proc.setProgram("/usr/bin/systemd-run");
-    proc.setArguments(QStringList()
-                      <<"--unit"<<CLIENT
-                      <<"--service-type"<<"simple"
-                      <<"/usr/bin/wvdial");
-    proc.start(QIODevice::ReadOnly);
-    if ( proc.waitForStarted() && proc.waitForFinished() ) {
-        retdata["code"]     = QString::number(proc.exitCode());
-    } else {
-        retdata["code"]     = QString::number(-1);
-    };
-    */
-
-    qDBusRegisterMetaType<PrimitivePair>();
-    qDBusRegisterMetaType<SrvParameters>();
-    qDBusRegisterMetaType<ComplexPair>();
-    qDBusRegisterMetaType<AuxParameters>();
+    QString servName =  get_key_varmap(args, "server");
 
     QDBusMessage msg = QDBusMessage::createMethodCall(
                 "org.freedesktop.systemd1",
                 "/org/freedesktop/systemd1",
                 "org.freedesktop.systemd1.Manager",
                 "StartTransientUnit");
+
     // Expecting 'ssa(sv)a(sa(sv))'
-    // maybe:
-    //    QString,
-    //    QString,
-    //    QVariantMap<QString,QValue>,
-    //    QVariantMap<QString,QVariantMap<QString,QValue>>
-    QVariantList  _args;
+    // StartTransientUnit(in  s name,
+    //                    in  s mode,
+    //                    in  a(sv) properties,
+    //                    in  a(sa(sv)) aux,
+    //                    out o job);
+
+    QString suffix = getRandomHex(8);
+    QString name = QString("%1-%2.service")
+            .arg(UnitName)
+            .arg(suffix);           // service name + unique suffix
+    QLatin1String mode("replace");  // If "replace" the call will start the unit
+                                    // and its dependencies, possibly replacing
+                                    // already queued jobs that conflict with this.
 
     SrvParameters _props;
     PrimitivePair srvType, execStart, execStop;
-    srvType.name    = "Type";
-    srvType.value   = "simple";
-    execStart.name  = "ExecStart";
-    execStart.value = QLatin1String("/usr/sbin/dnscrypt-proxy");
-    execStop.name   = "ExecStop";
+    srvType.name    = QLatin1String("Type");
+    srvType.value   = QLatin1String("forking");
+    execStart.name  = QLatin1String("ExecStart");
+    execStart.value = QString("/sbin/dnscrypt-proxy -d -R %1").arg(servName);
+    execStop.name   = QLatin1String("ExecStop");
     execStop.value  = QLatin1String("/bin/kill -INT ${MAINPID}");
     _props.append(srvType);
     _props.append(execStart);
@@ -177,14 +213,14 @@ ActionReply DNSCryptClientHelper::create(const QVariantMap args) const
     //_aux.append(srvAuxData);
 
     QDBusArgument PROPS, AUX;
-    PROPS<<_props;
-    AUX<<_aux;
+    PROPS   << _props;
+    AUX     << _aux;
 
-    _args
-        << QString("%1.service").arg(CLIENT)
-        << "replace";
-    _args<< PROPS;
-    _args<< AUX;
+    QVariantList _args;
+    _args   << name
+            << mode
+            << qVariantFromValue(PROPS)
+            << qVariantFromValue(AUX);
     msg.setArguments(_args);
     QDBusMessage res = QDBusConnection::systemBus()
             .call(msg, QDBus::Block);
@@ -193,7 +229,10 @@ ActionReply DNSCryptClientHelper::create(const QVariantMap args) const
         str.append(QDBusUtil::argumentToString(arg));
         str.append("\n");
     };
+
+    QVariantMap retdata;
     retdata["msg"]          = str;
+    retdata["name"]         = name;
     switch (res.type()) {
     case QDBusMessage::ReplyMessage:
         retdata["code"]     = QString::number(0);
@@ -235,7 +274,7 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
                     "org.freedesktop.systemd1.Manager",
                     "StartUnit");
         QList<QVariant> _args;
-        _args<<QString("%1.service").arg(CLIENT)<<"fail";
+        _args<<QString("%1.service").arg(UnitName)<<"fail";
         msg.setArguments(_args);
         QDBusMessage res = QDBusConnection::systemBus()
                 .call(msg, QDBus::Block);
@@ -257,9 +296,9 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
             break;
         };
     } else {
-        retdata["msg"]    = "Start failed";
-        retdata["code"]   = QString::number(1);
-        retdata["err"]    = "Resolv.conf not changed";
+        retdata["msg"]          = "Start failed";
+        retdata["code"]         = QString::number(1);
+        retdata["err"]          = "Resolv.conf not changed";
     };
 
     reply.setData(retdata);
@@ -285,7 +324,7 @@ ActionReply DNSCryptClientHelper::stop(const QVariantMap args) const
                 "org.freedesktop.systemd1.Manager",
                 "StopUnit");
     QList<QVariant> _args;
-    _args<<QString("%1.service").arg(CLIENT)<<"fail";
+    _args<<QString("%1.service").arg(UnitName)<<"fail";
     msg.setArguments(_args);
     QDBusMessage res = QDBusConnection::systemBus()
             .call(msg, QDBus::Block);
@@ -325,18 +364,18 @@ ActionReply DNSCryptClientHelper::restore(const QVariantMap args) const
     };
 
     int code = -1;
-    QString entry     = args["entry"].toString();
+    QString entry = args["entry"].toString();
     //code = writeResolvConf(entry);
     QVariantMap retdata;
     if ( code != -1 ) {
-        retdata["msg"]    = "Restore down";
+        retdata["msg"]      = "Restore down";
     } else {
-        retdata["msg"]    = "Restore failed";
+        retdata["msg"]      = "Restore failed";
     };
-    retdata["code"]   = QString::number(code);
+    retdata["code"]         = QString::number(code);
 
     reply.setData(retdata);
     return reply;
 }
 
-KAUTH_HELPER_MAIN("pro.russianfedora.dnscrypt_client", DNSCryptClientHelper)
+KAUTH_HELPER_MAIN("pro.russianfedora.dnscryptclient", DNSCryptClientHelper)

@@ -31,8 +31,8 @@ install(
 
 kauth_install_helper_files(
     dnscrypt_client_helper
-    pro.russianfedora.dnscrypt_client
+    pro.russianfedora.dnscryptclient
     root)
 kauth_install_actions(
-    pro.russianfedora.dnscrypt_client
+    pro.russianfedora.dnscryptclient
     actions.actions)

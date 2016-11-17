@@ -58,4 +58,4 @@ install ( TARGETS     ${PROJECT_NAME}
 install(  FILES       ${PROJECT_NAME}.notifyrc
           DESTINATION ${KNOTIFYRC_INSTALL_DIR})
 
-#add_subdirectory(helper)
+add_subdirectory(helper)

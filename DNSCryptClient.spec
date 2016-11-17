@@ -1,7 +1,7 @@
 %global cmake_build_dir build-cmake
 
 Name:          DNSCryptClient
-Version:       1.0
+Version:       0.0.1
 Release:       1%{?dist}
 Summary:       Qt/KF5 GUI wrapped over dnscrypt-proxy
 License:       GPLv2+
@@ -53,13 +53,13 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %{_bindir}/%{name}
 %{_libexecdir}/kf5/kauth/dnscrypt_client_helper
 %{_datadir}/applications/%{name}.desktop
-%{_datadir}/dbus-1/system-services/pro.russianfedora.dnscrypt_client.service
-%{_datadir}/polkit-1/actions/pro.russianfedora.dnscrypt_client.policy
-%{_sysconfdir}/dbus-1/system.d/pro.russianfedora.dnscrypt_client.conf
+%{_datadir}/dbus-1/system-services/pro.russianfedora.dnscryptclient.service
+%{_datadir}/polkit-1/actions/pro.russianfedora.dnscryptclient.policy
+%{_sysconfdir}/dbus-1/system.d/pro.russianfedora.dnscryptclient.conf
 %{_datadir}/knotifications5/%{name}.notifyrc
-%{_unitdir}/%{name}.service
+#%{_unitdir}/%{name}.service
 %{_datadir}/icons/hicolor/64x64/apps/%{name}.png
 
 %changelog
-* Fri Nov 11 2016 Fl@sh <kaperang07@gmail.com> - 1.0-1
+* Fri Nov 11 2016 Fl@sh <kaperang07@gmail.com> - 0.0.1-1
 - Initial build

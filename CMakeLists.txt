@@ -10,8 +10,8 @@ add_subdirectory(src)
 
 install ( FILES       ${PROJECT_NAME}.desktop
           DESTINATION ${SHARE_INSTALL_PREFIX}/applications )
-install ( FILES       ${PROJECT_NAME}.service
-          DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system )
-install ( FILES src/icons/64x64/status/dnscrypt-proxy-client.png
+#install ( FILES       ${PROJECT_NAME}.service
+#          DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system )
+install ( FILES src/icons/64x64/status/${PROJECT_NAME}.png
           DESTINATION ${SHARE_INSTALL_PREFIX}/icons/hicolor/64x64/apps
           RENAME ${PROJECT_NAME}.png )
