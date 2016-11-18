@@ -125,6 +125,7 @@ void ServerPanel::findLastServer()
     servList->setCurrentText(lastServer);
     QVariantMap _data = servList->currentData().toMap();
     emit serverData(_data);
+    emit readyForStart();
 }
 void ServerPanel::showServerInfo()
 {

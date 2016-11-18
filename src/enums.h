@@ -10,7 +10,8 @@ enum SRV_STATUS {
     ACTIVATING,
     DEACTIVATING,
     RELOADING,
-    RESTORED
+    RESTORED,
+    RELOAD_SLICE
 };
 
 #endif // ENUMS_H

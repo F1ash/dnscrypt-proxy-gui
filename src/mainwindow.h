@@ -24,7 +24,7 @@ public:
 
 signals:
     void                serviceStateChanged(SRV_STATUS);
-    void                nextServer(const QString);
+    void                nextServer();
 
 private:
     bool                runAtStart, findActiveService, stopManually;
@@ -41,17 +41,19 @@ private:
     QSettings           settings;
     QDBusConnection     connection;
     QStringList         resolverEntries;
-    QString             currentUnitName;
+    QString             currentUnitTranscription;
 
     void                readSettings();
     void                setSettings();
     void                initTrayIcon();
     void                changeVisibility();
     void                connectToClientService();
-    bool                checkServiceStatus();
-    void                changeAppState();
+    void                disconnectFromClientService();
+    void                checkServiceStatus();
+    int                 checkSliceStatus();
     void                startServiceProcess();
     void                stopServiceProcess();
+    void                stopSliceProcess();
     void                findActiveServiceProcess();
     void                addServerEnrty(const QString&);
     QString             showResolverEntries() const;
@@ -59,8 +61,8 @@ private:
 private slots:
     void                toSettings();
     void                toBase();
+    void                firstServiceStart();
     void                changeFindActiveServiceState(bool);
-    void                changeRunAtStartState(bool);
     void                startService();
     void                stopService();
     void                restoreSystemSettings();
@@ -68,7 +70,8 @@ private slots:
     void                servicePropertyChanged(QDBusMessage);
     void                closeEvent(QCloseEvent*);
     void                receiveServiceStatus(QDBusMessage);
-    void                probeNextServer(const QString);
+    void                changeAppState(SRV_STATUS);
+    void                probeNextServer();
 };
 
 #endif // MAINWINDOW_H

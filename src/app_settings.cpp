@@ -59,10 +59,12 @@ AppSettings::AppSettings(QWidget *parent) :
             this, SIGNAL(toBase()));
     connect(findActiveService, SIGNAL(toggled(bool)),
             this, SIGNAL(findActiveServiceStateChanged(bool)));
-    connect(runAtStart, SIGNAL(toggled(bool)),
-            this, SIGNAL(runAtStartStateChanged(bool)));
 }
 
+bool AppSettings::getRunAtStartState() const
+{
+    return runAtStart->isChecked();
+}
 void AppSettings::setRunAtStartState(bool state)
 {
     runAtStart->setChecked(state);

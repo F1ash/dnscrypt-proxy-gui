@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QVariantMap>
+#include <QTimerEvent>
 #include "enums.h"
 
 class InfoPanel : public QStackedWidget
@@ -16,6 +17,7 @@ public:
 signals:
 
 private:
+    int              timerId = 0;
     QLabel          *location, *fullName,
                     *description, *attention;
     QVBoxLayout     *servLayout, *attentLayout;
@@ -24,6 +26,9 @@ private:
 public slots:
     void             changeAppState(SRV_STATUS);
     void             setServerDescription(const QVariantMap&);
+
+private slots:
+    void             timerEvent(QTimerEvent*);
 };
 
 #endif // INFO_PANEL_H

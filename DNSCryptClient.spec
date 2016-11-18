@@ -57,7 +57,8 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %{_datadir}/polkit-1/actions/pro.russianfedora.dnscryptclient.policy
 %{_sysconfdir}/dbus-1/system.d/pro.russianfedora.dnscryptclient.conf
 %{_datadir}/knotifications5/%{name}.notifyrc
-#%{_unitdir}/%{name}.service
+%{_unitdir}/%{name}@.service
+%{_unitdir}/%{name}.socket
 %{_datadir}/icons/hicolor/64x64/apps/%{name}.png
 
 %changelog

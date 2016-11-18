@@ -25,7 +25,6 @@ Q_DECLARE_METATYPE(ComplexPair)
 typedef QList<ComplexPair>      AuxParameters;
 Q_DECLARE_METATYPE(AuxParameters)
 
-
 QString getRandomHex(const int &length)
 {
     QString randomHex;
@@ -160,6 +159,7 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, AuxParameters &li
     return argument;
 }
 
+// not implemented; transient unit not started in system
 // create transient DNSCryptClient.service systemd unit
 ActionReply DNSCryptClientHelper::create(const QVariantMap args) const
 {
@@ -262,6 +262,8 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
         return reply;
     };
 
+    QString servName =  get_key_varmap(args, "server");
+
     int code = 0;
     QString entry = readResolvConf();
     if ( entry.startsWith("127.0.0.1\n") ) entry.clear();
@@ -274,7 +276,9 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
                     "org.freedesktop.systemd1.Manager",
                     "StartUnit");
         QList<QVariant> _args;
-        _args<<QString("%1.service").arg(UnitName)<<"fail";
+        _args<<QString("%1@%2.service")
+               .arg(UnitName).arg(servName)
+             <<"fail";
         msg.setArguments(_args);
         QDBusMessage res = QDBusConnection::systemBus()
                 .call(msg, QDBus::Block);
@@ -317,6 +321,8 @@ ActionReply DNSCryptClientHelper::stop(const QVariantMap args) const
         return reply;
     };
 
+    QString servName =  get_key_varmap(args, "server");
+
     QVariantMap retdata;
     QDBusMessage msg = QDBusMessage::createMethodCall(
                 "org.freedesktop.systemd1",
@@ -324,7 +330,9 @@ ActionReply DNSCryptClientHelper::stop(const QVariantMap args) const
                 "org.freedesktop.systemd1.Manager",
                 "StopUnit");
     QList<QVariant> _args;
-    _args<<QString("%1.service").arg(UnitName)<<"fail";
+    _args<<QString("%1@%2.service")
+           .arg(UnitName).arg(servName)
+         <<"fail";
     msg.setArguments(_args);
     QDBusMessage res = QDBusConnection::systemBus()
             .call(msg, QDBus::Block);
@@ -373,6 +381,52 @@ ActionReply DNSCryptClientHelper::restore(const QVariantMap args) const
         retdata["msg"]      = "Restore failed";
     };
     retdata["code"]         = QString::number(code);
+
+    reply.setData(retdata);
+    return reply;
+}
+
+ActionReply DNSCryptClientHelper::stopslice(const QVariantMap args) const
+{
+    ActionReply reply;
+
+    const QString act = get_key_varmap(args, "action");
+    if ( act!="stopslice" ) {
+        QVariantMap err;
+        err["result"] = QString::number(-1);
+        reply.setData(err);
+        return reply;
+    };
+
+    QVariantMap retdata;
+    QDBusMessage msg = QDBusMessage::createMethodCall(
+                "org.freedesktop.systemd1",
+                "/org/freedesktop/systemd1",
+                "org.freedesktop.systemd1.Manager",
+                "StopUnit");
+    QList<QVariant> _args;
+    _args<<QString("system-DNSCryptClient.slice")<<"fail";
+    msg.setArguments(_args);
+    QDBusMessage res = QDBusConnection::systemBus()
+            .call(msg, QDBus::Block);
+    QString str;
+    foreach (QVariant arg, res.arguments()) {
+        str.append(QDBusUtil::argumentToString(arg));
+        str.append("\n");
+    };
+    retdata["msg"]          = str;
+    switch (res.type()) {
+    case QDBusMessage::ReplyMessage:
+        retdata["code"]     = QString::number(0);
+        break;
+    case QDBusMessage::ErrorMessage:
+        retdata["code"]     = QString::number(1);
+        retdata["err"]      = res.errorMessage();
+        break;
+    default:
+        retdata["code"]     = QString::number(1);
+        break;
+    };
 
     reply.setData(retdata);
     return reply;

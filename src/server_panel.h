@@ -21,6 +21,7 @@ public:
 signals:
     void             toSettings();
     void             serverData(const QVariantMap&);
+    void             readyForStart();
 
 private:
     QString          lastServer;

@@ -22,7 +22,6 @@ InfoPanel::InfoPanel(QWidget *parent) :
     servInfo->setLayout(servLayout);
 
     attention = new QLabel(this);
-    attention->setStyleSheet("QLabel {background-color: gold;}");
     attentLayout = new QVBoxLayout(this);
     attentLayout->addWidget(attention);
     attentions = new QWidget(this);
@@ -43,7 +42,7 @@ void InfoPanel::changeAppState(SRV_STATUS state)
     switch (state) {
     case ACTIVE:
         idx = 1;
-        attention->setText("You may need to restart the network and web applications");
+        attention->setText("You may need to restart the network\nand web applications");
         break;
     case RESTORED:
         idx = 1;
@@ -59,6 +58,11 @@ void InfoPanel::changeAppState(SRV_STATUS state)
         break;
     };
     setCurrentIndex(idx);
+    if ( idx==1 ) {
+        if ( timerId>0 ) killTimer(timerId);
+        timerId = startTimer(10000);
+        attention->setStyleSheet("QLabel {background-color: gold;}");
+    };
 }
 void InfoPanel::setServerDescription(const QVariantMap &_data)
 {
@@ -69,4 +73,15 @@ void InfoPanel::setServerDescription(const QVariantMap &_data)
     location->setText(_data.value("Location").toString());
     location->setToolTip(_data.value("Location").toString());
     setCurrentIndex(0);
+}
+
+/* private slots */
+void InfoPanel::timerEvent(QTimerEvent *ev)
+{
+    if ( timerId && ev->timerId()==timerId ) {
+        killTimer(timerId);
+        timerId = 0;
+        attention->setStyleSheet("QLabel {background-color: white;}");
+    };
+    ev->accept();
 }

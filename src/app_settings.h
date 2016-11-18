@@ -12,13 +12,13 @@ class AppSettings : public QWidget
     Q_OBJECT
 public:
     explicit AppSettings(QWidget *parent = nullptr);
+    bool            getRunAtStartState() const;
     void            setRunAtStartState(bool);
     void            setFindActiveServiceState(bool);
 
 signals:
     void            toBase();
     void            findActiveServiceStateChanged(bool);
-    void            runAtStartStateChanged(bool);
 
 private:
     QLabel         *setLabel, *nameLabel;
