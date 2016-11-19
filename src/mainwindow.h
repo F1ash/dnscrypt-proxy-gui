@@ -27,7 +27,8 @@ signals:
     void                nextServer();
 
 private:
-    bool                runAtStart, findActiveService, stopManually;
+    bool                runAtStart, findActiveService,
+                        stopManually, restoreFlag;
     int                 probeCount;
     SRV_STATUS          srvStatus;
     ServerPanel        *serverWdg;
@@ -54,6 +55,7 @@ private:
     void                startServiceProcess();
     void                stopServiceProcess();
     void                stopSliceProcess();
+    void                restoreSettingsProcess();
     void                findActiveServiceProcess();
     void                addServerEnrty(const QString&);
     QString             showResolverEntries() const;

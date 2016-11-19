@@ -65,7 +65,7 @@ QString DNSCryptClientHelper::readResolvConf() const
     };
     return ret;
 }
-int DNSCryptClientHelper::writeResolvConf(QString &entry) const
+int DNSCryptClientHelper::writeResolvConf(const QString &entry) const
 {
     int ret = 0;
     QFile f("/etc/resolv.conf");
@@ -266,8 +266,8 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
 
     int code = 0;
     QString entry = readResolvConf();
-    if ( entry.startsWith("127.0.0.1\n") ) entry.clear();
-    //code = writeResolvConf("127.0.0.1\n");
+    if ( entry.startsWith("nameserver 127.0.0.1\n") ) entry.clear();
+    code = writeResolvConf("nameserver 127.0.0.1\n");
     QVariantMap retdata;
     if ( code != -1 ) {
         QDBusMessage msg = QDBusMessage::createMethodCall(
@@ -301,7 +301,7 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
         };
     } else {
         retdata["msg"]          = "Start failed";
-        retdata["code"]         = QString::number(1);
+        retdata["code"]         = QString::number(-1);
         retdata["err"]          = "Resolv.conf not changed";
     };
 
@@ -373,7 +373,7 @@ ActionReply DNSCryptClientHelper::restore(const QVariantMap args) const
 
     int code = -1;
     QString entry = args["entry"].toString();
-    //code = writeResolvConf(entry);
+    code = writeResolvConf(entry);
     QVariantMap retdata;
     if ( code != -1 ) {
         retdata["msg"]      = "Restore down";

@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     srvStatus = INACTIVE;
     findActiveService = false;
     stopManually = false;
+    restoreFlag = false;
     probeCount = 0;
 
     serverWdg = new ServerPanel(this);
@@ -173,44 +174,71 @@ void MainWindow::checkServiceStatus()
                 msg, this, SLOT(receiveServiceStatus(QDBusMessage)));
     //return sent;
 }
-int MainWindow::checkSliceStatus()
+int  MainWindow::checkSliceStatus()
 {
-    int ret;
+    QTextStream s(stdout);
+    int ret = -1;
     QDBusMessage msg = QDBusMessage::createMethodCall(
                 "org.freedesktop.systemd1",
                 "/org/freedesktop/systemd1/unit/system_2dDNSCryptClient_2eslice",
                 "org.freedesktop.DBus.Properties",
                 "Get");
     QVariantList _args;
-    _args<<"org.freedesktop.systemd1.Slice"<<"TasksCurrent";
+
+    _args<<"org.freedesktop.systemd1.Unit"<<"ActiveState";
     msg.setArguments(_args);
     QDBusMessage answer = connection.call(msg);
-    int currTasks;
-    QRegExp rx("[0-9]{1,3}");
-    QVariant arg;
-    QString str;
-    switch (answer.type()) {
-    case QDBusMessage::ReplyMessage:
-        arg = answer.arguments().first();
-        str = QDBusUtil::argumentToString(arg);
-        rx.indexIn(str);
-        currTasks = rx.capturedTexts().first().toULongLong();
-        if        ( currTasks==0 ) {
-            // not active proxy
-            ret = 0;
-        } else if ( currTasks==1 ) {
-            // one active proxy
-            ret = 1;
-        } else {
-            // more than one active proxy
-            // need to restart slice and proxing
-            ret = -1;
+    if ( answer.arguments().length()!=1 ) return ret;
+    QVariant arg = answer.arguments().first();
+    QString str = QDBusUtil::argumentToString(arg);
+    s << str << endl;
+    QStringList l = str.split('"');
+    if ( l.length()<3 ) return ret;
+    QString status = l.at(1);
+    if        ( status=="inactive" ) {
+        // not active proxy
+        return 0;
+    } else if ( status=="failed" ) {
+        // not active proxy
+        return 0;
+    } else if ( status=="active" ) {
+        // if active then check task count
+        _args.clear();
+        _args<<"org.freedesktop.systemd1.Slice"<<"TasksCurrent";
+        msg.setArguments(_args);
+        answer = connection.call(msg);
+        int currTasks;
+        QRegExp rx("[0-1]{1}");
+        QStringList captured;
+        switch (answer.type()) {
+        case QDBusMessage::ReplyMessage:
+            arg = answer.arguments().first();
+            str = QDBusUtil::argumentToString(arg);
+            s << str << endl;
+            rx.indexIn(str);
+            captured = rx.capturedTexts();
+            if ( !captured.isEmpty() ) {
+                currTasks = captured.first().toULongLong();
+                if        ( currTasks==0 ) {
+                    // not active proxy
+                    ret = 0;
+                } else if ( currTasks==1 ) {
+                    // one active proxy
+                    ret = 1;
+                } else {
+                    // impossible, but...
+                    ret = -1;
+                };
+            } else {
+                // TasksCurrent not [0-1]; to STOP_SLICE
+                ret = -2;
+            };
+            break;
+        case QDBusMessage::ErrorMessage:
+            ret = -2;
+        default:
+            break;
         };
-        break;
-    case QDBusMessage::ErrorMessage:
-        ret = -1;
-    default:
-        break;
     };
     return ret;
 }
@@ -245,17 +273,19 @@ void MainWindow::startServiceProcess()
         QString msg         = job->data().value("msg").toString();
         QString err         = job->data().value("err").toString();
         QString entry       = job->data().value("entry").toString();
-        addServerEnrty(entry);
         KNotification::event(
                    KNotification::Notification,
                    "DNSCryptClient",
                    QString("Session open with exit code: %1\nMSG: %2\nERR: %3")
                    .arg(code).arg(msg).arg(err));
+        if ( code.toInt()!=-1 ) {
+            addServerEnrty(entry);
+        };
     } else {
         KNotification::event(
                    KNotification::Notification,
                    "DNSCryptClient",
-                   QString("ERROR: %1\n%2")
+                   QString("Start Service ERROR: %1\n%2")
                    .arg(job->error()).arg(job->errorText()));
         trayIcon->setIcon(
                     QIcon::fromTheme("DNSCryptClient_closed",
@@ -285,7 +315,7 @@ void MainWindow::stopServiceProcess()
         KNotification::event(
                    KNotification::Notification,
                    "DNSCryptClient",
-                   QString("ERROR: %1\n%2")
+                   QString("Stop Service ERROR: %1\n%2")
                    .arg(job->error()).arg(job->errorText()));
         trayIcon->setIcon(
                     QIcon::fromTheme("DNSCryptClient_close",
@@ -310,16 +340,53 @@ void MainWindow::stopSliceProcess()
                    "DNSCryptClient",
                    QString("Slice closed with exit code: %1\nMSG: %2\nERR: %3")
                    .arg(code).arg(msg).arg(err));
+        if ( code.toInt()>0 )
+            emit serviceStateChanged(STOP_SLICE_FAILED);
+    } else {
+        KNotification::event(
+                   KNotification::Notification,
+                   "DNSCryptClient",
+                   QString("Stop Slice ERROR: %1\n%2")
+                   .arg(job->error()).arg(job->errorText()));
+        trayIcon->setIcon(
+                    QIcon::fromTheme("DNSCryptClient_close",
+                                     QIcon(":/close.png")));
+        emit serviceStateChanged(STOP_SLICE_FAILED);
+    };
+}
+void MainWindow::restoreSettingsProcess()
+{
+    restoreFlag = false;
+    QString selectedEntry = showResolverEntries();
+    if ( selectedEntry.isEmpty() ) {
+        return;
+    };
+    QVariantMap args;
+    args["action"] = "restore";
+    args["entry"]  = selectedEntry;
+    Action act("pro.russianfedora.dnscryptclient.restore");
+    act.setHelperId("pro.russianfedora.dnscryptclient");
+    act.setArguments(args);
+    ExecuteJob *job = act.execute();
+    job->setAutoDelete(true);
+    if (job->exec()) {
+        QString code = job->data().value("code").toString();
+        QString msg  = job->data().value("msg").toString();
+        QString err  = job->data().value("err").toString();
+        KNotification::event(
+                   KNotification::Notification,
+                   "DNSCryptClient",
+                   QString("Restore exit code: %1\nMSG: %2\nERR: %3")
+                   .arg(code).arg(msg).arg(err));
+        if ( code.toInt()!=-1 ) srvStatus = RESTORED;
     } else {
         KNotification::event(
                    KNotification::Notification,
                    "DNSCryptClient",
                    QString("ERROR: %1\n%2")
                    .arg(job->error()).arg(job->errorText()));
-        trayIcon->setIcon(
-                    QIcon::fromTheme("DNSCryptClient_close",
-                                     QIcon(":/close.png")));
     };
+    emit serviceStateChanged(srvStatus);
 }
 void MainWindow::findActiveServiceProcess()
 {
@@ -364,28 +431,9 @@ void MainWindow::toBase()
 }
 void MainWindow::firstServiceStart()
 {
-    // check running tasks in slice
-    SRV_STATUS _srvStatus = FAILED;
-    switch (checkSliceStatus()) {
-    case 0 :
-        // not exist
-        _srvStatus = INACTIVE;
-        disconnectFromClientService();
-        break;
-    case 1 :
-    case -1:
-    default:
-        // TODO:
-        // multiple exemplars or DNSCryptClient@.service running already
-        // need to restart the slice and proxing or close another exemplars
-        _srvStatus = RELOAD_SLICE;
-        disconnectFromClientService();
-        break;
-    };
-    emit serviceStateChanged(_srvStatus);
     if ( runAtStart ) {
-        startService();
         runAtStart = false;
+        startService();
     };
 }
 void MainWindow::changeFindActiveServiceState(bool state)
@@ -394,86 +442,52 @@ void MainWindow::changeFindActiveServiceState(bool state)
 }
 void MainWindow::startService()
 {
+    probeCount = 0;
     stopManually = false;
-    startServiceProcess();
     SRV_STATUS _srvStatus = FAILED;
     switch (checkSliceStatus()) {
-    case 0 :
-        // start failed
+    case 0 :    // start ready
         _srvStatus = INACTIVE;
         disconnectFromClientService();
+        //startServiceProcess();
+        emit serviceStateChanged(_srvStatus);
         break;
-    case 1 :
-        // start successful
-        _srvStatus = ACTIVE;
-        break;
+    case 1 :    // start incorrect
+    case -2:    // errored answer
     case -1:
-    default:
-        //  need to restart the slice and proxing
-        _srvStatus = RELOAD_SLICE;
+    default:    //  need to restart the slice and proxing
+        _srvStatus = STOP_SLICE;
         disconnectFromClientService();
+        emit serviceStateChanged(_srvStatus);
         break;
     };
-    emit serviceStateChanged(_srvStatus);
 }
 void MainWindow::stopService()
 {
     probeCount = 0;
     stopManually = true;
-    stopServiceProcess();
     SRV_STATUS _srvStatus = FAILED;
     switch (checkSliceStatus()) {
-    case 0 :
-        // stop successful
+    case 0 :    // stop unnecessary
+    case 1 :    // stop ready
         _srvStatus = INACTIVE;
         disconnectFromClientService();
+        stopServiceProcess();
+        emit serviceStateChanged(_srvStatus);
         break;
-    case 1 :
-        // stop failed
-        _srvStatus = ACTIVE;
-        break;
+    case -2:    // errored answer
     case -1:
-    default:
-        // need to restart the slice and proxing
-        _srvStatus = RELOAD_SLICE;
+    default:    // need to restart the slice and proxing
+        _srvStatus = STOP_SLICE;
         disconnectFromClientService();
+        emit serviceStateChanged(_srvStatus);
         break;
     };
-    emit serviceStateChanged(_srvStatus);
 }
 void MainWindow::restoreSystemSettings()
 {
+    restoreFlag = true;
     stopService();
-    QString selectedEntry = showResolverEntries();
-    if ( selectedEntry.isEmpty() ) {
-        selectedEntry = "nameserver 8.8.8.8\n";
-    };
-    QVariantMap args;
-    args["action"] = "restore";
-    args["entry"]  = selectedEntry;
-    Action act("pro.russianfedora.dnscryptclient.restore");
-    act.setHelperId("pro.russianfedora.dnscryptclient");
-    act.setArguments(args);
-    ExecuteJob *job = act.execute();
-    job->setAutoDelete(true);
-    if (job->exec()) {
-        QString code = job->data().value("code").toString();
-        QString msg  = job->data().value("msg").toString();
-        QString err  = job->data().value("err").toString();
-        KNotification::event(
-                   KNotification::Notification,
-                   "DNSCryptClient",
-                   QString("Restore exit code: %1\nMSG: %2\nERR: %3")
-                   .arg(code).arg(msg).arg(err));
-        srvStatus = RESTORED;
-    } else {
-        KNotification::event(
-                   KNotification::Notification,
-                   "DNSCryptClient",
-                   QString("ERROR: %1\n%2")
-                   .arg(job->error()).arg(job->errorText()));
-    };
-    emit serviceStateChanged(srvStatus);
 }
 void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason r)
 {
@@ -538,6 +552,7 @@ void MainWindow::receiveServiceStatus(QDBusMessage _msg)
 }
 void MainWindow::changeAppState(SRV_STATUS status)
 {
+    srvStatus = status;
     QTextStream s(stdout);
     switch ( status ) {
     case INACTIVE:
@@ -548,6 +563,8 @@ void MainWindow::changeAppState(SRV_STATUS status)
                                      QIcon(":/closed.png")));
         if ( !stopManually && findActiveService ) {
             findActiveServiceProcess();
+        } else if ( restoreFlag ) {
+            restoreSettingsProcess();
         };
         break;
     case ACTIVE:
@@ -563,15 +580,20 @@ void MainWindow::changeAppState(SRV_STATUS status)
                                      QIcon(":/reload.png")));
         s << "DEACTIVATING/ACTIVATING" << endl;
         break;
-    case RELOAD_SLICE:
+    case STOP_SLICE:
+        trayIcon->setIcon(
+                    QIcon::fromTheme("DNSCryptClient",
+                                     QIcon(":/DNSCryptClient.png")));
         // need to restart the slice and proxing
-        s << "RELOAD_SLICE" << endl;
+        s << "STOP_SLICE" << endl;
         stopSliceProcess();
+    case STOP_SLICE_FAILED:
+        s << "STOP_SLICE_FAILED" << endl;
     default:
         break;
     };
 }
 void MainWindow::probeNextServer()
 {
-    startService();
+    startServiceProcess();
 }

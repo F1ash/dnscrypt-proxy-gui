@@ -17,5 +17,5 @@ public slots:
 private:
     QString         get_key_varmap(const QVariantMap &args, const QString& key) const;
     QString         readResolvConf() const;
-    int             writeResolvConf(QString&) const;
+    int             writeResolvConf(const QString &) const;
 };
