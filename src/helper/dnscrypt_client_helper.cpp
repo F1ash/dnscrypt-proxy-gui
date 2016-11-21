@@ -295,7 +295,7 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
             break;
         case QDBusMessage::ErrorMessage:
         default:
-            retdata["code"]     = QString::number(1);
+            retdata["code"]     = QString::number(-1);
             retdata["err"]      = res.errorMessage();
             break;
         };
@@ -347,11 +347,12 @@ ActionReply DNSCryptClientHelper::stop(const QVariantMap args) const
         retdata["code"]     = QString::number(0);
         break;
     case QDBusMessage::ErrorMessage:
-        retdata["code"]     = QString::number(1);
+        retdata["code"]     = QString::number(-1);
         retdata["err"]      = res.errorMessage();
         break;
     default:
-        retdata["code"]     = QString::number(1);
+        retdata["msg"]      = "Stop failed";
+        retdata["code"]     = QString::number(-1);
         break;
     };
 
@@ -420,11 +421,12 @@ ActionReply DNSCryptClientHelper::stopslice(const QVariantMap args) const
         retdata["code"]     = QString::number(0);
         break;
     case QDBusMessage::ErrorMessage:
-        retdata["code"]     = QString::number(1);
+        retdata["code"]     = QString::number(-1);
         retdata["err"]      = res.errorMessage();
         break;
     default:
-        retdata["code"]     = QString::number(1);
+        retdata["msg"]      = "Slice not stopped";
+        retdata["code"]     = QString::number(-1);
         break;
     };
 

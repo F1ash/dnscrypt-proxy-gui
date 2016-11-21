@@ -1,2 +1,2 @@
-v.0.0.1 :
-begin build;
+v.1.0.0 :
+implemented DNSCrypt proxy client;

@@ -1,7 +1,7 @@
 %global cmake_build_dir build-cmake
 
 Name:          DNSCryptClient
-Version:       0.0.1
+Version:       1.0.0
 Release:       1%{?dist}
 Summary:       Qt/KF5 GUI wrapped over dnscrypt-proxy
 License:       GPLv2+
@@ -62,5 +62,5 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %{_datadir}/icons/hicolor/64x64/apps/%{name}.png
 
 %changelog
-* Fri Nov 11 2016 Fl@sh <kaperang07@gmail.com> - 0.0.1-1
+* Mon Nov 21 2016 Fl@sh <kaperang07@gmail.com> - 1.0.0-1
 - Initial build
