@@ -2,8 +2,8 @@
 
 Name:          DNSCryptClient
 Version:       1.0.0
-Release:       1%{?dist}
-Summary:       Qt/KF5 GUI wrapped over dnscrypt-proxy
+Release:       2%{?dist}
+Summary:       The GUI wrapped over dnscrypt-proxy
 License:       GPLv2+
 Source0:       https://github.com/F1ash/%{name}/archive/%{version}.tar.gz
 URL:           https://github.com/F1ash/%{name}
@@ -26,7 +26,7 @@ BuildRequires: systemd
 
 %description
 DNSCryptClient
-The Qt GUI wrapped over dnscrypt-proxy
+The Qt/KF5 GUI wrapped over dnscrypt-proxy
 for encrypting all DNS traffic between the user and DNS resolvers,
 preventing any spying, spoofing or man-in-the-middle attacks.
 
@@ -62,5 +62,9 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %{_datadir}/icons/hicolor/64x64/apps/%{name}.png
 
 %changelog
+* Tue Nov 22 2016 Fl@sh <kaperang07@gmail.com> - 1.0.0-2
+- enhanced Summary and %%description;
+- release updated;
+
 * Mon Nov 21 2016 Fl@sh <kaperang07@gmail.com> - 1.0.0-1
 - Initial build
