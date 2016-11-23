@@ -42,9 +42,11 @@ AppSettings::AppSettings(QWidget *parent) :
 
     runAtStart = new QCheckBox("run service at start", this);
     findActiveService = new QCheckBox("find the active service", this);
+    restoreAtClose = new QCheckBox("restore DNS system resolver settings", this);
     appSetLayout = new QVBoxLayout(this);
     appSetLayout->addWidget(runAtStart);
     appSetLayout->addWidget(findActiveService);
+    appSetLayout->addWidget(restoreAtClose);
     appSettings = new QWidget(this);
     appSettings->setContentsMargins(0, 0, 0, 0);
     appSettings->setLayout(appSetLayout);
@@ -59,6 +61,8 @@ AppSettings::AppSettings(QWidget *parent) :
             this, SIGNAL(toBase()));
     connect(findActiveService, SIGNAL(toggled(bool)),
             this, SIGNAL(findActiveServiceStateChanged(bool)));
+    connect(restoreAtClose, SIGNAL(toggled(bool)),
+            this, SIGNAL(restoreAtCloseChanged(bool)));
 }
 
 bool AppSettings::getRunAtStartState() const
@@ -72,6 +76,10 @@ void AppSettings::setRunAtStartState(bool state)
 void AppSettings::setFindActiveServiceState(bool state)
 {
     findActiveService->setChecked(state);
+}
+void AppSettings::setRestoreAtClose(bool state)
+{
+    restoreAtClose->setChecked(state);
 }
 
 /* private slots */

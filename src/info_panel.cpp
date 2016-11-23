@@ -46,7 +46,8 @@ void InfoPanel::changeAppState(SRV_STATUS state)
         break;
     case RESTORED:
         idx = 1;
-        attention->setText("System DNS resolver settings restored");
+        attention->setText("System DNS resolver settings restored.\
+\nYou may need to restart the network\nand web applications");
         break;
     case ACTIVATING:
     case INACTIVE:
@@ -54,7 +55,6 @@ void InfoPanel::changeAppState(SRV_STATUS state)
     case DEACTIVATING:
     case RELOADING:
     default:
-        idx = 0;
         break;
     };
     setCurrentIndex(idx);

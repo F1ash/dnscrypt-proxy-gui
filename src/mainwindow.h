@@ -28,7 +28,8 @@ signals:
 
 private:
     bool                runAtStart, findActiveService,
-                        stopManually, restoreFlag;
+                        stopManually, restoreFlag,
+                        restoreAtClose;
     int                 probeCount;
     SRV_STATUS          srvStatus;
     ServerPanel        *serverWdg;
@@ -58,13 +59,14 @@ private:
     void                restoreSettingsProcess();
     void                findActiveServiceProcess();
     void                addServerEnrty(const QString&);
-    QString             showResolverEntries() const;
+    QString             showResolverEntries();
 
 private slots:
     void                toSettings();
     void                toBase();
     void                firstServiceStart();
     void                changeFindActiveServiceState(bool);
+    void                changeRestoreAtCloseState(bool);
     void                startService();
     void                stopService();
     void                restoreSystemSettings();

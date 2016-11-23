@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     findActiveService = false;
     stopManually = false;
     restoreFlag = false;
+    restoreAtClose = false;
     probeCount = 0;
 
     serverWdg = new ServerPanel(this);
@@ -51,6 +52,8 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(toBase()));
     connect(appSettings, SIGNAL(findActiveServiceStateChanged(bool)),
             this, SLOT(changeFindActiveServiceState(bool)));
+    connect(appSettings, SIGNAL(restoreAtCloseChanged(bool)),
+            this, SLOT(changeRestoreAtCloseState(bool)));
     connect(buttonsWdg, SIGNAL(startProxing()),
             this, SLOT(startService()));
     connect(buttonsWdg, SIGNAL(stopProxing()),
@@ -82,8 +85,15 @@ void MainWindow::readSettings()
     appSettings->setRunAtStartState(runAtStart);
     findActiveService = settings.value("FindActiveService", true).toBool();
     appSettings->setFindActiveServiceState(findActiveService);
+    restoreAtClose = settings.value("RestoreAtClose", true).toBool();
+    appSettings->setRestoreAtClose(restoreAtClose);
     QString lastServer = settings.value("LastServer").toString();
     serverWdg->setLastServer(lastServer);
+    settings.beginGroup("Entries");
+    foreach ( QString _key, settings.allKeys() ) {
+        resolverEntries.append(settings.value(_key).toString());
+    };
+    settings.endGroup();
 }
 void MainWindow::setSettings()
 {
@@ -91,6 +101,14 @@ void MainWindow::setSettings()
     settings.setValue("RunAtStart", appSettings->getRunAtStartState());
     settings.setValue("FindActiveService", findActiveService);
     settings.setValue("LastServer", serverWdg->getCurrentServer());
+    settings.setValue("RestoreAtClose", restoreAtClose);
+    settings.beginGroup("Entries");
+    uint i = 0;
+    foreach ( QString _val, resolverEntries ) {
+        ++i;
+        settings.setValue(QString::number(i), _val);
+    };
+    settings.endGroup();
 }
 void MainWindow::initTrayIcon()
 {
@@ -430,12 +448,14 @@ void MainWindow::addServerEnrty(const QString &entry)
     if ( resolverEntries.contains(entry) ) return;
     resolverEntries.append(entry);
 }
-QString MainWindow::showResolverEntries() const
+QString MainWindow::showResolverEntries()
 {
     ResolverEntries *d = new ResolverEntries(serverWdg);
     d->setEntries(resolverEntries);
     d->exec();
     QString ret = d->getEntry();
+    resolverEntries.clear();
+    resolverEntries.append(d->getEntries());
     d->deleteLater();
     return ret;
 }
@@ -459,6 +479,10 @@ void MainWindow::firstServiceStart()
 void MainWindow::changeFindActiveServiceState(bool state)
 {
     findActiveService = state;
+}
+void MainWindow::changeRestoreAtCloseState(bool state)
+{
+    restoreAtClose = state;
 }
 void MainWindow::startService()
 {
@@ -515,7 +539,13 @@ void MainWindow::closeEvent(QCloseEvent *ev)
     ev->accept();
     stopManually = true;
     if ( ev->type()==QEvent::Close ) {
-        stopServiceProcess();
+        if ( restoreAtClose ) {
+            show();
+            stopServiceProcess();
+            restoreSettingsProcess();
+        } else {
+            stopServiceProcess();
+        };
         setSettings();
         trayIcon->hide();
     };

@@ -15,17 +15,20 @@ public:
     bool            getRunAtStartState() const;
     void            setRunAtStartState(bool);
     void            setFindActiveServiceState(bool);
+    void            setRestoreAtClose(bool);
 
 signals:
     void            toBase();
     void            findActiveServiceStateChanged(bool);
+    void            restoreAtCloseChanged(bool);
 
 private:
     QLabel         *setLabel, *nameLabel;
     QPushButton    *baseButton;
     QHBoxLayout    *headLayout;
     QVBoxLayout    *appSetLayout;
-    QCheckBox      *runAtStart, *findActiveService;
+    QCheckBox      *runAtStart, *findActiveService,
+                   *restoreAtClose;
     QWidget        *headWdg, *appSettings;
 
     QVBoxLayout    *commonLayout;
