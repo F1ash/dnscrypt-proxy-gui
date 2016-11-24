@@ -5,33 +5,33 @@ ServerInfo::ServerInfo(QWidget *parent) :
 {
     setWindowTitle("Server Info");
 
-    name = new QLabel(this);
+    name = new Click_Label(this);
     name->setToolTip("Name");
-    fullName = new QLabel(this);
+    fullName = new Click_Label(this);
     fullName->setToolTip("Full name");
-    description = new QLabel(this);
+    description = new Click_Label(this);
     description->setToolTip("Description");
-    location = new QLabel(this);
+    location = new Click_Label(this);
     location->setToolTip("Location");
-    coordinates = new QLabel(this);
+    coordinates = new Click_Label(this);
     coordinates->setToolTip("Coordinates");
-    URL = new QLabel(this);
+    URL = new Click_Label(this);
     URL->setToolTip("URL");
-    version = new QLabel(this);
+    version = new Click_Label(this);
     version->setToolTip("Version");
-    DNSSECvalidation = new QLabel(this);
+    DNSSECvalidation = new Click_Label(this);
     DNSSECvalidation->setToolTip("DNSSEC validation");
-    NoLogs = new QLabel(this);
+    NoLogs = new Click_Label(this);
     NoLogs->setToolTip("No Logs");
-    Namecoin = new QLabel(this);
+    Namecoin = new Click_Label(this);
     Namecoin->setToolTip("Namecoin");
-    ResolverAddress = new QLabel(this);
+    ResolverAddress = new Click_Label(this);
     ResolverAddress->setToolTip("Resolver Address");
-    ProviderName = new QLabel(this);
+    ProviderName = new Click_Label(this);
     ProviderName->setToolTip("Provider Name");
-    ProviderPublicKey = new QLabel(this);
+    ProviderPublicKey = new Click_Label(this);
     ProviderPublicKey->setToolTip("Provider Public Key");
-    ProviderPublicKeyTXTrecord = new QLabel(this);
+    ProviderPublicKeyTXTrecord = new Click_Label(this);
     ProviderPublicKeyTXTrecord->setToolTip("Provider Public Key TXT record");
 
     commonLayout = new QVBoxLayout(this);

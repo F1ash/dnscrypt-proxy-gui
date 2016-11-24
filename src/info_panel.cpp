@@ -1,4 +1,5 @@
 #include "info_panel.h"
+//#include <QTextStream>
 
 InfoPanel::InfoPanel(QWidget *parent) :
     QStackedWidget(parent)
@@ -63,6 +64,8 @@ void InfoPanel::changeAppState(SRV_STATUS state)
         timerId = startTimer(10000);
         attention->setStyleSheet("QLabel {background-color: gold;}");
     };
+    //QTextStream s(stdout);
+    //s << "idx=" << idx << " state="<< state<<endl;
 }
 void InfoPanel::setServerDescription(const QVariantMap &_data)
 {

@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QVariantMap>
+#include "click_label.h"
 
 class ServerInfo : public QDialog
 {
@@ -15,7 +16,7 @@ public:
 
 private:
     QVBoxLayout *commonLayout;
-    QLabel      *name, *fullName, *description,
+    Click_Label *name, *fullName, *description,
                 *location, *coordinates, *URL,
                 *version, *DNSSECvalidation, *NoLogs,
                 *Namecoin, *ResolverAddress, *ProviderName,

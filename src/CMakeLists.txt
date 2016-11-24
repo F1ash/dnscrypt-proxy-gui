@@ -13,6 +13,7 @@ set(HEADERS
     help_thread.h
     server_info.h
     resolver_entries.h
+    click_label.h
     tray/traywidget.h)
 set(SOURCES
     main.cpp
@@ -24,6 +25,7 @@ set(SOURCES
     help_thread.cpp
     server_info.cpp
     resolver_entries.cpp
+    click_label.cpp
     tray/traywidget.cpp)
 
 find_package(Qt5 COMPONENTS Widgets DBus REQUIRED)

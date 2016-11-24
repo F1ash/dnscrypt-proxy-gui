@@ -74,6 +74,7 @@ void ResolverEntries::addEntry()
     if ( dnsEntry->text().isEmpty() ) return;
     QString _entry = QString("nameserver %1\n").arg(dnsEntry->text());
     entries->addItem(_entry);
+    dnsEntry->clear();
 }
 void ResolverEntries::delEntry()
 {
