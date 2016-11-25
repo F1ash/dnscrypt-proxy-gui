@@ -1,12 +1,13 @@
 %global cmake_build_dir build-cmake
+%global app_name DNSCryptClient
 
-Name:          DNSCryptClient
+Name:          dnscrypt-proxy-gui-qt
 Version:       1.2.2
-Release:       1%{?dist}
+Release:       2%{?dist}
 Summary:       The GUI wrapped over dnscrypt-proxy
 License:       GPLv2+
-Source0:       https://github.com/F1ash/%{name}/archive/%{version}.tar.gz
-URL:           https://github.com/F1ash/%{name}
+Source0:       https://github.com/F1ash/%{app_name}/archive/%{version}.tar.gz
+URL:           https://github.com/F1ash/%{app_name}
 
 Requires:      qt5-qtbase
 Requires:      kf5-kauth
@@ -25,7 +26,6 @@ BuildRequires: extra-cmake-modules
 BuildRequires: systemd
 
 %description
-DNSCryptClient
 The Qt/KF5 GUI wrapped over dnscrypt-proxy
 for encrypting all DNS traffic between the user and DNS resolvers,
 preventing any spying, spoofing or man-in-the-middle attacks.
@@ -50,18 +50,22 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 
 %files
 %doc README.md
-%{_bindir}/%{name}
+%{_bindir}/%{app_name}
 %{_libexecdir}/kf5/kauth/dnscrypt_client_helper
-%{_datadir}/applications/%{name}.desktop
+%{_datadir}/applications/%{app_name}.desktop
 %{_datadir}/dbus-1/system-services/pro.russianfedora.dnscryptclient.service
 %{_datadir}/polkit-1/actions/pro.russianfedora.dnscryptclient.policy
 %{_sysconfdir}/dbus-1/system.d/pro.russianfedora.dnscryptclient.conf
-%{_datadir}/knotifications5/%{name}.notifyrc
-%{_unitdir}/%{name}@.service
-%{_unitdir}/%{name}.socket
-%{_datadir}/icons/hicolor/64x64/apps/%{name}.png
+%{_datadir}/knotifications5/%{app_name}.notifyrc
+%{_unitdir}/%{app_name}@.service
+%{_unitdir}/%{app_name}.socket
+%{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog
+* Fri Nov 25 2016 Fl@sh <kaperang07@gmail.com> - 1.2.2-2
+- changed package %%name to comply with the NamingGuidelines;
+- release updated;
+
 * Fri Nov 25 2016 Fl@sh <kaperang07@gmail.com> - 1.2.2-1
 - version updated;
 
