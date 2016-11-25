@@ -47,17 +47,17 @@ add_definitions(
     ${Qt5DBus_DEFINITIONS})
 
 add_executable(
-    ${PROJECT_NAME}
+    ${APP_NAME}
     ${HEADERS}
     ${SOURCES}
     ${MOC_SOURCES}
     ${RCCs})
-target_link_libraries(${PROJECT_NAME} ${BUILD_PROJECT_LIBRARIES}) 
+target_link_libraries(${APP_NAME} ${BUILD_PROJECT_LIBRARIES})
 
-install ( TARGETS     ${PROJECT_NAME}
+install ( TARGETS     ${APP_NAME}
           DESTINATION ${CMAKE_INSTALL_PREFIX}/bin )
 #message("KNOTIFYRC_INSTALL_DIR: ${KNOTIFYRC_INSTALL_DIR}")
-install(  FILES       ${PROJECT_NAME}.notifyrc
+install(  FILES       ${APP_NAME}.notifyrc
           DESTINATION ${KNOTIFYRC_INSTALL_DIR})
 
 add_subdirectory(helper)

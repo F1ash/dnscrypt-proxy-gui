@@ -2,18 +2,19 @@ cmake_minimum_required(VERSION 3.0)
 set (CMAKE_INSTALL_PREFIX /usr)
 
 
-project (DNSCryptClient)
+project (dnscrypt-proxy-gui-qt)
+set (APP_NAME DNSCryptClient)
 
 find_package(KF5Auth          REQUIRED)
 find_package(KF5Notifications REQUIRED)
 add_subdirectory(src)
 
-install ( FILES       ${PROJECT_NAME}.desktop
+install ( FILES       ${APP_NAME}.desktop
           DESTINATION ${SHARE_INSTALL_PREFIX}/applications )
-install ( FILES       ${PROJECT_NAME}@.service
+install ( FILES       ${APP_NAME}@.service
           DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system )
-install ( FILES       ${PROJECT_NAME}.socket
+install ( FILES       ${APP_NAME}.socket
           DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system )
-install ( FILES src/icons/64x64/status/${PROJECT_NAME}.png
+install ( FILES src/icons/64x64/status/${APP_NAME}.png
           DESTINATION ${SHARE_INSTALL_PREFIX}/icons/hicolor/64x64/apps
-          RENAME ${PROJECT_NAME}.png )
+          RENAME ${APP_NAME}.png )
