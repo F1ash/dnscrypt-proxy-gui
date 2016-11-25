@@ -46,7 +46,7 @@ pushd %{cmake_build_dir}
 popd
 
 %check
-desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
+desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 
 %files
 %doc README.md
@@ -63,7 +63,7 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 
 %changelog
 * Fri Nov 25 2016 Fl@sh <kaperang07@gmail.com> - 1.2.2-2
-- changed package %%name to comply with the NamingGuidelines;
+- changed package name to comply with the NamingGuidelines;
 - release updated;
 
 * Fri Nov 25 2016 Fl@sh <kaperang07@gmail.com> - 1.2.2-1
