@@ -10,7 +10,7 @@ ButtonPanel::ButtonPanel(QWidget *parent) :
                 "", this);
     start->setFlat(true);
     start->setContentsMargins(0, 0, 0, 0);
-    start->setToolTip("Start proxing");
+    start->setToolTip("Start proxying");
     start->setSizePolicy(
                 QSizePolicy(
                     QSizePolicy::Ignored,
@@ -21,7 +21,7 @@ ButtonPanel::ButtonPanel(QWidget *parent) :
                 "", this);
     stop->setFlat(true);
     stop->setContentsMargins(0, 0, 0, 0);
-    stop->setToolTip("Stop proxing");
+    stop->setToolTip("Stop proxying");
     stop->setSizePolicy(
                 QSizePolicy(
                     QSizePolicy::Ignored,
@@ -33,7 +33,7 @@ ButtonPanel::ButtonPanel(QWidget *parent) :
                 "", this);
     restore->setFlat(true);
     restore->setContentsMargins(0, 0, 0, 0);
-    restore->setToolTip("Stop proxing\nRestore system DNS resolver settings");
+    restore->setToolTip("Stop proxying\nRestore system DNS resolver settings");
     restore->setSizePolicy(
                 QSizePolicy(
                     QSizePolicy::Ignored,

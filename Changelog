@@ -1,2 +1,8 @@
 v.1.0.0 :
 implemented DNSCrypt proxy client;
+
+v.1.2.2 :
+simplified start/stop implementation;
+enhanced restoring control;
+simplified notification;
+enhanced Server Info;

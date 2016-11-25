@@ -1,8 +1,8 @@
 %global cmake_build_dir build-cmake
 
 Name:          DNSCryptClient
-Version:       1.0.0
-Release:       2%{?dist}
+Version:       1.2.2
+Release:       1%{?dist}
 Summary:       The GUI wrapped over dnscrypt-proxy
 License:       GPLv2+
 Source0:       https://github.com/F1ash/%{name}/archive/%{version}.tar.gz
@@ -62,6 +62,9 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %{_datadir}/icons/hicolor/64x64/apps/%{name}.png
 
 %changelog
+* Fri Nov 25 2016 Fl@sh <kaperang07@gmail.com> - 1.2.2-1
+- version updated;
+
 * Tue Nov 22 2016 Fl@sh <kaperang07@gmail.com> - 1.0.0-2
 - enhanced Summary and %%description;
 - release updated;

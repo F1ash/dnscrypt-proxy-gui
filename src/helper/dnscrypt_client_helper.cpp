@@ -309,6 +309,7 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
     return reply;
 }
 
+// unused; for stop and remove instantiated services used 'stopslice'
 ActionReply DNSCryptClientHelper::stop(const QVariantMap args) const
 {
     ActionReply reply;

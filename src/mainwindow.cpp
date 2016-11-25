@@ -314,6 +314,9 @@ void MainWindow::startServiceProcess()
 }
 void MainWindow::stopServiceProcess()
 {
+    // unused;
+    // for stop and remove instantiated services used 'stopSliceProcess'
+    disconnectFromClientService();
     QVariantMap args;
     args["action"] = "stop";
     args["server"] = serverWdg->getCurrentServer();
@@ -497,7 +500,7 @@ void MainWindow::startService()
     case  1:    // incorrectly for start;
     case -2:    // errored answer
     case -1:
-    default:    //  need to restart the slice and proxing
+    default:    //  need to restart the slice and proxying
         emit serviceStateChanged(STOP_SLICE);
         break;
     };
@@ -513,7 +516,7 @@ void MainWindow::stopService()
     case  1:    // need to stop
     case -2:    // errored answer
     case -1:
-    default:    // need to restart the slice and proxing
+    default:    // need to restart the slice and proxying
         emit serviceStateChanged(STOP_SLICE);
         break;
     };
@@ -623,7 +626,7 @@ void MainWindow::changeAppState(SRV_STATUS status)
         trayIcon->setIcon(
                     QIcon::fromTheme("DNSCryptClient",
                                      QIcon(":/DNSCryptClient.png")));
-        // need to restart the slice and proxing
+        // need to restart the slice and proxying
         //s << "STOP_SLICE" << endl;
         stopSliceProcess();
         break;
