@@ -6,8 +6,8 @@ Version:       1.2.2
 Release:       2%{?dist}
 Summary:       The GUI wrapped over dnscrypt-proxy
 License:       GPLv2+
-Source0:       https://github.com/F1ash/%{app_name}/archive/%{version}.tar.gz
-URL:           https://github.com/F1ash/%{app_name}
+Source0:       https://github.com/F1ash/%{name}/archive/%{version}.tar.gz
+URL:           https://github.com/F1ash/%{name}
 
 Requires:      qt5-qtbase
 Requires:      kf5-kauth
