@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 set (CMAKE_INSTALL_PREFIX /usr)
 
 
-project (dnscrypt-proxy-gui-qt)
+project (dnscrypt-proxy-gui)
 set (APP_NAME DNSCryptClient)
 
 find_package(KF5Auth          REQUIRED)

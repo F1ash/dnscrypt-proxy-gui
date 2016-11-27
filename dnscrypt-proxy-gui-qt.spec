@@ -1,9 +1,9 @@
 %global cmake_build_dir build-cmake
 %global app_name DNSCryptClient
 
-Name:          dnscrypt-proxy-gui-qt
+Name:          dnscrypt-proxy-gui
 Version:       1.2.2
-Release:       2%{?dist}
+Release:       3%{?dist}
 Summary:       The GUI wrapped over dnscrypt-proxy
 License:       GPLv2+
 Source0:       https://github.com/F1ash/%{name}/archive/%{version}.tar.gz
@@ -62,6 +62,10 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 %{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog
+* Sun Nov 27 2016 Fl@sh <kaperang07@gmail.com> - 1.2.2-3
+- changed package name to comply with the NamingGuidelines;
+- release updated;
+
 * Fri Nov 25 2016 Fl@sh <kaperang07@gmail.com> - 1.2.2-2
 - changed package name to comply with the NamingGuidelines;
 - release updated;
