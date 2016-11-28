@@ -3,7 +3,7 @@
 
 Name:          dnscrypt-proxy-gui
 Version:       1.2.2
-Release:       3%{?dist}
+Release:       4%{?dist}
 Summary:       The GUI wrapped over dnscrypt-proxy
 License:       GPLv2+
 Source0:       https://github.com/F1ash/%{name}/archive/%{version}.tar.gz
@@ -18,11 +18,14 @@ Requires:      polkit
 Requires:      dnscrypt-proxy
 Requires:      hicolor-icon-theme
 
+BuildRequires: gcc-c++
+BuildRequires: cmake
 BuildRequires: desktop-file-utils
 BuildRequires: qt5-qtbase-devel
 BuildRequires: kf5-kauth-devel
 BuildRequires: kf5-knotifications-devel
 BuildRequires: extra-cmake-modules
+%{?systemd_requires}
 BuildRequires: systemd
 
 %description
@@ -48,6 +51,18 @@ popd
 %check
 desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 
+%post
+%systemd_post %{app_name}@.socket
+%systemd_post %{app_name}@.service
+
+%preun
+%systemd_preun %{app_name}@.socket
+%systemd_preun %{app_name}@.service
+
+%postun
+%systemd_postun %{app_name}@.socket
+%systemd_postun %{app_name}@.service
+
 %files
 %doc README.md
 %{_bindir}/%{app_name}
@@ -62,6 +77,11 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 %{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog
+* Mon Nov 28 2016 Fl@sh <kaperang07@gmail.com> - 1.2.2-4
+- added cmake, gcc-c++ BR;
+- added systemd scriptlets;
+- release updated;
+
 * Sun Nov 27 2016 Fl@sh <kaperang07@gmail.com> - 1.2.2-3
 - changed package name to comply with the NamingGuidelines;
 - release updated;
