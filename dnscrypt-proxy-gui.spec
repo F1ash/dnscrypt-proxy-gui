@@ -52,15 +52,15 @@ popd
 desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 
 %post
-%systemd_post %{app_name}@.socket
+%systemd_post %{app_name}.socket
 %systemd_post %{app_name}@.service
 
 %preun
-%systemd_preun %{app_name}@.socket
+%systemd_preun %{app_name}.socket
 %systemd_preun %{app_name}@.service
 
 %postun
-%systemd_postun %{app_name}@.socket
+%systemd_postun %{app_name}.socket
 %systemd_postun %{app_name}@.service
 
 %files
