@@ -52,15 +52,12 @@ popd
 desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 
 %post
-%systemd_post %{app_name}.socket
 %systemd_post %{app_name}@.service
 
 %preun
-%systemd_preun %{app_name}.socket
 %systemd_preun %{app_name}@.service
 
 %postun
-%systemd_postun %{app_name}.socket
 %systemd_postun %{app_name}@.service
 
 %files
@@ -73,7 +70,6 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 %{_sysconfdir}/dbus-1/system.d/pro.russianfedora.dnscryptclient.conf
 %{_datadir}/knotifications5/%{app_name}.notifyrc
 %{_unitdir}/%{app_name}@.service
-%{_unitdir}/%{app_name}.socket
 %{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog

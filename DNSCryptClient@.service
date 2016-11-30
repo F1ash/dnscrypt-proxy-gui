@@ -1,12 +1,12 @@
 [Unit]
 Description=DNSCrypt client proxy
 Documentation=man:dnscrypt-proxy(8)
-Requires=DNSCryptClient.socket
+#Requires=DNSCryptClient.socket
 After=network.target
 Before=nss-lookup.target
 
 [Install]
-Also=DNSCryptClient.socket
+#Also=DNSCryptClient.socket
 #WantedBy=multi-user.target
 
 [Service]

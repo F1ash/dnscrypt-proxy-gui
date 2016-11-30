@@ -13,8 +13,6 @@ install ( FILES       ${APP_NAME}.desktop
           DESTINATION ${SHARE_INSTALL_PREFIX}/applications )
 install ( FILES       ${APP_NAME}@.service
           DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system )
-install ( FILES       ${APP_NAME}.socket
-          DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system )
 install ( FILES src/icons/64x64/status/${APP_NAME}.png
           DESTINATION ${SHARE_INSTALL_PREFIX}/icons/hicolor/64x64/apps
           RENAME ${APP_NAME}.png )
