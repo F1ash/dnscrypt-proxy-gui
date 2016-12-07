@@ -3,7 +3,7 @@
 
 Name:          dnscrypt-proxy-gui
 Version:       1.2.3
-Release:       2%{?dist}
+Release:       3%{?dist}
 Summary:       GUI wrapper for dnscrypt-proxy
 License:       GPLv2+
 Source0:       https://github.com/F1ash/%{name}/archive/%{version}.tar.gz
@@ -18,6 +18,7 @@ Requires:      polkit
 Requires:      dnscrypt-proxy
 Requires:      hicolor-icon-theme
 
+BuildRequires: gcc-c++
 BuildRequires: cmake
 BuildRequires: desktop-file-utils
 BuildRequires: qt5-qtbase-devel
@@ -81,6 +82,10 @@ fi
 %{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog
+* Wed Dec  7 2016 Fl@sh <kaperang07@gmail.com> - 1.2.3-3
+- returned gcc-c++ BR;
+- release updated;
+
 * Wed Dec  7 2016 Fl@sh <kaperang07@gmail.com> - 1.2.3-2
 - removed gcc-c++ BR, fixed dbus-1 R;
 - added scriptlets for update Icon_Cache;
