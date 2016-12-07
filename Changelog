@@ -6,3 +6,6 @@ simplified start/stop implementation;
 enhanced restoring control;
 simplified notification;
 enhanced Server Info;
+
+v.1.2.3 :
+removed useless socket unit;

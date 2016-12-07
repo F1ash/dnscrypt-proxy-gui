@@ -2,9 +2,9 @@
 %global app_name DNSCryptClient
 
 Name:          dnscrypt-proxy-gui
-Version:       1.2.2
-Release:       4%{?dist}
-Summary:       The GUI wrapped over dnscrypt-proxy
+Version:       1.2.3
+Release:       1%{?dist}
+Summary:       GUI wrapper for dnscrypt-proxy
 License:       GPLv2+
 Source0:       https://github.com/F1ash/%{name}/archive/%{version}.tar.gz
 URL:           https://github.com/F1ash/%{name}
@@ -29,7 +29,7 @@ BuildRequires: extra-cmake-modules
 BuildRequires: systemd
 
 %description
-The Qt/KF5 GUI wrapped over dnscrypt-proxy
+The Qt/KF5 GUI wrapper over dnscrypt-proxy
 for encrypting all DNS traffic between the user and DNS resolvers,
 preventing any spying, spoofing or man-in-the-middle attacks.
 
@@ -73,6 +73,11 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 %{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog
+* Wed Dec  7 2016 Fl@sh <kaperang07@gmail.com> - 1.2.3-1
+- enhanced Summary and %%description;
+- removed useless socket unit from scriplets and %%files;
+- version updated;
+
 * Mon Nov 28 2016 Fl@sh <kaperang07@gmail.com> - 1.2.2-4
 - added cmake, gcc-c++ BR;
 - added systemd scriptlets;
