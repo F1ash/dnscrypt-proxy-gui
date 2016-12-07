@@ -3,7 +3,7 @@
 
 Name:          dnscrypt-proxy-gui
 Version:       1.2.3
-Release:       1%{?dist}
+Release:       2%{?dist}
 Summary:       GUI wrapper for dnscrypt-proxy
 License:       GPLv2+
 Source0:       https://github.com/F1ash/%{name}/archive/%{version}.tar.gz
@@ -12,13 +12,12 @@ URL:           https://github.com/F1ash/%{name}
 Requires:      qt5-qtbase
 Requires:      kf5-kauth
 Requires:      kf5-knotifications
-Requires:      dbus
+Requires:      dbus-1
 Requires:      systemd
 Requires:      polkit
 Requires:      dnscrypt-proxy
 Requires:      hicolor-icon-theme
 
-BuildRequires: gcc-c++
 BuildRequires: cmake
 BuildRequires: desktop-file-utils
 BuildRequires: qt5-qtbase-devel
@@ -52,15 +51,24 @@ popd
 desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 
 %post
+/bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 %systemd_post %{app_name}@.service
 
 %preun
 %systemd_preun %{app_name}@.service
 
 %postun
+if [ $1 -eq 0 ] ; then
+    /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null
+    /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
+fi
 %systemd_postun %{app_name}@.service
 
+%posttrans
+/usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
+
 %files
+%license LICENSE
 %doc README.md
 %{_bindir}/%{app_name}
 %{_libexecdir}/kf5/kauth/dnscrypt_client_helper
@@ -73,6 +81,12 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 %{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog
+* Wed Dec  7 2016 Fl@sh <kaperang07@gmail.com> - 1.2.3-2
+- removed gcc-c++ BR, fixed dbus-1 R;
+- added scriptlets for update Icon_Cache;
+- added %%license in %%files;
+- release updated;
+
 * Wed Dec  7 2016 Fl@sh <kaperang07@gmail.com> - 1.2.3-1
 - enhanced Summary and %%description;
 - removed useless socket unit from scriplets and %%files;
