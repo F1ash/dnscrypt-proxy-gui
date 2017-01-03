@@ -19,6 +19,7 @@ Requires:      hicolor-icon-theme
 
 BuildRequires: gcc-c++
 BuildRequires: cmake
+BuildRequires: glibc-headers
 BuildRequires: desktop-file-utils
 BuildRequires: qt5-qtbase-devel
 BuildRequires: kf5-kauth-devel

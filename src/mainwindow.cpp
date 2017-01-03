@@ -280,15 +280,26 @@ void MainWindow::startServiceProcess()
         //QString msg         = job->data().value("msg").toString();
         //QString err         = job->data().value("err").toString();
         QString entry       = job->data().value("entry").toString();
+        QString answ        = job->data().value("answ").toString();
+        QString resp_time   = job->data().value("time").toString();
+        QTextStream s(stdout);
+        s << "dns entries  : " << answ << endl;
+        s << "response time: " << resp_time << endl;
         //KNotification::event(
         //           KNotification::Notification,
         //           "DNSCryptClient",
         //           QString("Session open with exit code: %1\nMSG: %2\nERR: %3")
         //           .arg(code).arg(msg).arg(err));
-        if ( code.toInt()!=-1 ) {
+        if ( code.toInt()==0 ) {
             addServerEnrty(entry);
+            if ( answ.toInt()<1 ) {
+                emit serviceStateChanged(STOP_SLICE);
+                return;
+            };
         };
     } else {
+        QTextStream s(stdout);
+        s << "action failed" << endl;
         //KNotification::event(
         //           KNotification::Notification,
         //           "DNSCryptClient",
@@ -598,6 +609,9 @@ void MainWindow::changeAppState(SRV_STATUS status)
         trayIcon->setIcon(
                     QIcon::fromTheme("DNSCryptClient_closed",
                                      QIcon(":/closed.png")));
+        trayIcon->setToolTip(QString("%1\n%2")
+                             .arg(windowTitle())
+                             .arg("--stopped--"));
         if ( !stopManually && findActiveService ) {
             findActiveServiceProcess();
         } else if ( restoreFlag ) {
@@ -613,6 +627,9 @@ void MainWindow::changeAppState(SRV_STATUS status)
         trayIcon->setIcon(
                     QIcon::fromTheme("DNSCryptClient_opened",
                                      QIcon(":/opened.png")));
+        trayIcon->setToolTip(QString("%1\n%2")
+                             .arg(windowTitle())
+                             .arg(serverWdg->getCurrentServer()));
         //s << "ACTIVE" << endl;
         break;
     case DEACTIVATING:
@@ -634,6 +651,9 @@ void MainWindow::changeAppState(SRV_STATUS status)
         trayIcon->setIcon(
                     QIcon::fromTheme("DNSCryptClient_restore",
                                      QIcon(":/restore.png")));
+        trayIcon->setToolTip(QString("%1\n%2")
+                             .arg(windowTitle())
+                             .arg("--restored--"));
     default:
         break;
     };

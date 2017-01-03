@@ -1,9 +1,10 @@
 
-set(dnscrypt_client_helper_SRCS
+set (dnscrypt_client_helper_SRCS
+    dns.c
     dnscrypt_client_helper.cpp)
 
-find_package(Qt5 COMPONENTS DBus REQUIRED)
-qt5_wrap_cpp (HELPER_MOC_SOURCES dnscrypt_client_helper.h)
+find_package (Qt5 COMPONENTS DBus REQUIRED)
+qt5_wrap_cpp (HELPER_MOC_SOURCES dnscrypt_client_helper.h dns.h)
 
 set (
     HELPER_BUILD_PROJECT_LIBRARIES

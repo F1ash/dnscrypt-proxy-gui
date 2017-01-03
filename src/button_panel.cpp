@@ -71,6 +71,11 @@ void ButtonPanel::changeAppState(SRV_STATUS state)
         stop->setDisabled(true);
         restore->setDisabled(true);
         break;
+    case STOP_SLICE:
+        start->setDisabled(true);
+        stop->setDisabled(true);
+        restore->setDisabled(true);
+        break;
     case FAILED:
     case INACTIVE:
     default:

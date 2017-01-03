@@ -1,3 +1,6 @@
+extern "C" {
+#include "dns.h"
+}
 #include "dnscrypt_client_helper.h"
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusMessage>
@@ -196,16 +199,19 @@ ActionReply DNSCryptClientHelper::create(const QVariantMap args) const
                                     // already queued jobs that conflict with this.
 
     SrvParameters _props;
-    PrimitivePair srvType, execStart, execStop;
+    PrimitivePair srvType, execStart, execStop, user;
     srvType.name    = QLatin1String("Type");
     srvType.value   = QLatin1String("forking");
     execStart.name  = QLatin1String("ExecStart");
     execStart.value = QString("/sbin/dnscrypt-proxy -d -R %1").arg(servName);
     execStop.name   = QLatin1String("ExecStop");
     execStop.value  = QLatin1String("/bin/kill -INT ${MAINPID}");
+    user.name       = QLatin1String("User");
+    user.value      = QLatin1String("root");
     _props.append(srvType);
     _props.append(execStart);
     _props.append(execStop);
+    _props.append(user);
 
     AuxParameters _aux;
     // aux is currently unused and should be passed as empty array.
@@ -288,10 +294,14 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
             str.append("\n");
         };
         retdata["msg"]          = str;
+        long int t = 0;
+        int domain = (servName.endsWith("ipv6"))? 6 : 4;
         switch (res.type()) {
         case QDBusMessage::ReplyMessage:
             retdata["entry"]    = entry;
             retdata["code"]     = QString::number(0);
+            retdata["answ"]     = QString::number(is_responsible(&t, domain));
+            retdata["time"]     = QString::number(t);
             break;
         case QDBusMessage::ErrorMessage:
         default:
