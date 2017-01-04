@@ -87,10 +87,9 @@ typedef struct
  * */
 uint16_t is_responsible(long int *t, int _family)
 {
-    sleep(5); // dirty action to wait when the dnscrypt-proxy will runned
+    sleep(3); // dirty action to wait when the dnscrypt-proxy will runned
     unsigned char host[100] = "google.com";
-    unsigned char buf[65536],*qname;    //*reader;
-    int i , s;
+    unsigned char buf[65536],*qname;
 
     struct DNS_HEADER *dns = NULL;
     struct QUESTION *qinfo = NULL;
@@ -98,22 +97,18 @@ uint16_t is_responsible(long int *t, int _family)
     //printf("Resolving %s" , host);
 
     struct sockaddr_in dest;
-    struct sockaddr_in6 dest6;
 
-    if ( _family==4 ) {
-        s = socket(AF_INET , SOCK_DGRAM , IPPROTO_UDP); //UDP packet for DNS queries
-        dest.sin_family = AF_INET;
-        dest.sin_port = htons(53);
-        //dns servers resolver
-        dest.sin_addr.s_addr = inet_addr("127.0.0.1");
-    } else {
-        s = socket(AF_INET6 , SOCK_DGRAM , 0); //UDP packet for DNS queries
-        dest6.sin6_family = AF_INET6;
-        dest6.sin6_port = htons(53);//dns servers resolver
-        memcpy(dest6.sin6_addr.s6_addr,
-               in6addr_loopback.s6_addr,
-               sizeof in6addr_loopback.s6_addr);
+    int s = socket(AF_INET , SOCK_DGRAM , IPPROTO_UDP); //UDP packet for DNS queries
+    struct timeval tv;
+    tv.tv_sec = 10;
+    tv.tv_usec = 0;
+    if (setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+        //perror(" setsocketopt Error");
     }
+    dest.sin_family = AF_INET;
+    dest.sin_port = htons(53);
+    //dns servers resolver
+    dest.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     //Set the DNS structure to standard queries
     dns = (struct DNS_HEADER *)&buf;
@@ -148,26 +143,23 @@ uint16_t is_responsible(long int *t, int _family)
     time_t t1, t2;
     t1 = time(0);
     //printf("\nSending Packet...");
-    if ( _family==4 ) {
-        ( sendto(s,(char*)buf,sizeof(struct DNS_HEADER)
-               + (strlen((const char*)qname)+1)
-               + sizeof(struct QUESTION),
-               0,
-               (struct sockaddr*)&dest,
-               sizeof(dest))
-        < 0 );
-    } else {
-        ( sendto(s,(char*)buf,sizeof(struct DNS_HEADER)
-               + (strlen((const char*)qname)+1)
-               + sizeof(struct QUESTION),
-               0,
-               (struct sockaddr*)&dest6,
-               sizeof(dest6))
-        < 0 );
-    }
+    sendto(
+                s,
+                (char*)buf,
+                sizeof(struct DNS_HEADER) + (strlen((const char*)qname)+1) + sizeof(struct QUESTION),
+                0,
+                (struct sockaddr*)&dest,
+                sizeof(dest));
 
     //Receive the answer
-    recvfrom (s,(void*)buf , 65536 , 0 , 0 , 0 );
+    recvfrom(
+                s,
+                (void*)buf,
+                65536,
+                0,
+                (struct sockaddr*)&dest,
+                (socklen_t*)sizeof(dest));
+    close(s);
 
     t2 = time(0);
     *t = (long int)(t2-t1);

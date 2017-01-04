@@ -308,6 +308,8 @@ void MainWindow::startServiceProcess()
         //trayIcon->setIcon(
         //            QIcon::fromTheme("DNSCryptClient_closed",
         //                             QIcon(":/closed.png")));
+        emit serviceStateChanged(STOP_SLICE);
+        return;
     };
     switch (checkSliceStatus()) {
     case  1:
