@@ -85,6 +85,7 @@ void InfoPanel::timerEvent(QTimerEvent *ev)
         killTimer(timerId);
         timerId = 0;
         attention->setStyleSheet("QLabel {background-color: white;}");
+        setCurrentIndex(0);
     };
     ev->accept();
 }

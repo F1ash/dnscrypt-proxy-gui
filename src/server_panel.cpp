@@ -75,6 +75,23 @@ void ServerPanel::setNextServer()
     if ( idx==servList->count() ) idx = 0;
     servList->setCurrentIndex(idx);
 }
+void ServerPanel::setItemIcon(QString name, QString icon_name)
+{
+    int idx = servList->findText(name, Qt::MatchExactly);
+    if ( idx>-1 ) {
+        servList->setItemIcon(
+                    idx,
+                    QIcon::fromTheme(icon_name));
+    };
+}
+QString ServerPanel::getItemName(int idx) const
+{
+    return servList->itemText(idx);
+}
+QString ServerPanel::getItemIconName(int idx) const
+{
+    return servList->itemIcon(idx).name();
+}
 
 /* public slots */
 void ServerPanel::changeAppState(SRV_STATUS state)
@@ -118,6 +135,7 @@ void ServerPanel::serverDataChanged(int idx)
 void ServerPanel::addServer(const QVariantMap &_data)
 {
     servList->addItem(
+                QIcon::fromTheme("none"),
                 _data.value("Name").toString(), _data);
 }
 void ServerPanel::findLastServer()

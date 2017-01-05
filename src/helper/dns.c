@@ -85,7 +85,7 @@ typedef struct
 /*
  * Perform a DNS query by sending a packet
  * */
-uint16_t is_responsible(long int *t, int _family)
+uint16_t is_responsible(uint64_t *t, int _family)
 {
     sleep(3); // dirty action to wait when the dnscrypt-proxy will runned
     unsigned char host[100] = "google.com";
@@ -140,17 +140,19 @@ uint16_t is_responsible(long int *t, int _family)
     qinfo->qtype = htons( (_family==4)? T_A : T_AAAA );
     qinfo->qclass = htons(1); //its internet (lol)
 
-    time_t t1, t2;
-    t1 = time(0);
     //printf("\nSending Packet...");
     sendto(
                 s,
                 (char*)buf,
-                sizeof(struct DNS_HEADER) + (strlen((const char*)qname)+1) + sizeof(struct QUESTION),
+                sizeof(struct DNS_HEADER)
+                    + (strlen((const char*)qname)+1)
+                    + sizeof(struct QUESTION),
                 0,
                 (struct sockaddr*)&dest,
                 sizeof(dest));
 
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     //Receive the answer
     recvfrom(
                 s,
@@ -159,10 +161,11 @@ uint16_t is_responsible(long int *t, int _family)
                 0,
                 (struct sockaddr*)&dest,
                 (socklen_t*)sizeof(dest));
+    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
     close(s);
 
-    t2 = time(0);
-    *t = (long int)(t2-t1);
+    *t = (end.tv_sec - start.tv_sec)*1000000
+       + (end.tv_nsec - start.tv_nsec)/1000;
 
     return ntohs(dns->ans_count);
 }

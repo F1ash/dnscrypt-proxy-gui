@@ -294,7 +294,7 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
             str.append("\n");
         };
         retdata["msg"]          = str;
-        long int t = 0;
+        long unsigned int t = 0;
         int domain = (servName.endsWith("ipv6"))? 6 : 4;
         switch (res.type()) {
         case QDBusMessage::ReplyMessage:

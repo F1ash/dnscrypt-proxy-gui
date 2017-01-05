@@ -17,6 +17,9 @@ public:
     QString          getCurrentServer() const;
     int              getServerListCount() const;
     void             setNextServer();
+    void             setItemIcon(QString, QString);
+    QString          getItemName(int) const;
+    QString          getItemIconName(int) const;
 
 signals:
     void             toSettings();

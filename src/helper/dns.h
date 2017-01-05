@@ -3,6 +3,6 @@
 
 #include    <arpa/inet.h>   //inet_addr , inet_ntoa , ntohs etc
 
-uint16_t is_responsible(long int*, int sin_family);
+uint16_t is_responsible(uint64_t*, int);
 
 #endif // DNS_H
