@@ -126,7 +126,7 @@ void MainWindow::setSettings()
     for ( int i=0; i<serverWdg->getServerListCount(); i++ ) {
         QString name, respondIconName;
         name = serverWdg->getItemName(i);
-        respondIconName = serverWdg->getItemIconName(i);
+        respondIconName = serverWdg->getRespondIconName(i);
         settings.setValue(name, respondIconName);
     };
     settings.endGroup();

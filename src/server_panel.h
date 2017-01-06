@@ -19,7 +19,7 @@ public:
     void             setNextServer();
     void             setItemIcon(QString, QString);
     QString          getItemName(int) const;
-    QString          getItemIconName(int) const;
+    QString          getRespondIconName(int) const;
 
 signals:
     void             toSettings();

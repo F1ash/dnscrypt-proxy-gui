@@ -15,5 +15,9 @@
         <file alias="close.png">icons/128x128/actions/DNSCryptClient_close.png</file>
         <file alias="open.png">icons/128x128/actions/DNSCryptClient_open.png</file>
         <file alias="restore.png">icons/128x128/actions/DNSCryptClient_restore.png</file>
+        <file alias="fast.png">icons/32x32/status/fast.png</file>
+        <file alias="middle.png">icons/32x32/status/middle.png</file>
+        <file alias="slow.png">icons/32x32/status/slow.png</file>
+        <file alias="none.png">icons/32x32/status/none.png</file>
     </qresource>
 </RCC>

@@ -7,9 +7,9 @@ ServerPanel::ServerPanel(QWidget *parent) :
 {
     setContentsMargins(0, 0, 0, 0);
     servLabel = new QLabel(this);
-    servLabel->setPixmap(QIcon::fromTheme(
-                             "DNSCryptClient_start",
-                             QIcon(":/start.png"))
+    servLabel->setPixmap(
+                QIcon::fromTheme("DNSCryptClient_start",
+                                 QIcon(":/start.png"))
             .pixmap(32));
     servLabel->setSizePolicy(
                 QSizePolicy(
@@ -81,16 +81,21 @@ void ServerPanel::setItemIcon(QString name, QString icon_name)
     if ( idx>-1 ) {
         servList->setItemIcon(
                     idx,
-                    QIcon::fromTheme(icon_name));
+                    QIcon::fromTheme(icon_name,
+                    QIcon(QString(":/%1.png").arg(icon_name))));
+        QVariantMap _map = servList->itemData(idx).toMap();
+        _map.insert("Respond", icon_name);
+        servList->setItemData(idx, _map);
     };
 }
 QString ServerPanel::getItemName(int idx) const
 {
     return servList->itemText(idx);
 }
-QString ServerPanel::getItemIconName(int idx) const
+QString ServerPanel::getRespondIconName(int idx) const
 {
-    return servList->itemIcon(idx).name();
+    return servList->itemData(idx).toMap()
+            .value("Respond").toString();
 }
 
 /* public slots */
@@ -136,7 +141,8 @@ void ServerPanel::addServer(const QVariantMap &_data)
 {
     servList->addItem(
                 QIcon::fromTheme("none"),
-                _data.value("Name").toString(), _data);
+                _data.value("Name").toString(),
+                _data);
 }
 void ServerPanel::findLastServer()
 {

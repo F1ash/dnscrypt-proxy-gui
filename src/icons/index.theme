@@ -2,7 +2,11 @@
 Name=DNSCryptClient
 Comment=DNSCryptClient Icon Set
 Inherits=hicolor,default
-Directories=64x64/status,64x64/actions,128x128/actions
+Directories=32x32/status,64x64/status,64x64/actions,128x128/actions
+
+[32x32/status]
+Size=72
+Context=Status
 
 [64x64/status]
 Size=72
