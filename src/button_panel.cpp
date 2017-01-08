@@ -1,4 +1,5 @@
 #include "button_panel.h"
+#include <QTextStream>
 
 ButtonPanel::ButtonPanel(QWidget *parent) :
     QWidget(parent)
@@ -57,7 +58,18 @@ ButtonPanel::ButtonPanel(QWidget *parent) :
 /* public slots */
 void ButtonPanel::changeAppState(SRV_STATUS state)
 {
+    //QTextStream s(stdout);
     switch (state) {
+    case READY:
+        setEnabled(true);
+        //this->setStyleSheet("QWidget {background-color: green;}");
+        //s<< "QWidget {background-color: green;}"<< endl;
+        break;
+    case PROCESSING:
+        //this->setStyleSheet("QWidget {background-color: red;}");
+        setEnabled(false);
+        //s<< "QWidget {background-color: red;}"<< endl;
+        break;
     case ACTIVE:
     case ACTIVATING:
     case DEACTIVATING:
@@ -83,7 +95,7 @@ void ButtonPanel::changeAppState(SRV_STATUS state)
         stop->setDisabled(true);
         restore->setEnabled(true);
         break;
-    }
+    };
 }
 
 /* private slots */

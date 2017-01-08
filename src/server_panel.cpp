@@ -102,6 +102,9 @@ QString ServerPanel::getRespondIconName(int idx) const
 void ServerPanel::changeAppState(SRV_STATUS state)
 {
     switch (state) {
+    case PROCESSING:
+    case READY:
+        break;
     case INACTIVE:
     case RESTORED:
         servList->setEnabled(true);

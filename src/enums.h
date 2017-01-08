@@ -11,7 +11,9 @@ enum SRV_STATUS {
     DEACTIVATING,
     RELOADING,
     RESTORED,
-    STOP_SLICE
+    STOP_SLICE,
+    PROCESSING,
+    READY
 };
 
 #endif // ENUMS_H

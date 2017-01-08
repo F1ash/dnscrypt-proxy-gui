@@ -446,6 +446,7 @@ void MainWindow::restoreSettingsProcess()
     restoreFlag = false;
     QString selectedEntry = showResolverEntries();
     if ( selectedEntry.isEmpty() ) {
+        emit serviceStateChanged(READY);
         return;
     };
     QVariantMap args;
@@ -637,7 +638,7 @@ void MainWindow::receiveServiceStatus(QDBusMessage _msg)
 }
 void MainWindow::changeAppState(SRV_STATUS status)
 {
-    srvStatus = status;
+    if ( status!=READY && status!=PROCESSING ) srvStatus = status;
     //QTextStream s(stdout);
     switch ( status ) {
     case INACTIVE:
@@ -654,9 +655,16 @@ void MainWindow::changeAppState(SRV_STATUS status)
                              .arg(windowTitle())
                              .arg("--stopped--"));
         if ( !stopManually && findActiveService ) {
+            //setStyleSheet("QWidget {background-color: red;}");
+            emit serviceStateChanged(PROCESSING);
             findActiveServiceProcess();
         } else if ( restoreFlag ) {
+            //setStyleSheet("QWidget {background-color: red;}");
+            emit serviceStateChanged(PROCESSING);
             restoreSettingsProcess();
+        } else {
+            //setStyleSheet("QWidget {background-color: green;}");
+            emit serviceStateChanged(READY);
         };
         break;
     case ACTIVE:
@@ -672,6 +680,8 @@ void MainWindow::changeAppState(SRV_STATUS status)
                              .arg(windowTitle())
                              .arg(serverWdg->getCurrentServer()));
         //s << "ACTIVE" << endl;
+        //setStyleSheet("QWidget {background-color: green;}");
+        emit serviceStateChanged(READY);
         break;
     case DEACTIVATING:
     case   ACTIVATING:
@@ -686,6 +696,8 @@ void MainWindow::changeAppState(SRV_STATUS status)
                                      QIcon(":/DNSCryptClient.png")));
         // need to restart the slice and proxying
         //s << "STOP_SLICE" << endl;
+        //setStyleSheet("QWidget {background-color: red;}");
+        emit serviceStateChanged(PROCESSING);
         stopSliceProcess();
         break;
     case RESTORED:
@@ -695,6 +707,8 @@ void MainWindow::changeAppState(SRV_STATUS status)
         trayIcon->setToolTip(QString("%1\n%2")
                              .arg(windowTitle())
                              .arg("--restored--"));
+        //setStyleSheet("QWidget {background-color: green;}");
+        emit serviceStateChanged(READY);
     default:
         break;
     };

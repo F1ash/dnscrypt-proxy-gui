@@ -41,6 +41,9 @@ void InfoPanel::changeAppState(SRV_STATUS state)
 {
     int idx = 0;
     switch (state) {
+    case PROCESSING:
+    case READY:
+        return;
     case ACTIVE:
         idx = 1;
         attention->setText("You may need to restart the network\nand web applications");
