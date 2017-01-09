@@ -19,5 +19,6 @@
         <file alias="middle.png">icons/32x32/status/middle.png</file>
         <file alias="slow.png">icons/32x32/status/slow.png</file>
         <file alias="none.png">icons/32x32/status/none.png</file>
+        <file alias="test.png">icons/64x64/actions/DNSCryptClient_test.png</file>
     </qresource>
 </RCC>

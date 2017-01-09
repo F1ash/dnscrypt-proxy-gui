@@ -10,7 +10,10 @@ set(HEADERS
     button_panel.h
     info_panel.h
     app_settings.h
+    test_respond.h
+    test_widget.h
     help_thread.h
+    test_thread.h
     server_info.h
     resolver_entries.h
     click_label.h
@@ -22,7 +25,10 @@ set(SOURCES
     button_panel.cpp
     info_panel.cpp
     app_settings.cpp
+    test_respond.cpp
+    test_widget.cpp
     help_thread.cpp
+    test_thread.cpp
     server_info.cpp
     resolver_entries.cpp
     click_label.cpp

@@ -49,10 +49,12 @@ MainWindow::MainWindow(QWidget *parent) :
     baseWdg->setLayout(baseLayout);
 
     appSettings = new AppSettings(this);
+    testRespond = new TestRespond(this);
 
     commonWdg = new QStackedWidget(this);
     commonWdg->addWidget(baseWdg);
     commonWdg->addWidget(appSettings);
+    commonWdg->addWidget(testRespond);
 
     setCentralWidget(commonWdg);
 
@@ -60,8 +62,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(serverWdg, SIGNAL(toSettings()),
             this, SLOT(toSettings()));
+    connect(serverWdg, SIGNAL(toTest()),
+            this, SLOT(toTest()));
     connect(appSettings, SIGNAL(toBase()),
             this, SLOT(toBase()));
+    connect(testRespond, SIGNAL(toBase()),
+            this, SLOT(toBase()));
+    connect(testRespond->testWdg->start, SIGNAL(released()),
+            this, SLOT(testStarted()));
+    connect(testRespond->testWdg->stop, SIGNAL(released()),
+            this, SLOT(testFinished()));
     connect(appSettings, SIGNAL(findActiveServiceStateChanged(bool)),
             this, SLOT(changeFindActiveServiceState(bool)));
     connect(appSettings, SIGNAL(restoreAtCloseChanged(bool)),
@@ -80,6 +90,8 @@ MainWindow::MainWindow(QWidget *parent) :
             buttonsWdg, SLOT(changeAppState(SRV_STATUS)));
     connect(this, SIGNAL(serviceStateChanged(SRV_STATUS)),
             infoWdg, SLOT(changeAppState(SRV_STATUS)));
+    connect(this, SIGNAL(serviceStateChanged(SRV_STATUS)),
+            testRespond->testWdg, SLOT(changeAppState(SRV_STATUS)));
     connect(this, SIGNAL(serviceStateChanged(SRV_STATUS)),
             this, SLOT(changeAppState(SRV_STATUS)));
     connect(serverWdg, SIGNAL(readyForStart()),
@@ -296,65 +308,9 @@ void MainWindow::startServiceProcess()
     act.setArguments(args);
     ExecuteJob *job = act.execute();
     job->setAutoDelete(true);
-    if ( job->exec() ) {
-        QString code        = job->data().value("code").toString();
-        //QString msg         = job->data().value("msg").toString();
-        //QString err         = job->data().value("err").toString();
-        QString entry       = job->data().value("entry").toString();
-        QString answ        = job->data().value("answ").toString();
-        QString resp_time   = job->data().value("time").toString();
-        QTextStream s(stdout);
-        s << "dns entries  : " << answ << endl;
-        s << "response time: " << qreal(resp_time.toULong())/1000000 << endl;
-        //KNotification::event(
-        //           KNotification::Notification,
-        //           "DNSCryptClient",
-        //           QString("Session open with exit code: %1\nMSG: %2\nERR: %3")
-        //           .arg(code).arg(msg).arg(err));
-        if ( code.toInt()==0 ) {
-            addServerEnrty(entry);
-            if ( answ.toInt()<1 ) {
-                serverWdg->setItemIcon(
-                            serverWdg->getCurrentServer(), "none");
-                emit serviceStateChanged(STOP_SLICE);
-                return;
-            };
-            serverWdg->setItemIcon(
-                        serverWdg->getCurrentServer(),
-                        getRespondIconName(qreal(resp_time.toULong())/1000000));
-        } else {
-            serverWdg->setItemIcon(
-                        serverWdg->getCurrentServer(), "none");
-        };
-    } else {
-        QTextStream s(stdout);
-        s << "action failed" << endl;
-        //KNotification::event(
-        //           KNotification::Notification,
-        //           "DNSCryptClient",
-        //           QString("Start Service ERROR: %1\n%2")
-        //           .arg(job->error()).arg(job->errorText()));
-        //trayIcon->setIcon(
-        //            QIcon::fromTheme("DNSCryptClient_closed",
-        //                             QIcon(":/closed.png")));
-        serverWdg->setItemIcon(
-                    serverWdg->getCurrentServer(), "none");
-        emit serviceStateChanged(STOP_SLICE);
-        return;
-    };
-    switch (checkSliceStatus()) {
-    case  1:
-        emit serviceStateChanged(ACTIVE);
-        break;
-    case  0:
-        emit serviceStateChanged(INACTIVE);
-        break;
-    case -1:
-    case -2:
-    default:
-        emit serviceStateChanged(STOP_SLICE);
-        break;
-    };
+    connect(job, SIGNAL(finished(KJob*)),
+            this, SLOT(startServiceJobFinished(KJob*)));
+    job->start();
 }
 void MainWindow::stopServiceProcess()
 {
@@ -369,36 +325,9 @@ void MainWindow::stopServiceProcess()
     act.setArguments(args);
     ExecuteJob *job = act.execute();
     job->setAutoDelete(true);
-    if (job->exec()) {
-        QString code = job->data().value("code").toString();
-        QString msg  = job->data().value("msg").toString();
-        QString err  = job->data().value("err").toString();
-        KNotification::event(
-                   KNotification::Notification,
-                   "DNSCryptClient",
-                   QString("Session closed with exit code: %1\nMSG: %2\nERR: %3")
-                   .arg(code).arg(msg).arg(err));
-    } else {
-        KNotification::event(
-                   KNotification::Notification,
-                   "DNSCryptClient",
-                   QString("Stop Service ERROR: %1\n%2")
-                   .arg(job->error()).arg(job->errorText()));
-        trayIcon->setIcon(
-                    QIcon::fromTheme("DNSCryptClient_close",
-                                     QIcon(":/close.png")));
-    };
-    switch (checkSliceStatus()) {
-    case  0:
-        emit serviceStateChanged(INACTIVE);
-        break;
-    case  1:
-    case -1:
-    case -2:
-    default:
-        emit serviceStateChanged(STOP_SLICE);
-        break;
-    };
+    connect(job, SIGNAL(finished(KJob*)),
+            this, SLOT(stopServiceJobFinished(KJob*)));
+    job->start();
 }
 void MainWindow::stopSliceProcess()
 {
@@ -410,36 +339,9 @@ void MainWindow::stopSliceProcess()
     act.setArguments(args);
     ExecuteJob *job = act.execute();
     job->setAutoDelete(true);
-    if (job->exec()) {
-        //QString code = job->data().value("code").toString();
-        //QString msg  = job->data().value("msg").toString();
-        //QString err  = job->data().value("err").toString();
-        //KNotification::event(
-        //           KNotification::Notification,
-        //           "DNSCryptClient",
-        //           QString("Slice closed with exit code: %1\nMSG: %2\nERR: %3")
-        //           .arg(code).arg(msg).arg(err));
-    } else {
-        //KNotification::event(
-        //           KNotification::Notification,
-        //           "DNSCryptClient",
-        //           QString("Stop Slice ERROR: %1\n%2")
-        //           .arg(job->error()).arg(job->errorText()));
-        //trayIcon->setIcon(
-        //            QIcon::fromTheme("DNSCryptClient_close",
-        //                             QIcon(":/close.png")));
-    };
-    switch (checkSliceStatus()) {
-    case  0:
-        emit serviceStateChanged(INACTIVE);
-        break;
-    case  1:
-    case -1:
-    case -2:
-    default:
-        emit serviceStateChanged(STOP_SLICE);
-        break;
-    };
+    connect(job, SIGNAL(finished(KJob*)),
+            this, SLOT(stopsliceJobFinished(KJob*)));
+    job->start();
 }
 void MainWindow::restoreSettingsProcess()
 {
@@ -515,9 +417,22 @@ void MainWindow::toSettings()
 {
     commonWdg->setCurrentWidget(appSettings);
 }
+void MainWindow::toTest()
+{
+    commonWdg->setCurrentWidget(testRespond);
+}
 void MainWindow::toBase()
 {
     commonWdg->setCurrentWidget(baseWdg);
+}
+void MainWindow::testStarted()
+{
+    stopService();
+    emit serviceStateChanged(PROCESSING);
+}
+void MainWindow::testFinished()
+{
+    emit serviceStateChanged(READY);
 }
 void MainWindow::firstServiceStart()
 {
@@ -532,6 +447,137 @@ void MainWindow::firstServiceStart()
     if ( runAtStart ) {
         runAtStart = false;
         startService();
+    };
+}
+void MainWindow::startServiceJobFinished(KJob *_job)
+{
+    ExecuteJob *job = static_cast<ExecuteJob*>(_job);
+    if ( job!=nullptr ) {
+        QString code        = job->data().value("code").toString();
+        //QString msg         = job->data().value("msg").toString();
+        //QString err         = job->data().value("err").toString();
+        QString entry       = job->data().value("entry").toString();
+        QString answ        = job->data().value("answ").toString();
+        QString resp_time   = job->data().value("time").toString();
+        QTextStream s(stdout);
+        s << "dns entries  : " << answ << endl;
+        s << "response time: " << qreal(resp_time.toULong())/1000000 << endl;
+        //KNotification::event(
+        //           KNotification::Notification,
+        //           "DNSCryptClient",
+        //           QString("Session open with exit code: %1\nMSG: %2\nERR: %3")
+        //           .arg(code).arg(msg).arg(err));
+        if ( code.toInt()==0 ) {
+            addServerEnrty(entry);
+            if ( answ.toInt()<1 ) {
+                serverWdg->setItemIcon(
+                            serverWdg->getCurrentServer(), "none");
+                emit serviceStateChanged(STOP_SLICE);
+                return;
+            };
+            serverWdg->setItemIcon(
+                        serverWdg->getCurrentServer(),
+                        getRespondIconName(qreal(resp_time.toULong())/1000000));
+        } else {
+            serverWdg->setItemIcon(
+                        serverWdg->getCurrentServer(), "none");
+        };
+    } else {
+        QTextStream s(stdout);
+        s << "action failed" << endl;
+        //KNotification::event(
+        //           KNotification::Notification,
+        //           "DNSCryptClient",
+        //           QString("Start Service ERROR: %1\n%2")
+        //           .arg(job->error()).arg(job->errorText()));
+        //trayIcon->setIcon(
+        //            QIcon::fromTheme("DNSCryptClient_closed",
+        //                             QIcon(":/closed.png")));
+        serverWdg->setItemIcon(
+                    serverWdg->getCurrentServer(), "none");
+        emit serviceStateChanged(STOP_SLICE);
+        return;
+    };
+    switch (checkSliceStatus()) {
+    case  1:
+        emit serviceStateChanged(ACTIVE);
+        break;
+    case  0:
+        emit serviceStateChanged(INACTIVE);
+        break;
+    case -1:
+    case -2:
+    default:
+        emit serviceStateChanged(STOP_SLICE);
+        break;
+    };
+}
+void MainWindow::stopServiceJobFinished(KJob *_job)
+{
+    ExecuteJob *job = static_cast<ExecuteJob*>(_job);
+    if ( job!=nullptr ) {
+        QString code = job->data().value("code").toString();
+        QString msg  = job->data().value("msg").toString();
+        QString err  = job->data().value("err").toString();
+        KNotification::event(
+                   KNotification::Notification,
+                   "DNSCryptClient",
+                   QString("Session closed with exit code: %1\nMSG: %2\nERR: %3")
+                   .arg(code).arg(msg).arg(err));
+    } else {
+        KNotification::event(
+                   KNotification::Notification,
+                   "DNSCryptClient",
+                   QString("Stop Service ERROR: %1\n%2")
+                   .arg(job->error()).arg(job->errorText()));
+        trayIcon->setIcon(
+                    QIcon::fromTheme("DNSCryptClient_close",
+                                     QIcon(":/close.png")));
+    };
+    switch (checkSliceStatus()) {
+    case  0:
+        emit serviceStateChanged(INACTIVE);
+        break;
+    case  1:
+    case -1:
+    case -2:
+    default:
+        emit serviceStateChanged(STOP_SLICE);
+        break;
+    };
+}
+void MainWindow::stopsliceJobFinished(KJob *_job)
+{
+    ExecuteJob *job = static_cast<ExecuteJob*>(_job);
+    if ( job!=nullptr ) {
+        //QString code = job->data().value("code").toString();
+        //QString msg  = job->data().value("msg").toString();
+        //QString err  = job->data().value("err").toString();
+        //KNotification::event(
+        //           KNotification::Notification,
+        //           "DNSCryptClient",
+        //           QString("Slice closed with exit code: %1\nMSG: %2\nERR: %3")
+        //           .arg(code).arg(msg).arg(err));
+    } else {
+        //KNotification::event(
+        //           KNotification::Notification,
+        //           "DNSCryptClient",
+        //           QString("Stop Slice ERROR: %1\n%2")
+        //           .arg(job->error()).arg(job->errorText()));
+        //trayIcon->setIcon(
+        //            QIcon::fromTheme("DNSCryptClient_close",
+        //                             QIcon(":/close.png")));
+    };
+    switch (checkSliceStatus()) {
+    case  0:
+        emit serviceStateChanged(INACTIVE);
+        break;
+    case  1:
+    case -1:
+    case -2:
+    default:
+        emit serviceStateChanged(STOP_SLICE);
+        break;
     };
 }
 void MainWindow::changeFindActiveServiceState(bool state)
@@ -655,15 +701,12 @@ void MainWindow::changeAppState(SRV_STATUS status)
                              .arg(windowTitle())
                              .arg("--stopped--"));
         if ( !stopManually && findActiveService ) {
-            //setStyleSheet("QWidget {background-color: red;}");
-            emit serviceStateChanged(PROCESSING);
             findActiveServiceProcess();
+            emit serviceStateChanged(PROCESSING);
         } else if ( restoreFlag ) {
-            //setStyleSheet("QWidget {background-color: red;}");
             emit serviceStateChanged(PROCESSING);
             restoreSettingsProcess();
         } else {
-            //setStyleSheet("QWidget {background-color: green;}");
             emit serviceStateChanged(READY);
         };
         break;
@@ -680,7 +723,6 @@ void MainWindow::changeAppState(SRV_STATUS status)
                              .arg(windowTitle())
                              .arg(serverWdg->getCurrentServer()));
         //s << "ACTIVE" << endl;
-        //setStyleSheet("QWidget {background-color: green;}");
         emit serviceStateChanged(READY);
         break;
     case DEACTIVATING:
@@ -696,7 +738,6 @@ void MainWindow::changeAppState(SRV_STATUS status)
                                      QIcon(":/DNSCryptClient.png")));
         // need to restart the slice and proxying
         //s << "STOP_SLICE" << endl;
-        //setStyleSheet("QWidget {background-color: red;}");
         emit serviceStateChanged(PROCESSING);
         stopSliceProcess();
         break;
@@ -707,7 +748,6 @@ void MainWindow::changeAppState(SRV_STATUS status)
         trayIcon->setToolTip(QString("%1\n%2")
                              .arg(windowTitle())
                              .arg("--restored--"));
-        //setStyleSheet("QWidget {background-color: green;}");
         emit serviceStateChanged(READY);
     default:
         break;

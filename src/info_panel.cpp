@@ -1,5 +1,5 @@
 #include "info_panel.h"
-//#include <QTextStream>
+#include <QTextStream>
 
 InfoPanel::InfoPanel(QWidget *parent) :
     QStackedWidget(parent)
@@ -39,36 +39,55 @@ InfoPanel::InfoPanel(QWidget *parent) :
 /* public slots */
 void InfoPanel::changeAppState(SRV_STATUS state)
 {
+    QTextStream s(stdout);
     int idx = 0;
     switch (state) {
     case PROCESSING:
+        s<< "PROCESSING" <<endl;
+        idx = 1;
+        attention->setStyleSheet("QLabel {background-color: gold;}");
+        attention->setText("Processing...");
+        break;
     case READY:
-        return;
+        s<< "READY" <<endl;
+        break;
     case ACTIVE:
+        s<< "ACTIVE" <<endl;
         idx = 1;
         attention->setText("You may need to restart the network\nand web applications");
         break;
     case RESTORED:
+        s<< "RESTORED" <<endl;
         idx = 1;
         attention->setText("System DNS resolver settings restored.\
 \nYou may need to restart the network\nand web applications");
         break;
     case ACTIVATING:
+            s<< "ACTIVATING" <<endl;
+        break;
     case INACTIVE:
+        s<< "INACTIVE" <<endl;
+        break;
     case FAILED:
+        s<< "FAILED" <<endl;
+        break;
     case DEACTIVATING:
+        s<< "DEACTIVATING" <<endl;
+        break;
     case RELOADING:
+        s<< "RELOADING" <<endl;
+        break;
     default:
+         s<< "default" <<endl;
         break;
     };
     setCurrentIndex(idx);
-    if ( idx==1 ) {
+    if ( state !=PROCESSING && idx==1 ) {
         if ( timerId>0 ) killTimer(timerId);
         timerId = startTimer(10000);
         attention->setStyleSheet("QLabel {background-color: gold;}");
     };
-    //QTextStream s(stdout);
-    //s << "idx=" << idx << " state="<< state<<endl;
+    s << "idx=" << idx << " state="<< state<<endl;
 }
 void InfoPanel::setServerDescription(const QVariantMap &_data)
 {

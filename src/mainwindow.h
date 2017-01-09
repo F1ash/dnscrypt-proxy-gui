@@ -10,6 +10,7 @@
 #include "server_panel.h"
 #include "button_panel.h"
 #include "info_panel.h"
+#include "test_respond.h"
 #include "app_settings.h"
 #include "tray/traywidget.h"
 #include <kauth.h>
@@ -39,6 +40,7 @@ private:
     QVBoxLayout        *baseLayout;
     QWidget            *baseWdg;
     AppSettings        *appSettings;
+    TestRespond        *testRespond;
     QStackedWidget     *commonWdg;
     QSettings           settings;
     QDBusConnection     connection;
@@ -63,8 +65,14 @@ private:
 
 private slots:
     void                toSettings();
+    void                toTest();
     void                toBase();
+    void                testStarted();
+    void                testFinished();
     void                firstServiceStart();
+    void                startServiceJobFinished(KJob*);
+    void                stopServiceJobFinished(KJob*);
+    void                stopsliceJobFinished(KJob*);
     void                changeFindActiveServiceState(bool);
     void                changeRestoreAtCloseState(bool);
     void                startService();

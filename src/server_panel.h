@@ -23,6 +23,7 @@ public:
 
 signals:
     void             toSettings();
+    void             toTest();
     void             serverData(const QVariantMap&);
     void             readyForStart();
 
@@ -30,7 +31,7 @@ private:
     QString          lastServer;
     QLabel          *servLabel;
     QComboBox       *servList;
-    QPushButton     *servInfo, *appSettings;
+    QPushButton     *servInfo, *appSettings, *testRespond;
     QHBoxLayout     *baseLayout;
 
 public slots:

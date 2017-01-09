@@ -37,14 +37,27 @@ ServerPanel::ServerPanel(QWidget *parent) :
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
+    testRespond = new QPushButton(
+                QIcon::fromTheme("DNSCryptClient_test",
+                                 QIcon(":/test.png")),
+                "", this);
+    testRespond->setFlat(true);
+    testRespond->setToolTip("to Respond test");
+    testRespond->setSizePolicy(
+                QSizePolicy(
+                    QSizePolicy::Ignored,
+                    QSizePolicy::Ignored));
     baseLayout = new QHBoxLayout(this);
     baseLayout->addWidget(servLabel, 1);
     baseLayout->addWidget(servList, 10);
     baseLayout->addWidget(servInfo, 1);
     baseLayout->addWidget(appSettings, 1);
+    baseLayout->addWidget(testRespond, 1);
     setLayout(baseLayout);
     connect(appSettings, SIGNAL(released()),
             this, SIGNAL(toSettings()));
+    connect(testRespond, SIGNAL(released()),
+            this, SIGNAL(toTest()));
     connect(servList, SIGNAL(currentIndexChanged(int)),
             this, SLOT(serverDataChanged(int)));
     connect(servInfo, SIGNAL(released()),
