@@ -88,19 +88,6 @@ void ServerPanel::setNextServer()
     if ( idx==servList->count() ) idx = 0;
     servList->setCurrentIndex(idx);
 }
-void ServerPanel::setItemIcon(QString name, QString icon_name)
-{
-    int idx = servList->findText(name, Qt::MatchExactly);
-    if ( idx>-1 ) {
-        servList->setItemIcon(
-                    idx,
-                    QIcon::fromTheme(icon_name,
-                    QIcon(QString(":/%1.png").arg(icon_name))));
-        QVariantMap _map = servList->itemData(idx).toMap();
-        _map.insert("Respond", icon_name);
-        servList->setItemData(idx, _map);
-    };
-}
 QString ServerPanel::getItemName(int idx) const
 {
     return servList->itemText(idx);
@@ -115,7 +102,6 @@ QString ServerPanel::getRespondIconName(int idx) const
 void ServerPanel::changeAppState(SRV_STATUS state)
 {
     switch (state) {
-    case PROCESSING:
     case READY:
         break;
     case INACTIVE:
@@ -127,10 +113,24 @@ void ServerPanel::changeAppState(SRV_STATUS state)
     case FAILED:
     case DEACTIVATING:
     case RELOADING:
+    case PROCESSING:
     default:
         servList->setEnabled(false);
         break;
     }
+}
+void ServerPanel::setItemIcon(QString name, QString icon_name)
+{
+    int idx = servList->findText(name, Qt::MatchExactly);
+    if ( idx>-1 ) {
+        servList->setItemIcon(
+                    idx,
+                    QIcon::fromTheme(icon_name,
+                    QIcon(QString(":/%1.png").arg(icon_name))));
+        QVariantMap _map = servList->itemData(idx).toMap();
+        _map.insert("Respond", icon_name);
+        servList->setItemData(idx, _map);
+    };
 }
 
 /* private slots */
@@ -159,6 +159,7 @@ void ServerPanel::addServer(const QVariantMap &_data)
                 QIcon::fromTheme("none"),
                 _data.value("Name").toString(),
                 _data);
+    emit checkItem(_data.value("Name").toString(), "none");
 }
 void ServerPanel::findLastServer()
 {

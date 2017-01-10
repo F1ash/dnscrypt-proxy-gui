@@ -5,34 +5,47 @@
 #include <QLabel>
 #include <QProgressBar>
 #include <QVBoxLayout>
-#include "test_thread.h"
 #include "enums.h"
+#include <kauth.h>
+using namespace KAuth;
 
 class TestWidget : public QWidget
 {
     Q_OBJECT
 public:
     explicit TestWidget(QWidget *parent = nullptr);
-    QPushButton    *start, *stop;
+    void                setServerList(QStringList);
 
 signals:
+    void                started();
+    void                finished();
+    void                serverRespondIcon(const QString, const QString);
+    void                nextItem();
+    void                endList();
 
 private:
-    bool            processing;
-    QLabel         *info;
-    QProgressBar   *progress;
-    QHBoxLayout    *buttonLayout;
-    QWidget        *buttons;
-    QVBoxLayout    *commonLayout;
+    int                 counter;
+    bool                processing;
+    QLabel             *info;
+    QProgressBar       *progress;
+    QPushButton        *start, *stop;
+    QHBoxLayout        *buttonLayout;
+    QWidget            *buttons;
+    QVBoxLayout        *commonLayout;
 
-    TestThread     *testThread;
+    QStringList         list;
 
 private slots:
-    void            testStarted();
-    void            testFinished();
+    void                startTest();
+    void                stopTest();
+    void                finishTest();
+    void                checkServerRespond();
+    void                stopServiceSlice();
+    void                resultCheckServerRespond(KJob*);
+    void                resultStopServiceSlice(KJob*);
 
 public slots:
-    void            changeAppState(SRV_STATUS);
+    void                changeAppState(SRV_STATUS);
 };
 
 #endif // TEST_WIDGET_H

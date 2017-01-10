@@ -13,7 +13,6 @@ set(HEADERS
     test_respond.h
     test_widget.h
     help_thread.h
-    test_thread.h
     server_info.h
     resolver_entries.h
     click_label.h
@@ -28,7 +27,6 @@ set(SOURCES
     test_respond.cpp
     test_widget.cpp
     help_thread.cpp
-    test_thread.cpp
     server_info.cpp
     resolver_entries.cpp
     click_label.cpp

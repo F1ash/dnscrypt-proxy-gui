@@ -3,18 +3,6 @@
 #include <private/qdbusutil_p.h>
 #include <QRegExp>
 
-QString getRespondIconName(qreal r)
-{
-    if        ( 0<r && r<=0.3 ) {
-        return "fast";
-    } else if ( 0.3<r && r<=0.7 ) {
-        return "middle";
-    } else if ( 0.7<r && r<10.0 ) {
-        return "slow";
-    };
-    return "none";
-}
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     connection(QDBusConnection::systemBus())
@@ -68,10 +56,12 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(toBase()));
     connect(testRespond, SIGNAL(toBase()),
             this, SLOT(toBase()));
-    connect(testRespond->testWdg->start, SIGNAL(released()),
+    connect(testRespond->testWdg, SIGNAL(started()),
             this, SLOT(testStarted()));
-    connect(testRespond->testWdg->stop, SIGNAL(released()),
+    connect(testRespond->testWdg, SIGNAL(finished()),
             this, SLOT(testFinished()));
+    connect(testRespond->testWdg, SIGNAL(serverRespondIcon(QString,QString)),
+            serverWdg, SLOT(setItemIcon(QString,QString)));
     connect(appSettings, SIGNAL(findActiveServiceStateChanged(bool)),
             this, SLOT(changeFindActiveServiceState(bool)));
     connect(appSettings, SIGNAL(restoreAtCloseChanged(bool)),
@@ -96,6 +86,8 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(changeAppState(SRV_STATUS)));
     connect(serverWdg, SIGNAL(readyForStart()),
             this, SLOT(firstServiceStart()));
+    connect(serverWdg, SIGNAL(checkItem(QString,QString)),
+            this, SLOT(checkRespondSettings(QString,QString)));
     connect(this, SIGNAL(nextServer()),
             this, SLOT(probeNextServer()));
 
@@ -429,14 +421,36 @@ void MainWindow::testStarted()
 {
     stopService();
     emit serviceStateChanged(PROCESSING);
+    trayIcon->setIcon(
+                QIcon::fromTheme("DNSCryptClient_test",
+                                 QIcon(":/test.png")));
+    trayIcon->setToolTip(QString("%1\n%2")
+                         .arg(windowTitle())
+                         .arg("--testing--"));
 }
 void MainWindow::testFinished()
 {
     emit serviceStateChanged(READY);
+    trayIcon->setIcon(
+                QIcon::fromTheme("DNSCryptClient_closed",
+                                 QIcon(":/closed.png")));
+    trayIcon->setToolTip(QString("%1\n%2")
+                         .arg(windowTitle())
+                         .arg("--tested--"));
+    stopService();
+}
+void MainWindow::checkRespondSettings(const QString name, const QString icon)
+{
+    settings.beginGroup("Responds");
+    if ( !settings.allKeys().contains(name) ) {
+        settings.setValue(name, icon);
+    };
+    settings.endGroup();
 }
 void MainWindow::firstServiceStart()
 {
     settings.beginGroup("Responds");
+    testRespond->testWdg->setServerList(settings.allKeys());
     foreach ( QString _key, settings.allKeys() ) {
         QString respondIconName =
                 settings.value(_key).toString();
@@ -458,10 +472,10 @@ void MainWindow::startServiceJobFinished(KJob *_job)
         //QString err         = job->data().value("err").toString();
         QString entry       = job->data().value("entry").toString();
         QString answ        = job->data().value("answ").toString();
-        QString resp_time   = job->data().value("time").toString();
-        QTextStream s(stdout);
-        s << "dns entries  : " << answ << endl;
-        s << "response time: " << qreal(resp_time.toULong())/1000000 << endl;
+        QString resp_icon   = job->data().value("resp").toString();
+        //QTextStream s(stdout);
+        //s << "dns entries  : " << answ << endl;
+        //s << "response time: " << resp_icon << endl;
         //KNotification::event(
         //           KNotification::Notification,
         //           "DNSCryptClient",
@@ -476,15 +490,14 @@ void MainWindow::startServiceJobFinished(KJob *_job)
                 return;
             };
             serverWdg->setItemIcon(
-                        serverWdg->getCurrentServer(),
-                        getRespondIconName(qreal(resp_time.toULong())/1000000));
+                        serverWdg->getCurrentServer(), resp_icon);
         } else {
             serverWdg->setItemIcon(
                         serverWdg->getCurrentServer(), "none");
         };
     } else {
-        QTextStream s(stdout);
-        s << "action failed" << endl;
+        //QTextStream s(stdout);
+        //s << "action failed" << endl;
         //KNotification::event(
         //           KNotification::Notification,
         //           "DNSCryptClient",

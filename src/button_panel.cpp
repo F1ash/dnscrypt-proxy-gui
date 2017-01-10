@@ -1,5 +1,5 @@
 #include "button_panel.h"
-#include <QTextStream>
+//#include <QTextStream>
 
 ButtonPanel::ButtonPanel(QWidget *parent) :
     QWidget(parent)

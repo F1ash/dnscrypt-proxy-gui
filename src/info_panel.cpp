@@ -1,5 +1,5 @@
 #include "info_panel.h"
-#include <QTextStream>
+//#include <QTextStream>
 
 InfoPanel::InfoPanel(QWidget *parent) :
     QStackedWidget(parent)
@@ -39,46 +39,46 @@ InfoPanel::InfoPanel(QWidget *parent) :
 /* public slots */
 void InfoPanel::changeAppState(SRV_STATUS state)
 {
-    QTextStream s(stdout);
+    //QTextStream s(stdout);
     int idx = 0;
     switch (state) {
     case PROCESSING:
-        s<< "PROCESSING" <<endl;
+        //s<< "PROCESSING" <<endl;
         idx = 1;
         attention->setStyleSheet("QLabel {background-color: gold;}");
         attention->setText("Processing...");
         break;
     case READY:
-        s<< "READY" <<endl;
+        //s<< "READY" <<endl;
         break;
     case ACTIVE:
-        s<< "ACTIVE" <<endl;
+        //s<< "ACTIVE" <<endl;
         idx = 1;
         attention->setText("You may need to restart the network\nand web applications");
         break;
     case RESTORED:
-        s<< "RESTORED" <<endl;
+        //s<< "RESTORED" <<endl;
         idx = 1;
         attention->setText("System DNS resolver settings restored.\
 \nYou may need to restart the network\nand web applications");
         break;
     case ACTIVATING:
-            s<< "ACTIVATING" <<endl;
+        //s<< "ACTIVATING" <<endl;
         break;
     case INACTIVE:
-        s<< "INACTIVE" <<endl;
+        //s<< "INACTIVE" <<endl;
         break;
     case FAILED:
-        s<< "FAILED" <<endl;
+        //s<< "FAILED" <<endl;
         break;
     case DEACTIVATING:
-        s<< "DEACTIVATING" <<endl;
+        //s<< "DEACTIVATING" <<endl;
         break;
     case RELOADING:
-        s<< "RELOADING" <<endl;
+        //s<< "RELOADING" <<endl;
         break;
     default:
-         s<< "default" <<endl;
+        //s<< "default" <<endl;
         break;
     };
     setCurrentIndex(idx);
@@ -87,7 +87,7 @@ void InfoPanel::changeAppState(SRV_STATUS state)
         timerId = startTimer(10000);
         attention->setStyleSheet("QLabel {background-color: gold;}");
     };
-    s << "idx=" << idx << " state="<< state<<endl;
+    //s << "idx=" << idx << " state="<< state<<endl;
 }
 void InfoPanel::setServerDescription(const QVariantMap &_data)
 {

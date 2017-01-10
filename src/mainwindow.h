@@ -69,6 +69,7 @@ private slots:
     void                toBase();
     void                testStarted();
     void                testFinished();
+    void                checkRespondSettings(const QString, const QString);
     void                firstServiceStart();
     void                startServiceJobFinished(KJob*);
     void                stopServiceJobFinished(KJob*);

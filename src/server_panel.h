@@ -17,7 +17,6 @@ public:
     QString          getCurrentServer() const;
     int              getServerListCount() const;
     void             setNextServer();
-    void             setItemIcon(QString, QString);
     QString          getItemName(int) const;
     QString          getRespondIconName(int) const;
 
@@ -26,6 +25,7 @@ signals:
     void             toTest();
     void             serverData(const QVariantMap&);
     void             readyForStart();
+    void             checkItem(const QString, const QString);
 
 private:
     QString          lastServer;
@@ -36,6 +36,7 @@ private:
 
 public slots:
     void             changeAppState(SRV_STATUS);
+    void             setItemIcon(QString, QString);
 
 private slots:
     void             resizeEvent(QResizeEvent*);
