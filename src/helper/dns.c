@@ -85,7 +85,7 @@ typedef struct
 /*
  * Perform a DNS query by sending a packet
  * */
-uint16_t is_responsible(uint64_t *t, int _family)
+uint16_t is_responsible(unsigned long *t, int _family)
 {
     sleep(3); // dirty action to wait when the dnscrypt-proxy will runned
     unsigned char host[100] = "google.com";
