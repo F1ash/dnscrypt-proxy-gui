@@ -103,7 +103,7 @@ void TestWidget::stopServiceSlice()
 void TestWidget::resultCheckServerRespond(KJob *_job)
 {
     //QTextStream s(stdout);
-    QString i = QString("\nLeft %1 sec...").arg((list.count()-counter)*3);
+    QString i = QString("\nLeft %1 sec...").arg((list.count()-counter-1)*3);
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
     if ( job!=nullptr ) {
         QString code        = job->data().value("code").toString();

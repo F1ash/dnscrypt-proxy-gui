@@ -7,7 +7,6 @@ extern "C" {
 #include <private/qdbusmetatype_p.h>
 #include <private/qdbusutil_p.h>
 #include <QFile>
-#include <QTextStream>
 
 #define UnitName QString("DNSCryptClient")
 
@@ -270,7 +269,6 @@ ActionReply DNSCryptClientHelper::create(const QVariantMap args) const
 
 ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
 {
-    QTextStream s(stdout);
     ActionReply reply;
 
     const QString act = get_key_varmap(args, "action");
@@ -301,14 +299,12 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
         msg.setArguments(_args);
         QDBusMessage res = QDBusConnection::systemBus()
                 .call(msg, QDBus::Block);
-        s<< "service sterted" <<endl;
         QString str;
         foreach (QVariant arg, res.arguments()) {
             str.append(QDBusUtil::argumentToString(arg));
             str.append("\n");
         };
         retdata["msg"]          = str;
-        s<< str << endl;
         long unsigned int t = 0;
         int domain = (servName.endsWith("ipv6"))? 6 : 4;
         switch (res.type()) {
@@ -317,7 +313,6 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
             retdata["code"]     = QString::number(0);
             retdata["answ"]     = QString::number(is_responsible(&t, domain));
             retdata["resp"]     = getRespondIconName(qreal(t)/1000000);
-            s<< retdata["answ"].toString() << retdata["resp"].toString() <<endl;
             break;
         case QDBusMessage::ErrorMessage:
         default:
@@ -332,7 +327,6 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
     };
 
     reply.setData(retdata);
-    s<< "end job" <<endl;
     return reply;
 }
 

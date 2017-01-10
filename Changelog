@@ -9,3 +9,7 @@ enhanced Server Info;
 
 v.1.2.3 :
 removed useless socket unit;
+
+v.1.3.4 :
+added test of the servers validity;
+enhanced GUI;
