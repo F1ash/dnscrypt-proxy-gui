@@ -15,6 +15,7 @@ public:
     explicit ServerPanel(QWidget *parent = nullptr);
     void             setLastServer(const QString&);
     QString          getCurrentServer() const;
+    QString          getCurrentRespondIconName() const;
     int              getServerListCount() const;
     void             setNextServer();
     QString          getItemName(int) const;

@@ -87,7 +87,7 @@ typedef struct
  * */
 uint16_t is_responsible(unsigned long *t, int _family)
 {
-    sleep(3); // dirty action to wait when the dnscrypt-proxy will runned
+    sleep(1); // dirty action to wait when the dnscrypt-proxy will runned
     unsigned char host[100] = "google.com";
     unsigned char buf[65536],*qname;
 

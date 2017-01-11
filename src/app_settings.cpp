@@ -41,11 +41,14 @@ AppSettings::AppSettings(QWidget *parent) :
     headWdg->setLayout(headLayout);
 
     runAtStart = new QCheckBox("run service at start", this);
-    findActiveService = new QCheckBox("find the active service", this);
+    findActiveService = new QCheckBox("find the active service automatically", this);
+    useFastOnly = new QCheckBox("Use fast servers only", this);
+    useFastOnly->setEnabled(false);
     restoreAtClose = new QCheckBox("restore DNS system resolver settings", this);
     appSetLayout = new QVBoxLayout(this);
     appSetLayout->addWidget(runAtStart);
     appSetLayout->addWidget(findActiveService);
+    appSetLayout->addWidget(useFastOnly);
     appSetLayout->addWidget(restoreAtClose);
     appSettings = new QWidget(this);
     appSettings->setContentsMargins(0, 0, 0, 0);
@@ -61,6 +64,10 @@ AppSettings::AppSettings(QWidget *parent) :
             this, SIGNAL(toBase()));
     connect(findActiveService, SIGNAL(toggled(bool)),
             this, SIGNAL(findActiveServiceStateChanged(bool)));
+    connect(findActiveService, SIGNAL(toggled(bool)),
+            this, SLOT(enableUseFastOnly(bool)));
+    connect(useFastOnly, SIGNAL(toggled(bool)),
+            this, SIGNAL(useFastOnlyStateChanged(bool)));
     connect(restoreAtClose, SIGNAL(toggled(bool)),
             this, SIGNAL(restoreAtCloseChanged(bool)));
 }
@@ -76,6 +83,12 @@ void AppSettings::setRunAtStartState(bool state)
 void AppSettings::setFindActiveServiceState(bool state)
 {
     findActiveService->setChecked(state);
+}
+void AppSettings::setUseFastOnlyState(bool state)
+{
+    if ( findActiveService->isChecked() ) {
+        useFastOnly->setChecked(state);
+    };
 }
 void AppSettings::setRestoreAtClose(bool state)
 {
@@ -94,4 +107,9 @@ void AppSettings::resizeEvent(QResizeEvent *ev)
     baseButton->setIconSize(s);
     */
     ev->accept();
+}
+void AppSettings::enableUseFastOnly(bool state)
+{
+    useFastOnly->setChecked(false);
+    useFastOnly->setEnabled(state);
 }

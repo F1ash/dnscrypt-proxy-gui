@@ -103,7 +103,8 @@ void TestWidget::stopServiceSlice()
 void TestWidget::resultCheckServerRespond(KJob *_job)
 {
     //QTextStream s(stdout);
-    QString i = QString("\nLeft %1 sec...").arg((list.count()-counter-1)*3);
+    QString i = QString("\nIt left about %1 sec...")
+            .arg(list.count()-counter-1);
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
     if ( job!=nullptr ) {
         QString code        = job->data().value("code").toString();
@@ -114,7 +115,8 @@ void TestWidget::resultCheckServerRespond(KJob *_job)
         QString resp_icon   = job->data().value("resp").toString();
         if ( code.toInt()==0 && answ.toInt()>0 ) {
             emit serverRespondIcon(list.at(counter), resp_icon);
-            i.prepend(QString("%1\tis %2.").arg(list.at(counter)).arg(resp_icon));
+            i.prepend(QString("%1\tis %2.")
+                      .arg(list.at(counter)).arg(resp_icon));
         } else {
             emit serverRespondIcon(list.at(counter), "none");
             i.prepend(QString("%1\tis none.").arg(list.at(counter)));

@@ -15,11 +15,13 @@ public:
     bool            getRunAtStartState() const;
     void            setRunAtStartState(bool);
     void            setFindActiveServiceState(bool);
+    void            setUseFastOnlyState(bool);
     void            setRestoreAtClose(bool);
 
 signals:
     void            toBase();
     void            findActiveServiceStateChanged(bool);
+    void            useFastOnlyStateChanged(bool);
     void            restoreAtCloseChanged(bool);
 
 private:
@@ -28,7 +30,7 @@ private:
     QHBoxLayout    *headLayout;
     QVBoxLayout    *appSetLayout;
     QCheckBox      *runAtStart, *findActiveService,
-                   *restoreAtClose;
+                   *useFastOnly, *restoreAtClose;
     QWidget        *headWdg, *appSettings;
 
     QVBoxLayout    *commonLayout;
@@ -37,6 +39,7 @@ public slots:
 
 private slots:
     void            resizeEvent(QResizeEvent*);
+    void            enableUseFastOnly(bool);
 };
 
 #endif // APP_SETTINGS_H

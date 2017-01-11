@@ -29,8 +29,8 @@ signals:
 
 private:
     bool                runAtStart, findActiveService,
-                        stopManually, restoreFlag,
-                        restoreAtClose;
+                        useFastOnly, stopManually,
+                        restoreFlag, restoreAtClose;
     int                 probeCount;
     SRV_STATUS          srvStatus;
     ServerPanel        *serverWdg;
@@ -75,6 +75,7 @@ private slots:
     void                stopServiceJobFinished(KJob*);
     void                stopsliceJobFinished(KJob*);
     void                changeFindActiveServiceState(bool);
+    void                changeUseFastOnlyState(bool);
     void                changeRestoreAtCloseState(bool);
     void                startService();
     void                stopService();

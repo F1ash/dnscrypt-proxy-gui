@@ -13,3 +13,8 @@ removed useless socket unit;
 v.1.3.4 :
 added test of the servers validity;
 enhanced GUI;
+
+v.1.3.7 :
+fixed restore settings;
+fixed start proxing in simple mode;
+added 'use fast only' property;

@@ -78,6 +78,11 @@ QString ServerPanel::getCurrentServer() const
 {
     return servList->currentText();
 }
+QString ServerPanel::getCurrentRespondIconName() const
+{
+    return servList->currentData().toMap()
+            .value("Respond").toString();
+}
 int ServerPanel::getServerListCount() const
 {
     return servList->count();

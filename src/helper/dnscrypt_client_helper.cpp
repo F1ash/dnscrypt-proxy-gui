@@ -316,6 +316,7 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
             break;
         case QDBusMessage::ErrorMessage:
         default:
+            retdata["entry"]    = entry;
             retdata["code"]     = QString::number(-1);
             retdata["err"]      = res.errorMessage();
             break;

@@ -64,6 +64,8 @@ MainWindow::MainWindow(QWidget *parent) :
             serverWdg, SLOT(setItemIcon(QString,QString)));
     connect(appSettings, SIGNAL(findActiveServiceStateChanged(bool)),
             this, SLOT(changeFindActiveServiceState(bool)));
+    connect(appSettings, SIGNAL(useFastOnlyStateChanged(bool)),
+            this, SLOT(changeUseFastOnlyState(bool)));
     connect(appSettings, SIGNAL(restoreAtCloseChanged(bool)),
             this, SLOT(changeRestoreAtCloseState(bool)));
     connect(buttonsWdg, SIGNAL(startProxing()),
@@ -101,6 +103,8 @@ void MainWindow::readSettings()
     appSettings->setRunAtStartState(runAtStart);
     findActiveService = settings.value("FindActiveService", true).toBool();
     appSettings->setFindActiveServiceState(findActiveService);
+    useFastOnly = settings.value("UseFastOnly", false).toBool();
+    appSettings->setUseFastOnlyState(useFastOnly);
     restoreAtClose = settings.value("RestoreAtClose", true).toBool();
     appSettings->setRestoreAtClose(restoreAtClose);
     QString lastServer = settings.value("LastServer").toString();
@@ -116,6 +120,7 @@ void MainWindow::setSettings()
     settings.setValue("Geometry", saveGeometry());
     settings.setValue("RunAtStart", appSettings->getRunAtStartState());
     settings.setValue("FindActiveService", findActiveService);
+    settings.setValue("UseFastOnly", useFastOnly);
     settings.setValue("LastServer", serverWdg->getCurrentServer());
     settings.setValue("RestoreAtClose", restoreAtClose);
     settings.beginGroup("Entries");
@@ -481,8 +486,8 @@ void MainWindow::startServiceJobFinished(KJob *_job)
         //           "DNSCryptClient",
         //           QString("Session open with exit code: %1\nMSG: %2\nERR: %3")
         //           .arg(code).arg(msg).arg(err));
+        addServerEnrty(entry);
         if ( code.toInt()==0 ) {
-            addServerEnrty(entry);
             if ( answ.toInt()<1 ) {
                 serverWdg->setItemIcon(
                             serverWdg->getCurrentServer(), "none");
@@ -597,6 +602,10 @@ void MainWindow::changeFindActiveServiceState(bool state)
 {
     findActiveService = state;
 }
+void MainWindow::changeUseFastOnlyState(bool state)
+{
+    useFastOnly = state;
+}
 void MainWindow::changeRestoreAtCloseState(bool state)
 {
     restoreAtClose = state;
@@ -607,7 +616,12 @@ void MainWindow::startService()
     stopManually = false;
     switch (checkSliceStatus()) {
     case  0:     // ready for start
-        emit serviceStateChanged(INACTIVE);
+        if ( findActiveService ) {
+            emit serviceStateChanged(INACTIVE);
+        } else {
+            startServiceProcess();
+            emit serviceStateChanged(PROCESSING);
+        };
         break;
     case  1:    // incorrectly for start;
     case -2:    // errored answer
@@ -768,5 +782,11 @@ void MainWindow::changeAppState(SRV_STATUS status)
 }
 void MainWindow::probeNextServer()
 {
+    if ( useFastOnly ) {
+        if ( 0!=serverWdg->getCurrentRespondIconName().compare("fast") ) {
+            findActiveServiceProcess();
+            return;
+        };
+    };
     startServiceProcess();
 }
