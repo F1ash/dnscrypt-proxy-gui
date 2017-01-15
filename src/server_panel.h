@@ -7,6 +7,7 @@
 #include <QHBoxLayout>
 #include <QResizeEvent>
 #include "enums.h"
+#include <QStandardItemModel>
 
 class ServerPanel : public QWidget
 {
@@ -35,6 +36,9 @@ private:
     QPushButton     *servInfo, *appSettings, *testRespond;
     QHBoxLayout     *baseLayout;
 
+    QStandardItemModel
+                    *servItemModel;
+
 public slots:
     void             changeAppState(SRV_STATUS);
     void             setItemIcon(QString, QString);
@@ -45,6 +49,7 @@ private slots:
     void             addServer(const QVariantMap&);
     void             findLastServer();
     void             showServerInfo();
+    void             changeItemState(int);
 };
 
 #endif // SERVER_PANEL_H

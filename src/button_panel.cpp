@@ -61,11 +61,8 @@ void ButtonPanel::changeAppState(SRV_STATUS state)
     //QTextStream s(stdout);
     switch (state) {
     case READY:
-        setEnabled(true);
         break;
     case PROCESSING:
-        setEnabled(false);
-        break;
     case ACTIVE:
     case ACTIVATING:
     case DEACTIVATING:

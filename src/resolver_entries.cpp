@@ -46,6 +46,7 @@ QString ResolverEntries::getEntry() const
 void ResolverEntries::setEntries(const QStringList &_entries)
 {
     entries->addItems(_entries);
+    entries->setCurrentRow(0, QItemSelectionModel::SelectCurrent);
 }
 QStringList ResolverEntries::getEntries() const
 {
@@ -63,7 +64,9 @@ QStringList ResolverEntries::getEntries() const
 void ResolverEntries::_close()
 {
     QList<QListWidgetItem*> items = entries->selectedItems();
-    if ( items.count()==0 ) return;
+    if ( items.count()==0 ) {
+        return;
+    };
     if ( items.first()!=nullptr ) {
         selectedEntry = items.first()->text();
     };

@@ -17,6 +17,9 @@ ServerPanel::ServerPanel(QWidget *parent) :
                     QSizePolicy::Ignored));
     servList = new QComboBox(this);
     servList->setDuplicatesEnabled(false);
+    servList->setContextMenuPolicy(Qt::NoContextMenu);
+    servItemModel = new QStandardItemModel(this);
+    servList->setModel(servItemModel);
     servInfo = new QPushButton(
                 QIcon::fromTheme("DNSCryptClient_info",
                                  QIcon(":/info.png")),
@@ -59,6 +62,8 @@ ServerPanel::ServerPanel(QWidget *parent) :
     connect(testRespond, SIGNAL(released()),
             this, SIGNAL(toTest()));
     connect(servList, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(serverDataChanged(int)));
+    connect(servList, SIGNAL(customContextMenuRequested(QPoint)),
             this, SLOT(serverDataChanged(int)));
     connect(servInfo, SIGNAL(released()),
             this, SLOT(showServerInfo()));
@@ -161,9 +166,13 @@ void ServerPanel::serverDataChanged(int idx)
 void ServerPanel::addServer(const QVariantMap &_data)
 {
     servList->addItem(
-                QIcon::fromTheme("none"),
-                _data.value("Name").toString(),
-                _data);
+                 QIcon::fromTheme("none"),
+                 _data.value("Name").toString(),
+                 _data);
+    servList->model()->setData(
+                servList->model()->index(servList->count()-1, 0),
+                _data.value("Enabled", false).toBool(),
+                Qt::CheckStateRole);
     emit checkItem(_data.value("Name").toString(), "none");
 }
 void ServerPanel::findLastServer()
@@ -180,4 +189,9 @@ void ServerPanel::showServerInfo()
     d->setServerData(_map);
     d->exec();
     d->deleteLater();
+}
+void ServerPanel::changeItemState(int idx)
+{
+
+
 }
