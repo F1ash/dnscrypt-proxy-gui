@@ -15,6 +15,7 @@ ServerPanel::ServerPanel(QWidget *parent) :
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
+    servItems = QList<QStandardItem*>();
     servList = new QComboBox(this);
     servList->setDuplicatesEnabled(false);
     servList->setContextMenuPolicy(Qt::NoContextMenu);
@@ -165,14 +166,14 @@ void ServerPanel::serverDataChanged(int idx)
 }
 void ServerPanel::addServer(const QVariantMap &_data)
 {
-    servList->addItem(
-                 QIcon::fromTheme("none"),
-                 _data.value("Name").toString(),
-                 _data);
-    servList->model()->setData(
-                servList->model()->index(servList->count()-1, 0),
-                _data.value("Enabled", false).toBool(),
-                Qt::CheckStateRole);
+    QStandardItem *_item = new QStandardItem;
+    _item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+    _item->setData(_data.value("Name").toString(), Qt::DisplayRole);
+    _item->setData(Qt::Unchecked, Qt::CheckStateRole);
+    _item->setData(QIcon::fromTheme("none"), Qt::DecorationRole);
+    _item->setData(_data, Qt::UserRole);
+    servItemModel->insertRow(servItems.count(), _item);
+    servItems.append(_item);
     emit checkItem(_data.value("Name").toString(), "none");
 }
 void ServerPanel::findLastServer()

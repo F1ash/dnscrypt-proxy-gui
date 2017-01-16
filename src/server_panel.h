@@ -38,6 +38,8 @@ private:
 
     QStandardItemModel
                     *servItemModel;
+    QList<QStandardItem*>
+                     servItems;
 
 public slots:
     void             changeAppState(SRV_STATUS);
