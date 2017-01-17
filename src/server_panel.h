@@ -51,7 +51,7 @@ private slots:
     void             addServer(const QVariantMap&);
     void             findLastServer();
     void             showServerInfo();
-    void             changeItemState(int);
+    void             changeItemState(QModelIndex, QModelIndex);
 };
 
 #endif // SERVER_PANEL_H

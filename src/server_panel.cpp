@@ -1,6 +1,7 @@
 #include "server_panel.h"
 #include "help_thread.h"
 #include "server_info.h"
+#include <QTextStream>
 
 ServerPanel::ServerPanel(QWidget *parent) :
     QWidget(parent)
@@ -64,8 +65,8 @@ ServerPanel::ServerPanel(QWidget *parent) :
             this, SIGNAL(toTest()));
     connect(servList, SIGNAL(currentIndexChanged(int)),
             this, SLOT(serverDataChanged(int)));
-    connect(servList, SIGNAL(customContextMenuRequested(QPoint)),
-            this, SLOT(serverDataChanged(int)));
+    connect(servList->model(), SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+            this, SLOT(changeItemState(QModelIndex, QModelIndex)));
     connect(servInfo, SIGNAL(released()),
             this, SLOT(showServerInfo()));
 }
@@ -191,8 +192,14 @@ void ServerPanel::showServerInfo()
     d->exec();
     d->deleteLater();
 }
-void ServerPanel::changeItemState(int idx)
+void ServerPanel::changeItemState(QModelIndex topLeft, QModelIndex bottomRight)
 {
-
-
+    QStandardItem* _item = const_cast<QStandardItem*>(
+                servItems.at(topLeft.row()));
+    QVariantMap _map = qvariant_cast<QVariantMap>(
+                _item->data().toMap());
+    _map.insert("Enable", (_item->checkState() == Qt::Checked));
+    _item->setData(_map, Qt::UserRole);
+    QTextStream s(stdout);
+    s<< _item->text()<<" " << _item->checkState() << endl;
 }
