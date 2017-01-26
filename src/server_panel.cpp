@@ -168,10 +168,13 @@ void ServerPanel::serverDataChanged(int idx)
 void ServerPanel::addServer(const QVariantMap &_data)
 {
     QStandardItem *_item = new QStandardItem;
-    _item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+    _item->setFlags(Qt::ItemIsUserCheckable |
+                    Qt::ItemIsEnabled |
+                    Qt::ItemIsSelectable);
     _item->setData(_data.value("Name").toString(), Qt::DisplayRole);
     _item->setData(Qt::Unchecked, Qt::CheckStateRole);
     _item->setData(QIcon::fromTheme("none"), Qt::DecorationRole);
+    _item->setData("Press 'Blank' key to change state", Qt::ToolTipRole);
     _item->setData(_data, Qt::UserRole);
     servItemModel->insertRow(servItems.count(), _item);
     servItems.append(_item);
@@ -194,10 +197,8 @@ void ServerPanel::showServerInfo()
 }
 void ServerPanel::changeItemState(QModelIndex topLeft, QModelIndex bottomRight)
 {
-    QStandardItem* _item = const_cast<QStandardItem*>(
-                servItems.at(topLeft.row()));
-    QVariantMap _map = qvariant_cast<QVariantMap>(
-                _item->data().toMap());
+    QStandardItem* _item = servItems.at(topLeft.row());
+    QVariantMap _map = _item->data(Qt::UserRole).toMap();
     _map.insert("Enable", (_item->checkState() == Qt::Checked));
     _item->setData(_map, Qt::UserRole);
     QTextStream s(stdout);
