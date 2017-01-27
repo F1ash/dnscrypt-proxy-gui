@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QVariantMap>
+#include <QSettings>
 
 class HelpThread : public QThread
 {
@@ -14,6 +15,7 @@ signals:
     void            newDNSCryptSever(const QVariantMap&);
 
 private:
+    QSettings       settings;
     QString         readToNextComma(QString*);
     QString         readToNextQuotes(QString*);
     QString         readNextItem(QString*);

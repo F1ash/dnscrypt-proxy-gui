@@ -139,6 +139,15 @@ void MainWindow::setSettings()
         settings.setValue(name, respondIconName);
     };
     settings.endGroup();
+    settings.beginGroup("Enables");
+    settings.remove("");
+    for ( int i=0; i<serverWdg->getServerListCount(); i++ ) {
+        QString name; bool state = false;
+        name = serverWdg->getItemName(i);
+        state = serverWdg->getItemState(i);
+        settings.setValue(name, state);
+    };
+    settings.endGroup();
 }
 void MainWindow::initTrayIcon()
 {
@@ -456,12 +465,12 @@ void MainWindow::firstServiceStart()
 {
     settings.beginGroup("Responds");
     testRespond->testWdg->setServerList(settings.allKeys());
-    foreach ( QString _key, settings.allKeys() ) {
-        QString respondIconName =
-                settings.value(_key).toString();
-        if ( respondIconName.isEmpty() ) respondIconName.append("none");
-        serverWdg->setItemIcon( _key, respondIconName );
-    };
+    //foreach ( QString _key, settings.allKeys() ) {
+    //    QString respondIconName =
+    //            settings.value(_key).toString();
+    //    if ( respondIconName.isEmpty() ) respondIconName.append("none");
+    //    serverWdg->setItemIcon( _key, respondIconName );
+    //};
     settings.endGroup();
     if ( runAtStart ) {
         runAtStart = false;
@@ -619,8 +628,12 @@ void MainWindow::startService()
         if ( findActiveService ) {
             emit serviceStateChanged(INACTIVE);
         } else {
-            startServiceProcess();
-            emit serviceStateChanged(PROCESSING);
+            if ( serverWdg->serverIsEnabled() ) {
+                startServiceProcess();
+                emit serviceStateChanged(PROCESSING);
+            } else {
+                findActiveServiceProcess();
+            };
         };
         break;
     case  1:    // incorrectly for start;
@@ -788,5 +801,9 @@ void MainWindow::probeNextServer()
             return;
         };
     };
-    startServiceProcess();
+    if ( serverWdg->serverIsEnabled() ) {
+        startServiceProcess();
+    } else {
+        findActiveServiceProcess();
+    };
 }

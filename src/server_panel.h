@@ -21,6 +21,8 @@ public:
     void             setNextServer();
     QString          getItemName(int) const;
     QString          getRespondIconName(int) const;
+    bool             getItemState(int) const;
+    bool             serverIsEnabled() const;
 
 signals:
     void             toSettings();

@@ -107,7 +107,16 @@ QString ServerPanel::getItemName(int idx) const
 QString ServerPanel::getRespondIconName(int idx) const
 {
     return servList->itemData(idx).toMap()
-            .value("Respond").toString();
+            .value("Respond", "none").toString();
+}
+bool ServerPanel::getItemState(int idx) const
+{
+    return servList->itemData(idx).toMap()
+            .value("Enable", true).toBool();
+}
+bool ServerPanel::serverIsEnabled() const
+{
+    return getItemState(servList->currentIndex());
 }
 
 /* public slots */
@@ -168,17 +177,29 @@ void ServerPanel::serverDataChanged(int idx)
 void ServerPanel::addServer(const QVariantMap &_data)
 {
     QStandardItem *_item = new QStandardItem;
-    _item->setFlags(Qt::ItemIsUserCheckable |
-                    Qt::ItemIsEnabled |
-                    Qt::ItemIsSelectable);
     _item->setData(_data.value("Name").toString(), Qt::DisplayRole);
-    _item->setData(Qt::Unchecked, Qt::CheckStateRole);
-    _item->setData(QIcon::fromTheme("none"), Qt::DecorationRole);
+    bool state = _data.value("Enable").toBool();
+    if ( state ) {
+        _item->setFlags(Qt::ItemIsUserCheckable |
+                        Qt::ItemIsEnabled |
+                        Qt::ItemIsSelectable);
+    } else {
+        _item->setFlags(Qt::ItemIsUserCheckable |
+                        Qt::ItemIsEnabled);
+    };
+    _item->setData(
+                (state)? Qt::Checked : Qt::Unchecked,
+                Qt::CheckStateRole);
+    QString respondIconName = _data.value("Respond", "none").toString();
+    _item->setData(
+                QIcon::fromTheme(respondIconName,
+                                 QIcon(QString(":/%1.png").arg(respondIconName))),
+                Qt::DecorationRole);
     _item->setData("Press 'Blank' key to change state", Qt::ToolTipRole);
     _item->setData(_data, Qt::UserRole);
     servItemModel->insertRow(servItems.count(), _item);
     servItems.append(_item);
-    emit checkItem(_data.value("Name").toString(), "none");
+    emit checkItem(_data.value("Name").toString(), respondIconName);
 }
 void ServerPanel::findLastServer()
 {
@@ -197,10 +218,20 @@ void ServerPanel::showServerInfo()
 }
 void ServerPanel::changeItemState(QModelIndex topLeft, QModelIndex bottomRight)
 {
+    Q_UNUSED(bottomRight);
     QStandardItem* _item = servItems.at(topLeft.row());
     QVariantMap _map = _item->data(Qt::UserRole).toMap();
-    _map.insert("Enable", (_item->checkState() == Qt::Checked));
+    bool state = (_item->checkState() == Qt::Checked);
+    _map.insert("Enable", state);
+    if ( state ) {
+        _item->setFlags(Qt::ItemIsUserCheckable |
+                        Qt::ItemIsEnabled |
+                        Qt::ItemIsSelectable);
+    } else {
+        _item->setFlags(Qt::ItemIsUserCheckable |
+                        Qt::ItemIsEnabled);
+    };
     _item->setData(_map, Qt::UserRole);
-    QTextStream s(stdout);
-    s<< _item->text()<<" " << _item->checkState() << endl;
+    //QTextStream s(stdout);
+    //s<< _item->text()<<" " << _item->checkState() << endl;
 }

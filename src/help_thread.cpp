@@ -71,6 +71,16 @@ void HelpThread::readServerData(QString servData)
         _data.insert("ProviderPublicKey", readNextItem(&servData));
         _data.insert("ProviderPublicKeyTXTrecord", readNextItem(&servData));
     };
+    QString _key = _data.value("Name").toString();
+    settings.beginGroup("Responds");
+    QString respondIconName = settings.value(_key).toString();
+    if ( respondIconName.isEmpty() ) respondIconName.append("none");
+    settings.endGroup();
+    settings.beginGroup("Enables");
+    bool state = settings.value(_key, true).toBool();
+    settings.endGroup();
+    _data.insert("Respond", respondIconName);
+    _data.insert("Enable", state);
     emit newDNSCryptSever(_data);
 }
 
