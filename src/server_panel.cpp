@@ -1,7 +1,7 @@
 #include "server_panel.h"
 #include "help_thread.h"
 #include "server_info.h"
-#include <QTextStream>
+//#include <QTextStream>
 
 ServerPanel::ServerPanel(QWidget *parent) :
     QWidget(parent)
