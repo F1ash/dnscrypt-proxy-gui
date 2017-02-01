@@ -365,24 +365,9 @@ void MainWindow::restoreSettingsProcess()
     act.setArguments(args);
     ExecuteJob *job = act.execute();
     job->setAutoDelete(true);
-    if (job->exec()) {
-        QString code = job->data().value("code").toString();
-        QString msg  = job->data().value("msg").toString();
-        QString err  = job->data().value("err").toString();
-        KNotification::event(
-                   KNotification::Notification,
-                   "DNSCryptClient",
-                   QString("Restore exit code: %1\nMSG: %2\nERR: %3")
-                   .arg(code).arg(msg).arg((err.isEmpty())? "None" : err));
-        if ( code.toInt()!=-1 ) srvStatus = RESTORED;
-    } else {
-        KNotification::event(
-                   KNotification::Notification,
-                   "DNSCryptClient",
-                   QString("ERROR: %1\n%2")
-                   .arg(job->error()).arg(job->errorText()));
-    };
-    emit serviceStateChanged(srvStatus);
+    connect(job, SIGNAL(finished(KJob*)),
+            this, SLOT(restoreSettingsProcessFinished(KJob*)));
+    job->start();
 }
 void MainWindow::findActiveServiceProcess()
 {
@@ -555,11 +540,7 @@ void MainWindow::stopServiceJobFinished(KJob *_job)
         KNotification::event(
                    KNotification::Notification,
                    "DNSCryptClient",
-                   QString("Stop Service ERROR: %1\n%2")
-                   .arg(job->error()).arg(job->errorText()));
-        trayIcon->setIcon(
-                    QIcon::fromTheme("DNSCryptClient_close",
-                                     QIcon(":/close.png")));
+                   QString("Stop status unknown."));
     };
     switch (checkSliceStatus()) {
     case  0:
@@ -572,6 +553,27 @@ void MainWindow::stopServiceJobFinished(KJob *_job)
         emit serviceStateChanged(STOP_SLICE);
         break;
     };
+}
+void MainWindow::restoreSettingsProcessFinished(KJob *_job)
+{
+    ExecuteJob *job = static_cast<ExecuteJob*>(_job);
+    if ( job!=nullptr ) {
+        QString code = job->data().value("code").toString();
+        QString msg  = job->data().value("msg").toString();
+        QString err  = job->data().value("err").toString();
+        KNotification::event(
+                   KNotification::Notification,
+                   "DNSCryptClient",
+                   QString("Restore exit code: %1\nMSG: %2\nERR: %3")
+                   .arg(code).arg(msg).arg((err.isEmpty())? "None" : err));
+        if ( code.toInt()!=-1 ) srvStatus = RESTORED;
+    } else {
+        KNotification::event(
+                   KNotification::Notification,
+                   "DNSCryptClient",
+                   QString("ERROR: restore status unknown."));
+    };
+    emit serviceStateChanged(srvStatus);
 }
 void MainWindow::stopsliceJobFinished(KJob *_job)
 {
@@ -724,15 +726,19 @@ void MainWindow::receiveServiceStatus(QDBusMessage _msg)
 }
 void MainWindow::changeAppState(SRV_STATUS status)
 {
+    SRV_STATUS prevSrvStatus = srvStatus;
     if ( status!=READY && status!=PROCESSING ) srvStatus = status;
     //QTextStream s(stdout);
     switch ( status ) {
     case INACTIVE:
     case FAILED:
-        KNotification::event(
-                    KNotification::Notification,
-                    "DNSCryptClient",
-                    QString("DNSCryptClient service is inactive."));
+        if ( prevSrvStatus!=srvStatus ) {
+            KNotification::event(
+                        KNotification::Notification,
+                        "DNSCryptClient",
+                        QString("DNSCryptClient service is %1.")
+                        .arg((status==FAILED)? "failed" : "inactive"));
+        };
         //s << "INACTIVE/FAILED" << endl;
         trayIcon->setIcon(
                     QIcon::fromTheme("DNSCryptClient_closed",
@@ -751,10 +757,12 @@ void MainWindow::changeAppState(SRV_STATUS status)
         };
         break;
     case ACTIVE:
-        KNotification::event(
-                    KNotification::Notification,
-                    "DNSCryptClient",
-                    QString("DNSCryptClient service is active."));
+        if ( prevSrvStatus!=srvStatus ) {
+            KNotification::event(
+                        KNotification::Notification,
+                        "DNSCryptClient",
+                        QString("DNSCryptClient service is active."));
+        };
         connectToClientService();
         trayIcon->setIcon(
                     QIcon::fromTheme("DNSCryptClient_opened",

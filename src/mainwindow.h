@@ -73,6 +73,7 @@ private slots:
     void                firstServiceStart();
     void                startServiceJobFinished(KJob*);
     void                stopServiceJobFinished(KJob*);
+    void                restoreSettingsProcessFinished(KJob*);
     void                stopsliceJobFinished(KJob*);
     void                changeFindActiveServiceState(bool);
     void                changeUseFastOnlyState(bool);
