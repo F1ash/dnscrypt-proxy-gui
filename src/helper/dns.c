@@ -85,7 +85,7 @@ typedef struct
 /*
  * Perform a DNS query by sending a packet
  * */
-uint16_t is_responsible(unsigned long *t, int _family)
+uint16_t is_responsible(unsigned long *t, int flag, int _family)
 {
     sleep(1); // dirty action to wait when the dnscrypt-proxy will runned
     unsigned char host[100] = "google.com";
@@ -100,15 +100,15 @@ uint16_t is_responsible(unsigned long *t, int _family)
 
     int s = socket(AF_INET , SOCK_DGRAM , IPPROTO_UDP); //UDP packet for DNS queries
     struct timeval tv;
-    tv.tv_sec = 10;
+    tv.tv_sec  = 3;
     tv.tv_usec = 0;
     if (setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
         //perror(" setsocketopt Error");
     }
     dest.sin_family = AF_INET;
-    dest.sin_port = htons(53);
+    dest.sin_port = htons((flag)? 53535:53);
     //dns servers resolver
-    dest.sin_addr.s_addr = inet_addr("127.0.0.1");
+    dest.sin_addr.s_addr = inet_addr((flag)? "127.0.0.2":"127.0.0.1");
 
     //Set the DNS structure to standard queries
     dns = (struct DNS_HEADER *)&buf;
@@ -120,14 +120,14 @@ uint16_t is_responsible(unsigned long *t, int _family)
     dns->tc = 0; //This message is not truncated
     dns->rd = 1; //Recursion Desired
     dns->ra = 0; //Recursion not available! hey we dont have it (lol)
-    dns->z = 0;
+    dns->z  = 0;
     dns->ad = 0;
     dns->cd = 0;
-    dns->rcode = 0;
-    dns->q_count = htons(1); //we have only 1 question
-    dns->ans_count = 0;
+    dns->rcode      = 0;
+    dns->q_count    = htons(1); //we have only 1 question
+    dns->ans_count  = 0;
     dns->auth_count = 0;
-    dns->add_count = 0;
+    dns->add_count  = 0;
 
     //point to the query portion
     qname =(unsigned char*)&buf[sizeof(struct DNS_HEADER)];

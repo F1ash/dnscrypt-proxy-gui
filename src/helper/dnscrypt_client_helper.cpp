@@ -39,11 +39,11 @@ QString getRandomHex(const int &length)
 }
 QString getRespondIconName(qreal r)
 {
-    if        ( 0<r && r<=0.3 ) {
+    if        ( 0<r   && r<=0.3 ) {
         return "fast";
     } else if ( 0.3<r && r<=0.7 ) {
         return "middle";
-    } else if ( 0.7<r && r<10.0 ) {
+    } else if ( 0.7<r && r<3.0 ) {
         return "slow";
     };
     return "none";
@@ -311,7 +311,7 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
         case QDBusMessage::ReplyMessage:
             retdata["entry"]    = entry;
             retdata["code"]     = QString::number(0);
-            retdata["answ"]     = QString::number(is_responsible(&t, domain));
+            retdata["answ"]     = QString::number(is_responsible(&t, 0, domain));
             retdata["resp"]     = getRespondIconName(qreal(t)/1000000);
             break;
         case QDBusMessage::ErrorMessage:
@@ -430,6 +430,117 @@ ActionReply DNSCryptClientHelper::stopslice(const QVariantMap args) const
                 "StopUnit");
     QList<QVariant> _args;
     _args<<QString("system-DNSCryptClient.slice")<<"fail";
+    msg.setArguments(_args);
+    QDBusMessage res = QDBusConnection::systemBus()
+            .call(msg, QDBus::Block);
+    QString str;
+    foreach (QVariant arg, res.arguments()) {
+        str.append(QDBusUtil::argumentToString(arg));
+        str.append("\n");
+    };
+    retdata["msg"]          = str;
+    switch (res.type()) {
+    case QDBusMessage::ReplyMessage:
+        retdata["code"]     = QString::number(0);
+        break;
+    case QDBusMessage::ErrorMessage:
+        retdata["code"]     = QString::number(-1);
+        retdata["err"]      = res.errorMessage();
+        break;
+    default:
+        retdata["msg"]      = "Slice not stopped";
+        retdata["code"]     = QString::number(-1);
+        break;
+    };
+
+    reply.setData(retdata);
+    return reply;
+}
+
+ActionReply DNSCryptClientHelper::starttest(const QVariantMap args) const
+{
+    ActionReply reply;
+
+    const QString act = get_key_varmap(args, "action");
+    if ( act!="startTest" ) {
+        QVariantMap err;
+        err["result"] = QString::number(-1);
+        reply.setData(err);
+        return reply;
+    };
+
+    QString servName =  get_key_varmap(args, "server");
+
+    int code = 0;
+    QString entry = readResolvConf();
+    if ( entry.startsWith("nameserver 127.0.0.1\n") ) entry.clear();
+    code = writeResolvConf("nameserver 127.0.0.1\n");
+    QVariantMap retdata;
+    if ( code != -1 ) {
+        QDBusMessage msg = QDBusMessage::createMethodCall(
+                    "org.freedesktop.systemd1",
+                    "/org/freedesktop/systemd1",
+                    "org.freedesktop.systemd1.Manager",
+                    "StartUnit");
+        QList<QVariant> _args;
+        _args<<QString("%1_test@%2.service")
+               .arg(UnitName).arg(servName)
+             <<"fail";
+        msg.setArguments(_args);
+        QDBusMessage res = QDBusConnection::systemBus()
+                .call(msg, QDBus::Block);
+        QString str;
+        foreach (QVariant arg, res.arguments()) {
+            str.append(QDBusUtil::argumentToString(arg));
+            str.append("\n");
+        };
+        retdata["msg"]          = str;
+        long unsigned int t = 0;
+        int domain = (servName.endsWith("ipv6"))? 6 : 4;
+        switch (res.type()) {
+        case QDBusMessage::ReplyMessage:
+            retdata["entry"]    = entry;
+            retdata["code"]     = QString::number(0);
+            retdata["answ"]     = QString::number(is_responsible(&t, 1, domain));
+            retdata["resp"]     = getRespondIconName(qreal(t)/1000000);
+            break;
+        case QDBusMessage::ErrorMessage:
+        default:
+            retdata["entry"]    = entry;
+            retdata["code"]     = QString::number(-1);
+            retdata["err"]      = res.errorMessage();
+            break;
+        };
+    } else {
+        retdata["msg"]          = "Start failed";
+        retdata["code"]         = QString::number(-1);
+        retdata["err"]          = "Resolv.conf not changed";
+    };
+
+    reply.setData(retdata);
+    return reply;
+}
+
+ActionReply DNSCryptClientHelper::stoptestslice(const QVariantMap args) const
+{
+    ActionReply reply;
+
+    const QString act = get_key_varmap(args, "action");
+    if ( act!="stopTestSlice" ) {
+        QVariantMap err;
+        err["result"] = QString::number(-1);
+        reply.setData(err);
+        return reply;
+    };
+
+    QVariantMap retdata;
+    QDBusMessage msg = QDBusMessage::createMethodCall(
+                "org.freedesktop.systemd1",
+                "/org/freedesktop/systemd1",
+                "org.freedesktop.systemd1.Manager",
+                "StopUnit");
+    QList<QVariant> _args;
+    _args<<QString("system-DNSCryptClient_test.slice")<<"fail";
     msg.setArguments(_args);
     QDBusMessage res = QDBusConnection::systemBus()
             .call(msg, QDBus::Block);

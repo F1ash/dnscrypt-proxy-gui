@@ -5,6 +5,8 @@
 #include <QLabel>
 #include <QProgressBar>
 #include <QVBoxLayout>
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusMessage>
 #include "enums.h"
 #include <kauth.h>
 using namespace KAuth;
@@ -34,6 +36,8 @@ private:
     QVBoxLayout        *commonLayout;
 
     QStringList         list;
+    QDBusConnection     connection;
+    void                connectToTestClientService();
 
 private slots:
     void                startTest();

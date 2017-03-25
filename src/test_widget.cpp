@@ -2,7 +2,8 @@
 //#include <QTextStream>
 
 TestWidget::TestWidget(QWidget *parent) :
-    QWidget(parent)
+    QWidget(parent),
+    connection(QDBusConnection::systemBus())
 {
     processing = false;
     info = new QLabel(this);
@@ -10,7 +11,7 @@ TestWidget::TestWidget(QWidget *parent) :
     progress->setEnabled(false);
     start = new QPushButton("Start", this);
     stop = new QPushButton("Stop", this);
-    stop->setEnabled(false);
+    //stop->setEnabled(false);
     buttonLayout = new QHBoxLayout(this);
     buttonLayout->addWidget(start, 0, Qt::AlignRight);
     buttonLayout->addWidget(stop, 0, Qt::AlignRight);
@@ -39,6 +40,22 @@ void TestWidget::setServerList(QStringList _list)
     list = _list;
     progress->setRange(0, _list.count());
 }
+void TestWidget::connectToTestClientService()
+{
+    connection = QDBusConnection::systemBus();
+    QString unitTestTranscription = list.at(counter);
+    unitTestTranscription = unitTestTranscription
+            .replace("-", "_2d").replace(".", "_2e");
+    QString dbusPath = QString("DNSCryptClient_5ftest_40%1_2eservice")
+            .arg(unitTestTranscription);
+    bool connected = connection.connect(
+                "org.freedesktop.systemd1",
+                QString("/org/freedesktop/systemd1/unit/%1").arg(dbusPath),
+                "org.freedesktop.DBus.Properties",
+                "PropertiesChanged",
+                this,
+                SLOT(testservicePropertyChanged(QDBusMessage)));
+}
 
 /* private slots */
 void TestWidget::startTest()
@@ -47,7 +64,7 @@ void TestWidget::startTest()
     start->setEnabled(false);
     stop->setEnabled(true);
     processing = true;
-    emit started();
+    //emit started();
     progress->setValue(0);
     counter = 0;
     emit nextItem();
@@ -63,7 +80,7 @@ void TestWidget::finishTest()
     progress->setEnabled(false);
     stop->setEnabled(false);
     start->setEnabled(true);
-    emit finished();
+    //emit finished();
 }
 void TestWidget::checkServerRespond()
 {
@@ -73,9 +90,9 @@ void TestWidget::checkServerRespond()
         return;
     };
     QVariantMap args;
-    args["action"] = "start";
+    args["action"] = "startTest";
     args["server"] = list.at(counter);
-    Action act("pro.russianfedora.dnscryptclient.start");
+    Action act("pro.russianfedora.dnscryptclient.starttest");
     act.setHelperId("pro.russianfedora.dnscryptclient");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
@@ -83,14 +100,14 @@ void TestWidget::checkServerRespond()
     connect(job, SIGNAL(result(KJob*)),
             this, SLOT(resultCheckServerRespond(KJob*)));
     job->start();
-    //s<< counter <<"\t"<< "start"<< endl;
+    //s<< counter <<"\t"<< "startTest"<< endl;
 }
 void TestWidget::stopServiceSlice()
 {
     //QTextStream s(stdout);
     QVariantMap args;
-    args["action"] = "stopslice";
-    Action act("pro.russianfedora.dnscryptclient.stopslice");
+    args["action"] = "stopTestSlice";
+    Action act("pro.russianfedora.dnscryptclient.stoptestslice");
     act.setHelperId("pro.russianfedora.dnscryptclient");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
@@ -98,7 +115,7 @@ void TestWidget::stopServiceSlice()
     connect(job, SIGNAL(result(KJob*)),
             this, SLOT(resultStopServiceSlice(KJob*)));
     job->start();
-    //s<< counter <<"\t"<< "stopslice"<< endl;
+    //s<< counter <<"\t"<< "stopTestSlice"<< endl;
 }
 void TestWidget::resultCheckServerRespond(KJob *_job)
 {
@@ -151,19 +168,19 @@ void TestWidget::changeAppState(SRV_STATUS state)
 {
     switch (state) {
     case READY:
-        start->setEnabled(true);
+        //start->setEnabled(true);
         break;
     case PROCESSING:
-        start->setEnabled(false);
+        //start->setEnabled(false);
         break;
     case ACTIVE:
-        buttons->setDisabled(true);
-        info->setText("To use necessary to stop service.");
+        //buttons->setDisabled(true);
+        //info->setText("To use necessary to stop service.");
         break;
     case INACTIVE:
     case FAILED:
-        buttons->setEnabled(true);
-        info->setText("For get correct result\n\
+        //buttons->setEnabled(true);
+        //info->setText("For get correct result\n\
 need to stop all internet activity.");
         break;
     case ACTIVATING:

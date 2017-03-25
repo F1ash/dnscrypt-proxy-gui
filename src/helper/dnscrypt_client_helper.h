@@ -13,6 +13,8 @@ public slots:
     ActionReply     stop(const QVariantMap args) const;
     ActionReply     restore(const QVariantMap args) const;
     ActionReply     stopslice(const QVariantMap args) const;
+    ActionReply     starttest(const QVariantMap args) const;
+    ActionReply     stoptestslice(const QVariantMap args) const;
 
 private:
     QString         get_key_varmap(const QVariantMap &args, const QString& key) const;
