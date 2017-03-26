@@ -2,7 +2,7 @@
 %global app_name DNSCryptClient
 
 Name:          dnscrypt-proxy-gui
-Version:       1.5.7
+Version:       1.6.8
 Release:       1%{?dist}
 Summary:       GUI wrapper for dnscrypt-proxy
 License:       GPLv2+
@@ -54,9 +54,11 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 %post
 /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 %systemd_post %{app_name}@.service
+%systemd_post %{app_name}_test@.service
 
 %preun
 %systemd_preun %{app_name}@.service
+%systemd_preun %{app_name}_test@.service
 
 %postun
 if [ $1 -eq 0 ] ; then
@@ -64,6 +66,7 @@ if [ $1 -eq 0 ] ; then
     /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 fi
 %systemd_postun %{app_name}@.service
+%systemd_postun %{app_name}_test@.service
 
 %posttrans
 /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
@@ -79,9 +82,14 @@ fi
 %{_sysconfdir}/dbus-1/system.d/pro.russianfedora.dnscryptclient.conf
 %{_datadir}/knotifications5/%{app_name}.notifyrc
 %{_unitdir}/%{app_name}@.service
+%{_unitdir}/%{app_name}_test@.service
 %{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog
+* Mon Mar 27 2017 Fl@sh <kaperang07@gmail.com> - 1.6.8-1
+- version updated;
+- changed %%post, %%preun, %%postun, %%files for new systemd unit;
+
 * Sun Jan 29 2017 Fl@sh <kaperang07@gmail.com> - 1.5.7-1
 - version updated;
 

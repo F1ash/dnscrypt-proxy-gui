@@ -37,7 +37,6 @@ private:
 
     QStringList         list;
     QDBusConnection     connection;
-    void                connectToTestClientService();
 
 private slots:
     void                startTest();

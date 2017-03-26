@@ -22,3 +22,7 @@ added 'use fast only' property;
 v.1.5.7 :
 implemented test for respond speed;
 implemented exclusion from proxy servers list;
+
+v.1.6.8 :
+reimplemented dns respond test as free action;
+changed dns respond timeout to 3 sec.;

@@ -40,22 +40,6 @@ void TestWidget::setServerList(QStringList _list)
     list = _list;
     progress->setRange(0, _list.count());
 }
-void TestWidget::connectToTestClientService()
-{
-    connection = QDBusConnection::systemBus();
-    QString unitTestTranscription = list.at(counter);
-    unitTestTranscription = unitTestTranscription
-            .replace("-", "_2d").replace(".", "_2e");
-    QString dbusPath = QString("DNSCryptClient_5ftest_40%1_2eservice")
-            .arg(unitTestTranscription);
-    bool connected = connection.connect(
-                "org.freedesktop.systemd1",
-                QString("/org/freedesktop/systemd1/unit/%1").arg(dbusPath),
-                "org.freedesktop.DBus.Properties",
-                "PropertiesChanged",
-                this,
-                SLOT(testservicePropertyChanged(QDBusMessage)));
-}
 
 /* private slots */
 void TestWidget::startTest()
@@ -81,6 +65,7 @@ void TestWidget::finishTest()
     stop->setEnabled(false);
     start->setEnabled(true);
     //emit finished();
+    info->clear();
 }
 void TestWidget::checkServerRespond()
 {
