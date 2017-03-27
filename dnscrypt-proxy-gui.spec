@@ -3,7 +3,7 @@
 
 Name:          dnscrypt-proxy-gui
 Version:       1.6.8
-Release:       1%{?dist}
+Release:       2%{?dist}
 Summary:       GUI wrapper for dnscrypt-proxy
 License:       GPLv2+
 Source0:       https://github.com/F1ash/%{name}/archive/%{version}.tar.gz
@@ -86,6 +86,9 @@ fi
 %{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog
+* Mon Mar 27 2017 Fl@sh <kaperang07@gmail.com> - 1.6.8-2
+- release updated;
+
 * Mon Mar 27 2017 Fl@sh <kaperang07@gmail.com> - 1.6.8-1
 - version updated;
 - changed %%post, %%preun, %%postun, %%files for new systemd unit;
