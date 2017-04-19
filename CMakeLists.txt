@@ -5,8 +5,6 @@ set (CMAKE_INSTALL_PREFIX /usr)
 project (dnscrypt-proxy-gui)
 set (APP_NAME DNSCryptClient)
 
-find_package(KF5Auth          REQUIRED)
-find_package(KF5Notifications REQUIRED)
 add_subdirectory(src)
 
 install ( FILES       ${APP_NAME}.desktop

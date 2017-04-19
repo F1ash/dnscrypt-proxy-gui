@@ -3,16 +3,19 @@ set (dnscrypt_client_helper_SRCS
     dns.c
     dnscrypt_client_helper.cpp)
 
-find_package (Qt5 COMPONENTS DBus REQUIRED)
+find_package (Qt5Core   REQUIRED)
+find_package (Qt5DBus   REQUIRED)
+find_package (KF5Auth   REQUIRED)
 qt5_wrap_cpp (HELPER_MOC_SOURCES dnscrypt_client_helper.h dns.h)
+
 
 set (
     HELPER_BUILD_PROJECT_LIBRARIES
+    ${Qt5Core_LIBRARIES}
     ${Qt5DBus_LIBRARIES}
-    KF5::Auth
-    KF5::Notifications)
+    KF5::Auth)
 add_definitions(
-    ${Qt5Widgets_DEFINITIONS}
+    ${Qt5Core_DEFINITIONS}
     ${Qt5DBus_DEFINITIONS})
 
 # FYI: helper names don't like a CAPs letters !!!

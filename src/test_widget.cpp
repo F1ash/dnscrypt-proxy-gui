@@ -81,6 +81,7 @@ void TestWidget::checkServerRespond()
     act.setHelperId("pro.russianfedora.dnscryptclient");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
+    job->setParent(this);
     job->setAutoDelete(true);
     connect(job, SIGNAL(result(KJob*)),
             this, SLOT(resultCheckServerRespond(KJob*)));
@@ -96,6 +97,7 @@ void TestWidget::stopServiceSlice()
     act.setHelperId("pro.russianfedora.dnscryptclient");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
+    job->setParent(this);
     job->setAutoDelete(true);
     connect(job, SIGNAL(result(KJob*)),
             this, SLOT(resultStopServiceSlice(KJob*)));

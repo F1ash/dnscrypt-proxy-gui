@@ -32,8 +32,13 @@ set(SOURCES
     click_label.cpp
     tray/traywidget.cpp)
 
-find_package(Qt5 COMPONENTS Widgets DBus REQUIRED)
+find_package(Qt5Core            REQUIRED)
+find_package(Qt5Widgets         REQUIRED)
+find_package(Qt5DBus            REQUIRED)
+find_package(KF5Auth            REQUIRED)
+find_package(KF5Notifications   REQUIRED)
 include_directories(
+    ${Qt5Core_INCLUDE_DIRS}
     ${Qt5Widgets_INCLUDE_DIRS}
     ${Qt5DBus_INCLUDE_DIRS}
     ${Qt5DBus_PRIVATE_INCLUDE_DIRS})
@@ -42,11 +47,13 @@ qt5_wrap_cpp(MOC_SOURCES ${HEADERS})
 qt5_add_resources(RCCs dnscrypt_proxy_icons.qrc)
 set (
     BUILD_PROJECT_LIBRARIES
+    ${Qt5Core_LIBRARIES}
     ${Qt5Widgets_LIBRARIES}
     ${Qt5DBus_LIBRARIES}
     KF5::Auth
     KF5::Notifications)
 add_definitions(
+    ${Qt5Core_DEFINITIONS}
     ${Qt5Widgets_DEFINITIONS}
     ${Qt5DBus_DEFINITIONS})
 

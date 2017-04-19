@@ -313,6 +313,7 @@ void MainWindow::startServiceProcess()
     act.setHelperId("pro.russianfedora.dnscryptclient");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
+    job->setParent(this);
     job->setAutoDelete(true);
     connect(job, SIGNAL(finished(KJob*)),
             this, SLOT(startServiceJobFinished(KJob*)));
@@ -330,6 +331,7 @@ void MainWindow::stopServiceProcess()
     act.setHelperId("pro.russianfedora.dnscryptclient");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
+    job->setParent(this);
     job->setAutoDelete(true);
     connect(job, SIGNAL(finished(KJob*)),
             this, SLOT(stopServiceJobFinished(KJob*)));
@@ -344,6 +346,7 @@ void MainWindow::stopSliceProcess()
     act.setHelperId("pro.russianfedora.dnscryptclient");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
+    job->setParent(this);
     job->setAutoDelete(true);
     connect(job, SIGNAL(finished(KJob*)),
             this, SLOT(stopsliceJobFinished(KJob*)));
@@ -364,6 +367,7 @@ void MainWindow::restoreSettingsProcess()
     act.setHelperId("pro.russianfedora.dnscryptclient");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
+    job->setParent(this);
     job->setAutoDelete(true);
     connect(job, SIGNAL(finished(KJob*)),
             this, SLOT(restoreSettingsProcessFinished(KJob*)));
