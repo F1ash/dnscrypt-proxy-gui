@@ -5,8 +5,6 @@
 #include <QLabel>
 #include <QProgressBar>
 #include <QVBoxLayout>
-#include <QtDBus/QDBusConnection>
-#include <QtDBus/QDBusMessage>
 #include "enums.h"
 #include <kauth.h>
 using namespace KAuth;
@@ -17,17 +15,18 @@ class TestWidget : public QWidget
 public:
     explicit TestWidget(QWidget *parent = nullptr);
     void                setServerList(QStringList);
+    void                setTestPort(int);
+    bool                isActive() const;
 
 signals:
     void                started();
     void                finished();
     void                serverRespondIcon(const QString, const QString);
     void                nextItem();
-    void                endList();
 
 private:
-    int                 counter;
-    bool                processing;
+    int                 counter, testPort;
+    bool                processing, active;
     QLabel             *info;
     QProgressBar       *progress;
     QPushButton        *start, *stop;
@@ -36,11 +35,9 @@ private:
     QVBoxLayout        *commonLayout;
 
     QStringList         list;
-    QDBusConnection     connection;
 
 private slots:
     void                startTest();
-    void                stopTest();
     void                finishTest();
     void                checkServerRespond();
     void                stopServiceSlice();
@@ -49,6 +46,7 @@ private slots:
 
 public slots:
     void                changeAppState(SRV_STATUS);
+    void                stopTest();
 };
 
 #endif // TEST_WIDGET_H

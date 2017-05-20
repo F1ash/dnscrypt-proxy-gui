@@ -13,4 +13,4 @@ NonBlocking=true
 
 # Fill in the resolver name with one from dnscrypt-resolvers.csv file
 # with default 127.0.0.1:53 local-address
-ExecStart=/usr/sbin/dnscrypt-proxy -R %i
+ExecStart=/usr/sbin/dnscrypt-proxy -a 127.0.0.1:53 -R %i

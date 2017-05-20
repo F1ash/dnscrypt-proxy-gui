@@ -25,7 +25,7 @@ TestRespond::TestRespond(QWidget *parent) :
                 QIcon::fromTheme("DNSCryptClient_start",
                                  QIcon(":/start.png")),
                 "", this);
-    baseButton->setFlat(true);
+    baseButton->setFlat(false);
     baseButton->setToolTip("to Control Panel");
     baseButton->setSizePolicy(
                 QSizePolicy(

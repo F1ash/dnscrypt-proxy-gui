@@ -85,7 +85,7 @@ typedef struct
 /*
  * Perform a DNS query by sending a packet
  * */
-uint16_t is_responsible(unsigned long *t, int flag, int _family)
+uint16_t is_responsible(unsigned long *t, int _port, int _family)
 {
     sleep(1); // dirty action to wait when the dnscrypt-proxy will runned
     unsigned char host[100] = "google.com";
@@ -106,9 +106,9 @@ uint16_t is_responsible(unsigned long *t, int flag, int _family)
         //perror(" setsocketopt Error");
     }
     dest.sin_family = AF_INET;
-    dest.sin_port = htons((flag)? 53535:53);
+    dest.sin_port = htons(_port);
     //dns servers resolver
-    dest.sin_addr.s_addr = inet_addr((flag)? "127.0.0.2":"127.0.0.1");
+    dest.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     //Set the DNS structure to standard queries
     dns = (struct DNS_HEADER *)&buf;

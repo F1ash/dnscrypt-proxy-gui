@@ -2,6 +2,7 @@
 #include "resolver_entries.h"
 #include <private/qdbusutil_p.h>
 #include <QRegExp>
+//#include <QTextStream>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -16,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowIcon(QIcon::fromTheme(
                       "DNSCryptClient",
                       QIcon(":/DNSCryptClient.png")));
-    setStyleSheet("QWidget {background-color: white;}");
+    //setStyleSheet("QWidget {background-color: white;}");
 
     runAtStart = false;
     srvStatus = INACTIVE;
@@ -24,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     stopManually = false;
     restoreFlag = false;
     restoreAtClose = false;
+    stopForChangePorts = false;
     probeCount = 0;
 
     serverWdg = new ServerPanel(this);
@@ -92,6 +94,12 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(checkRespondSettings(QString,QString)));
     connect(this, SIGNAL(nextServer()),
             this, SLOT(probeNextServer()));
+    connect(appSettings, SIGNAL(jobPortChanged(int)),
+            this, SLOT(changeJobPort(int)));
+    connect(appSettings, SIGNAL(testPortChanged(int)),
+            this, SLOT(changeTestPort(int)));
+    connect(appSettings, SIGNAL(stopSystemdAppUnits()),
+            this, SLOT(stopSystemdAppUnits()));
 
     readSettings();
 }
@@ -109,6 +117,11 @@ void MainWindow::readSettings()
     appSettings->setRestoreAtClose(restoreAtClose);
     QString lastServer = settings.value("LastServer").toString();
     serverWdg->setLastServer(lastServer);
+    jobPort = settings.value("JobPort", JOB_PORT).toInt();
+    appSettings->jobPort->setPort(jobPort);
+    testPort = settings.value("TestPort", TEST_PORT).toInt();
+    appSettings->testPort->setPort(testPort);
+    testRespond->testWdg->setTestPort(testPort);
     settings.beginGroup("Entries");
     foreach ( QString _key, settings.allKeys() ) {
         resolverEntries.append(settings.value(_key).toString());
@@ -119,6 +132,8 @@ void MainWindow::setSettings()
 {
     settings.setValue("Geometry", saveGeometry());
     settings.setValue("RunAtStart", appSettings->getRunAtStartState());
+    settings.setValue("JobPort", jobPort);
+    settings.setValue("TestPort", testPort);
     settings.setValue("FindActiveService", findActiveService);
     settings.setValue("UseFastOnly", useFastOnly);
     settings.setValue("LastServer", serverWdg->getCurrentServer());
@@ -234,7 +249,7 @@ void MainWindow::checkServiceStatus()
 int  MainWindow::checkSliceStatus()
 {
     //QTextStream s(stdout);
-    int ret = -1;
+    int ret = -2;
     QDBusMessage msg = QDBusMessage::createMethodCall(
                 "org.freedesktop.systemd1",
                 "/org/freedesktop/systemd1/unit/system_2dDNSCryptClient_2eslice",
@@ -257,7 +272,7 @@ int  MainWindow::checkSliceStatus()
         return 0;
     } else if ( status=="failed" ) {
         // service failed; to STOP_SLICE
-        return -2;
+        return 0;
     } else if ( status=="active" ) {
         // if active then check task count
         _args.clear();
@@ -292,14 +307,16 @@ int  MainWindow::checkSliceStatus()
                 };
             } else {
                 // TasksCurrent not [0-1]; to STOP_SLICE
-                ret = -2;
+                ret = -1;
             };
             break;
         case QDBusMessage::ErrorMessage:
         default:
-            ret = -2;
+            ret = -1;
             break;
         };
+    } else {
+        ret = -2; // slice not exist
     };
     //s << "ret "<<ret << endl;
     return ret;
@@ -308,6 +325,7 @@ void MainWindow::startServiceProcess()
 {
     QVariantMap args;
     args["action"] = "start";
+    args["port"]   = jobPort;
     args["server"] = serverWdg->getCurrentServer();
     Action act("pro.russianfedora.dnscryptclient.start");
     act.setHelperId("pro.russianfedora.dnscryptclient");
@@ -315,7 +333,7 @@ void MainWindow::startServiceProcess()
     ExecuteJob *job = act.execute();
     job->setParent(this);
     job->setAutoDelete(true);
-    connect(job, SIGNAL(finished(KJob*)),
+    connect(job, SIGNAL(result(KJob*)),
             this, SLOT(startServiceJobFinished(KJob*)));
     job->start();
 }
@@ -333,7 +351,7 @@ void MainWindow::stopServiceProcess()
     ExecuteJob *job = act.execute();
     job->setParent(this);
     job->setAutoDelete(true);
-    connect(job, SIGNAL(finished(KJob*)),
+    connect(job, SIGNAL(result(KJob*)),
             this, SLOT(stopServiceJobFinished(KJob*)));
     job->start();
 }
@@ -348,7 +366,7 @@ void MainWindow::stopSliceProcess()
     ExecuteJob *job = act.execute();
     job->setParent(this);
     job->setAutoDelete(true);
-    connect(job, SIGNAL(finished(KJob*)),
+    connect(job, SIGNAL(result(KJob*)),
             this, SLOT(stopsliceJobFinished(KJob*)));
     job->start();
 }
@@ -411,6 +429,9 @@ QString MainWindow::showResolverEntries()
 void MainWindow::toSettings()
 {
     commonWdg->setCurrentWidget(appSettings);
+    appSettings->jobPort->setPort(jobPort);
+    appSettings->testPort->setPort(testPort);
+    appSettings->applyNewPortsBtn->setEnabled(false);
 }
 void MainWindow::toTest()
 {
@@ -433,6 +454,7 @@ void MainWindow::testStarted()
 }
 void MainWindow::testFinished()
 {
+    /*
     emit serviceStateChanged(READY);
     trayIcon->setIcon(
                 QIcon::fromTheme("DNSCryptClient_closed",
@@ -441,6 +463,19 @@ void MainWindow::testFinished()
                          .arg(windowTitle())
                          .arg("--tested--"));
     stopService();
+    */
+
+    //QTextStream s(stdout);
+    if ( srvStatus==FAILED   ||
+         srvStatus==INACTIVE ||
+         srvStatus==READY ) {
+        if ( stopForChangePorts ) {
+            stopForChangePorts = false;
+            appSettings->runChangePorts();
+            //s << "runChangePorts ";
+        };
+    };
+    //s << "testFinished" << endl;
 }
 void MainWindow::checkRespondSettings(const QString name, const QString icon)
 {
@@ -518,11 +553,11 @@ void MainWindow::startServiceJobFinished(KJob *_job)
     case  1:
         emit serviceStateChanged(ACTIVE);
         break;
+    case -2:
     case  0:
         emit serviceStateChanged(INACTIVE);
         break;
     case -1:
-    case -2:
     default:
         emit serviceStateChanged(STOP_SLICE);
         break;
@@ -547,12 +582,12 @@ void MainWindow::stopServiceJobFinished(KJob *_job)
                    QString("Stop status unknown."));
     };
     switch (checkSliceStatus()) {
+    case -2:
     case  0:
         emit serviceStateChanged(INACTIVE);
         break;
     case  1:
     case -1:
-    case -2:
     default:
         emit serviceStateChanged(STOP_SLICE);
         break;
@@ -602,12 +637,12 @@ void MainWindow::stopsliceJobFinished(KJob *_job)
         //                             QIcon(":/close.png")));
     };
     switch (checkSliceStatus()) {
+    case -2:
     case  0:
         emit serviceStateChanged(INACTIVE);
         break;
     case  1:
     case -1:
-    case -2:
     default:
         emit serviceStateChanged(STOP_SLICE);
         break;
@@ -625,11 +660,25 @@ void MainWindow::changeRestoreAtCloseState(bool state)
 {
     restoreAtClose = state;
 }
+void MainWindow::changeJobPort(int port)
+{
+    jobPort = port;
+    //QTextStream s(stdout);
+    //s << "job port" << jobPort << endl;
+}
+void MainWindow::changeTestPort(int port)
+{
+    testPort = port;
+    testRespond->testWdg->setTestPort(testPort);
+    //QTextStream s(stdout);
+    //s << "test port" << testPort << endl;
+}
 void MainWindow::startService()
 {
     probeCount = 0;
     stopManually = false;
     switch (checkSliceStatus()) {
+    case -2:
     case  0:     // ready for start
         if ( findActiveService ) {
             emit serviceStateChanged(INACTIVE);
@@ -643,9 +692,8 @@ void MainWindow::startService()
         };
         break;
     case  1:    // incorrectly for start;
-    case -2:    // errored answer
-    case -1:
-    default:    //  need to restart the slice and proxying
+    case -1:    // errored answer
+    default:    // need to restart the slice and proxying
         emit serviceStateChanged(STOP_SLICE);
         break;
     };
@@ -655,13 +703,13 @@ void MainWindow::stopService()
     probeCount = 0;
     stopManually = true;
     switch (checkSliceStatus()) {
+    case -2:
     case  0:    // stop slice or service unnecessary
         emit serviceStateChanged(INACTIVE);
         break;
     case  1:    // need to stop
-    case -2:    // errored answer
-    case -1:
-    default:    // need to restart the slice and proxying
+    case -1:    // errored answer
+    default:
         emit serviceStateChanged(STOP_SLICE);
         break;
     };
@@ -688,17 +736,16 @@ void MainWindow::closeEvent(QCloseEvent *ev)
 {
     ev->accept();
     stopManually = true;
-    if ( ev->type()==QEvent::Close ) {
-        if ( restoreAtClose && srvStatus!=RESTORED ) {
-            show();
-            stopSliceProcess();
-            restoreSettingsProcess();
-        } else {
-            stopSliceProcess();
-        };
-        setSettings();
-        trayIcon->hide();
+    testRespond->testWdg->stopTest();
+    if ( restoreAtClose && srvStatus!=RESTORED ) {
+        show();
+        stopSliceProcess();
+        restoreSettingsProcess();
+    } else {
+        stopSliceProcess();
     };
+    setSettings();
+    trayIcon->hide();
 }
 void MainWindow::receiveServiceStatus(QDBusMessage _msg)
 {
@@ -759,6 +806,14 @@ void MainWindow::changeAppState(SRV_STATUS status)
         } else {
             emit serviceStateChanged(READY);
         };
+        if ( stopForChangePorts ) {
+            if ( !testRespond->testWdg->isActive() ) {
+                stopForChangePorts = false;
+                appSettings->runChangePorts();
+                //s << "runChangePorts ";
+            };
+            //s << "srvStatus inactive" << endl;
+        };
         break;
     case ACTIVE:
         if ( prevSrvStatus!=srvStatus ) {
@@ -818,4 +873,12 @@ void MainWindow::probeNextServer()
     } else {
         findActiveServiceProcess();
     };
+}
+void MainWindow::stopSystemdAppUnits()
+{
+    //QTextStream s(stdout);
+    //s << "stopSystemdAppUnits" << endl;
+    stopForChangePorts = true;
+    stopService();
+    testRespond->testWdg->stopTest();
 }

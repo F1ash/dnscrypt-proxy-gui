@@ -2,10 +2,10 @@
 //#include <QTextStream>
 
 TestWidget::TestWidget(QWidget *parent) :
-    QWidget(parent),
-    connection(QDBusConnection::systemBus())
+    QWidget(parent)
 {
     processing = false;
+    active = false;
     info = new QLabel(this);
     progress = new QProgressBar(this);
     progress->setEnabled(false);
@@ -31,14 +31,20 @@ TestWidget::TestWidget(QWidget *parent) :
 
     connect(this, SIGNAL(nextItem()),
             this, SLOT(checkServerRespond()));
-    connect(this, SIGNAL(endList()),
-            this, SLOT(stopTest()));
 }
 
 void TestWidget::setServerList(QStringList _list)
 {
     list = _list;
     progress->setRange(0, _list.count());
+}
+void TestWidget::setTestPort(int port)
+{
+    testPort = port;
+}
+bool TestWidget::isActive() const
+{
+    return active;
 }
 
 /* private slots */
@@ -48,6 +54,7 @@ void TestWidget::startTest()
     start->setEnabled(false);
     stop->setEnabled(true);
     processing = true;
+    active = true;
     //emit started();
     progress->setValue(0);
     counter = 0;
@@ -57,28 +64,29 @@ void TestWidget::stopTest()
 {
     stop->setEnabled(false);
     processing = false;
-    emit nextItem();
 }
 void TestWidget::finishTest()
 {
+    active = false;
     progress->setEnabled(false);
     stop->setEnabled(false);
     start->setEnabled(true);
-    //emit finished();
+    emit finished();
     info->clear();
 }
 void TestWidget::checkServerRespond()
 {
     //QTextStream s(stdout);
     if ( !processing || counter>=list.count() ) {
-        emit finishTest();
+        finishTest();
         return;
     };
     QVariantMap args;
     args["action"] = "startTest";
+    args["port"]   = testPort;
     args["server"] = list.at(counter);
-    Action act("pro.russianfedora.dnscryptclient.starttest");
-    act.setHelperId("pro.russianfedora.dnscryptclient");
+    Action act("pro.russianfedora.dnscryptclienttest.starttest");
+    act.setHelperId("pro.russianfedora.dnscryptclienttest");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
     job->setParent(this);
@@ -93,8 +101,8 @@ void TestWidget::stopServiceSlice()
     //QTextStream s(stdout);
     QVariantMap args;
     args["action"] = "stopTestSlice";
-    Action act("pro.russianfedora.dnscryptclient.stoptestslice");
-    act.setHelperId("pro.russianfedora.dnscryptclient");
+    Action act("pro.russianfedora.dnscryptclienttest.stoptestslice");
+    act.setHelperId("pro.russianfedora.dnscryptclienttest");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
     job->setParent(this);
@@ -139,10 +147,11 @@ void TestWidget::resultStopServiceSlice(KJob *_job)
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
     if ( job!=nullptr ) {
         QString code = job->data().value("code").toString();
-        if ( code.toInt()!=0 )
+        if ( code.toInt()!=0 ) {
             stopServiceSlice();
+        };
     } else {
-        stopServiceSlice();
+        //stopServiceSlice();
     };
     //s<< counter <<"\t"<< "stopslice1"<< endl;
     ++counter;

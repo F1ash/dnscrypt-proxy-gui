@@ -16,6 +16,7 @@ set(HEADERS
     server_info.h
     resolver_entries.h
     click_label.h
+    port_settings.h
     tray/traywidget.h)
 set(SOURCES
     main.cpp
@@ -30,6 +31,7 @@ set(SOURCES
     server_info.cpp
     resolver_entries.cpp
     click_label.cpp
+    port_settings.cpp
     tray/traywidget.cpp)
 
 find_package(Qt5Core            REQUIRED)
@@ -71,4 +73,4 @@ install ( TARGETS     ${APP_NAME}
 install(  FILES       ${APP_NAME}.notifyrc
           DESTINATION ${KNOTIFYRC_INSTALL_DIR})
 
-add_subdirectory(helper)
+add_subdirectory(helpers)

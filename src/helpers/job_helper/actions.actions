@@ -28,14 +28,8 @@ Description=User DNSCrypt
 Policy=yes
 Persistence=session
 
-[pro.russianfedora.dnscryptclient.starttest]
-Name=Stop DNSCrypt proxy test service
-Description=User DNSCrypt test
-Policy=yes
-Persistence=session
-
-[pro.russianfedora.dnscryptclient.stoptestslice]
-Name=Stop DNSCrypt proxy test service by stop slice
-Description=User DNSCrypt test
+[pro.russianfedora.dnscryptclient.setports]
+Name=Set ports to systemd DNSCrypt units
+Description=User DNSCrypt
 Policy=yes
 Persistence=session

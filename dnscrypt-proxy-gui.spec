@@ -75,11 +75,15 @@ fi
 %license LICENSE
 %doc README.md
 %{_bindir}/%{app_name}
-%{_libexecdir}/kf5/kauth/dnscrypt_client_helper
 %{_datadir}/applications/%{app_name}.desktop
+%{_libexecdir}/kf5/kauth/dnscrypt_client_helper
 %{_datadir}/dbus-1/system-services/pro.russianfedora.dnscryptclient.service
 %{_datadir}/polkit-1/actions/pro.russianfedora.dnscryptclient.policy
 %{_sysconfdir}/dbus-1/system.d/pro.russianfedora.dnscryptclient.conf
+%{_libexecdir}/kf5/kauth/dnscrypt_client_test_helper
+%{_datadir}/dbus-1/system-services/pro.russianfedora.dnscryptclienttest.service
+%{_datadir}/polkit-1/actions/pro.russianfedora.dnscryptclienttest.policy
+%{_sysconfdir}/dbus-1/system.d/pro.russianfedora.dnscryptclienttest.conf
 %{_datadir}/knotifications5/%{app_name}.notifyrc
 %{_unitdir}/%{app_name}@.service
 %{_unitdir}/%{app_name}_test@.service

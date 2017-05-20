@@ -4,41 +4,40 @@
 ButtonPanel::ButtonPanel(QWidget *parent) :
     QWidget(parent)
 {
-    setContentsMargins(0, 0, 0, 0);
     start = new QPushButton(
                 QIcon::fromTheme("DNSCryptClient_open",
                                  QIcon(":/open.png")),
                 "", this);
-    start->setFlat(true);
-    start->setContentsMargins(0, 0, 0, 0);
+    start->setFlat(false);
     start->setToolTip("Start proxying");
     start->setSizePolicy(
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
+    start->setContentsMargins(0, 0, 0, 0);
     stop = new QPushButton(
                 QIcon::fromTheme("DNSCryptClient_close",
                                  QIcon(":/close.png")),
                 "", this);
-    stop->setFlat(true);
-    stop->setContentsMargins(0, 0, 0, 0);
+    stop->setFlat(false);
     stop->setToolTip("Stop proxying");
     stop->setSizePolicy(
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
+    stop->setContentsMargins(0, 0, 0, 0);
     stop->setEnabled(false);
     restore = new QPushButton(
                 QIcon::fromTheme("DNSCryptClient_restore",
                                  QIcon(":/restore.png")),
                 "", this);
-    restore->setFlat(true);
-    restore->setContentsMargins(0, 0, 0, 0);
+    restore->setFlat(false);
     restore->setToolTip("Stop proxying\nRestore system DNS resolver settings");
     restore->setSizePolicy(
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
+    restore->setContentsMargins(0, 0, 0, 0);
     restore->setEnabled(false);
 
     baseLayout = new QHBoxLayout(this);
@@ -61,6 +60,7 @@ void ButtonPanel::changeAppState(SRV_STATUS state)
     //QTextStream s(stdout);
     switch (state) {
     case READY:
+        //s<< 0 <<endl;
         break;
     case PROCESSING:
     case ACTIVE:
@@ -70,16 +70,19 @@ void ButtonPanel::changeAppState(SRV_STATUS state)
         start->setDisabled(true);
         stop->setEnabled(true);
         restore->setEnabled(true);
+        //s<< 1 <<endl;
         break;
     case RESTORED:
         start->setEnabled(true);
         stop->setDisabled(true);
         restore->setDisabled(true);
+        //s<< 2 <<endl;
         break;
     case STOP_SLICE:
         start->setDisabled(true);
         stop->setDisabled(true);
         restore->setDisabled(true);
+        //s<< 3 <<endl;
         break;
     case FAILED:
     case INACTIVE:
@@ -87,6 +90,7 @@ void ButtonPanel::changeAppState(SRV_STATUS state)
         start->setEnabled(true);
         stop->setDisabled(true);
         restore->setEnabled(true);
+        //s<< 4 <<endl;
         break;
     };
 }

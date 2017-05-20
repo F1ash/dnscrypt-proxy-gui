@@ -13,9 +13,6 @@
 #include "test_respond.h"
 #include "app_settings.h"
 #include "tray/traywidget.h"
-#include <kauth.h>
-#include <knotification.h>
-using namespace KAuth;
 
 class MainWindow : public QMainWindow
 {
@@ -30,8 +27,9 @@ signals:
 private:
     bool                runAtStart, findActiveService,
                         useFastOnly, stopManually,
-                        restoreFlag, restoreAtClose;
-    int                 probeCount;
+                        restoreFlag, restoreAtClose,
+                        stopForChangePorts;
+    int                 probeCount, jobPort, testPort;
     SRV_STATUS          srvStatus;
     ServerPanel        *serverWdg;
     ButtonPanel        *buttonsWdg;
@@ -78,6 +76,8 @@ private slots:
     void                changeFindActiveServiceState(bool);
     void                changeUseFastOnlyState(bool);
     void                changeRestoreAtCloseState(bool);
+    void                changeJobPort(int);
+    void                changeTestPort(int);
     void                startService();
     void                stopService();
     void                restoreSystemSettings();
@@ -87,6 +87,7 @@ private slots:
     void                receiveServiceStatus(QDBusMessage);
     void                changeAppState(SRV_STATUS);
     void                probeNextServer();
+    void                stopSystemdAppUnits();
 };
 
 #endif // MAINWINDOW_H

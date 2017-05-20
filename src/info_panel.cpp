@@ -8,6 +8,7 @@ InfoPanel::InfoPanel(QWidget *parent) :
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
+    st = this->styleSheet();
     fullName = new QLabel(this);
     description = new QLabel(this);
     location = new QLabel(this);
@@ -106,7 +107,7 @@ void InfoPanel::timerEvent(QTimerEvent *ev)
     if ( timerId && ev->timerId()==timerId ) {
         killTimer(timerId);
         timerId = 0;
-        attention->setStyleSheet("QLabel {background-color: white;}");
+        attention->setStyleSheet(st);
         setCurrentIndex(0);
     };
     ev->accept();

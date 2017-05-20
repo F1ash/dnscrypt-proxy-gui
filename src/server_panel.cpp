@@ -6,7 +6,6 @@
 ServerPanel::ServerPanel(QWidget *parent) :
     QWidget(parent)
 {
-    setContentsMargins(0, 0, 0, 0);
     servLabel = new QLabel(this);
     servLabel->setPixmap(
                 QIcon::fromTheme("DNSCryptClient_start",
@@ -26,7 +25,7 @@ ServerPanel::ServerPanel(QWidget *parent) :
                 QIcon::fromTheme("DNSCryptClient_info",
                                  QIcon(":/info.png")),
                 "", this);
-    servInfo->setFlat(true);
+    servInfo->setFlat(false);
     servInfo->setToolTip("DNSCrypt Server Info");
     servInfo->setSizePolicy(
                 QSizePolicy(
@@ -36,7 +35,7 @@ ServerPanel::ServerPanel(QWidget *parent) :
                 QIcon::fromTheme("DNSCryptClient_settings",
                                  QIcon(":/settings.png")),
                 "", this);
-    appSettings->setFlat(true);
+    appSettings->setFlat(false);
     appSettings->setToolTip("to Application Settings");
     appSettings->setSizePolicy(
                 QSizePolicy(
@@ -46,7 +45,7 @@ ServerPanel::ServerPanel(QWidget *parent) :
                 QIcon::fromTheme("DNSCryptClient_test",
                                  QIcon(":/test.png")),
                 "", this);
-    testRespond->setFlat(true);
+    testRespond->setFlat(false);
     testRespond->setToolTip("to Respond test");
     testRespond->setSizePolicy(
                 QSizePolicy(

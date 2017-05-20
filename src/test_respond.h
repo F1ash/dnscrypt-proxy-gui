@@ -22,7 +22,6 @@ private:
     QLabel         *testLabel, *nameLabel;
     QPushButton    *baseButton;
     QHBoxLayout    *headLayout;
-    QVBoxLayout    *appSetLayout;
     QWidget        *headWdg;
 
     QVBoxLayout    *commonLayout;

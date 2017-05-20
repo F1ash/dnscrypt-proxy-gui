@@ -18,6 +18,7 @@ signals:
 
 private:
     int              timerId = 0;
+    QString          st;
     QLabel          *location, *fullName,
                     *description, *attention;
     QVBoxLayout     *servLayout, *attentLayout;
