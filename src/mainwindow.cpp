@@ -100,6 +100,8 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(changeTestPort(int)));
     connect(appSettings, SIGNAL(stopSystemdAppUnits()),
             this, SLOT(stopSystemdAppUnits()));
+    connect(appSettings, SIGNAL(changePortsFinished()),
+            this, SLOT(changePortsFinished()));
 
     readSettings();
 }
@@ -496,10 +498,9 @@ void MainWindow::firstServiceStart()
     //    serverWdg->setItemIcon( _key, respondIconName );
     //};
     settings.endGroup();
-    if ( runAtStart ) {
-        runAtStart = false;
-        startService();
-    };
+    // check and change job\test ports to according with settings
+    // if application was updated or reinstalled
+    appSettings->runChangePorts();
 }
 void MainWindow::startServiceJobFinished(KJob *_job)
 {
@@ -879,6 +880,19 @@ void MainWindow::stopSystemdAppUnits()
     //QTextStream s(stdout);
     //s << "stopSystemdAppUnits" << endl;
     stopForChangePorts = true;
+    buttonsWdg->setEnabled(false);
+    testRespond->testWdg->setEnabled(false);
     stopService();
     testRespond->testWdg->stopTest();
+}
+void MainWindow::changePortsFinished()
+{
+    buttonsWdg->setEnabled(true);
+    testRespond->testWdg->setEnabled(true);
+
+    // for first service start; can be changed.
+    if ( runAtStart ) {
+        runAtStart = false;
+        startService();
+    };
 }

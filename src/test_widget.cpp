@@ -176,8 +176,6 @@ void TestWidget::changeAppState(SRV_STATUS state)
     case INACTIVE:
     case FAILED:
         //buttons->setEnabled(true);
-        //info->setText("For get correct result\n\
-need to stop all internet activity.");
         break;
     case ACTIVATING:
     case DEACTIVATING:

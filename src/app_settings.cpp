@@ -224,4 +224,5 @@ void AppSettings::resultChangePorts(KJob *_job)
                     QString("Ports not changed."));
     };
     scrolled->setEnabled(true);
+    emit changePortsFinished();
 }

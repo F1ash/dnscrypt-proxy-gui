@@ -88,6 +88,7 @@ private slots:
     void                changeAppState(SRV_STATUS);
     void                probeNextServer();
     void                stopSystemdAppUnits();
+    void                changePortsFinished();
 };
 
 #endif // MAINWINDOW_H

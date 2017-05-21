@@ -12,4 +12,4 @@ Type=simple
 NonBlocking=true
 
 # Fill in the resolver name with one from dnscrypt-resolvers.csv file
-ExecStart=/usr/sbin/dnscrypt-proxy -a 127.0.0.2:53535 -R %i
+ExecStart=/usr/sbin/dnscrypt-proxy -a 127.0.0.1:53535 -R %i

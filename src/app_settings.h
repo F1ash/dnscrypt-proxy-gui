@@ -37,6 +37,7 @@ signals:
     void            jobPortChanged(int);
     void            testPortChanged(int);
     void            stopSystemdAppUnits();
+    void            changePortsFinished();
 
 private:
     QLabel         *setLabel, *nameLabel, *advancedlabel;
