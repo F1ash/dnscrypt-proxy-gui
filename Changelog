@@ -26,3 +26,12 @@ implemented exclusion from proxy servers list;
 v.1.6.8 :
 reimplemented dns respond test as free action;
 changed dns respond timeout to 3 sec.;
+
+v.1.9.8 :
+implemented changing the job\test ports;
+implemented test_helper
+    for avoid deadlock
+    between job and test actions;
+implemented check and change job\test ports
+   to according with settings
+   if application was updated or reinstalled;
