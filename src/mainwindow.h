@@ -28,7 +28,7 @@ private:
     bool                runAtStart, findActiveService,
                         useFastOnly, stopManually,
                         restoreFlag, restoreAtClose,
-                        stopForChangePorts;
+                        stopForChangeUnits;
     int                 probeCount, jobPort, testPort;
     SRV_STATUS          srvStatus;
     ServerPanel        *serverWdg;
@@ -43,7 +43,8 @@ private:
     QSettings           settings;
     QDBusConnection     connection;
     QStringList         resolverEntries;
-    QString             currentUnitTranscription;
+    QString             currentUnitTranscription,
+                        asUser;
 
     void                readSettings();
     void                setSettings();
@@ -78,6 +79,7 @@ private slots:
     void                changeRestoreAtCloseState(bool);
     void                changeJobPort(int);
     void                changeTestPort(int);
+    void                changeUserName(QString);
     void                startService();
     void                stopService();
     void                restoreSystemSettings();
@@ -88,7 +90,7 @@ private slots:
     void                changeAppState(SRV_STATUS);
     void                probeNextServer();
     void                stopSystemdAppUnits();
-    void                changePortsFinished();
+    void                changeUnitsFinished();
 };
 
 #endif // MAINWINDOW_H

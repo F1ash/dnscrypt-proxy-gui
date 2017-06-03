@@ -1,0 +1,5 @@
+[pro.russianfedora.dnscryptclientreload.setunits]
+Name=Set parameters to systemd DNSCrypt units
+Description=User DNSCrypt
+Policy=yes
+Persistence=session

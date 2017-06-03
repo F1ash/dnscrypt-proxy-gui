@@ -4,6 +4,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QCheckBox>
+#include <QLineEdit>
 #include <QHBoxLayout>
 #include <QResizeEvent>
 #include <QScrollArea>
@@ -22,12 +23,13 @@ public:
     explicit AppSettings(QWidget *parent = nullptr);
     PortSettings   *jobPort, *testPort;
     QPushButton    *applyNewPortsBtn;
+    void            setUserName(QString);
     bool            getRunAtStartState() const;
     void            setRunAtStartState(bool);
     void            setFindActiveServiceState(bool);
     void            setUseFastOnlyState(bool);
     void            setRestoreAtClose(bool);
-    void            runChangePorts();
+    void            runChangeUnits();
 
 signals:
     void            toBase();
@@ -36,18 +38,22 @@ signals:
     void            restoreAtCloseChanged(bool);
     void            jobPortChanged(int);
     void            testPortChanged(int);
+    void            userChanged(QString);
     void            stopSystemdAppUnits();
-    void            changePortsFinished();
+    void            changeUnitsFinished();
 
 private:
-    QLabel         *setLabel, *nameLabel, *advancedlabel;
+    QLabel         *setLabel, *nameLabel, *advancedLabel;
+    QLineEdit      *asUserLine;
     QPushButton    *baseButton, *restoreDefaultBtn;
-    QHBoxLayout    *headLayout;
+    QHBoxLayout    *headLayout, *asUserLayout;
     QVBoxLayout    *appSettingsLayout;
     QHBoxLayout    *advancedButtonsLayout;
     QCheckBox      *runAtStart, *findActiveService,
-                   *useFastOnly, *restoreAtClose;
-    QWidget        *headWdg, *appSettings, *advancedButtons;
+                   *useFastOnly, *restoreAtClose,
+                   *asUser;
+    QWidget        *headWdg, *appSettings,
+                   *asUserWdg, *advancedButtons;
     QScrollArea    *scrolled;
 
     QVBoxLayout    *commonLayout;
@@ -57,9 +63,9 @@ public slots:
 private slots:
     void            resizeEvent(QResizeEvent*);
     void            enableUseFastOnly(bool);
-    void            portChanged();
-    void            setPorts();
-    void            resultChangePorts(KJob*);
+    void            unitChanged();
+    void            setUnits();
+    void            resultChangeUnits(KJob*);
 };
 
 #endif // APP_SETTINGS_H

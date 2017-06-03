@@ -29,6 +29,7 @@ Q_DECLARE_METATYPE(ComplexPair)
 typedef QList<ComplexPair>      AuxParameters;
 Q_DECLARE_METATYPE(AuxParameters)
 
+/* unused
 QString getRandomHex(const int &length)
 {
     QString randomHex;
@@ -38,6 +39,7 @@ QString getRandomHex(const int &length)
     };
     return randomHex;
 }
+*/
 QString getRespondIconName(qreal r)
 {
     if        ( 0<r   && r<=0.3 ) {
@@ -54,8 +56,6 @@ QString get_key_varmap(const QVariantMap &args, const QString& key)
     QString value;
     if (args.keys().contains(key)) {
         value = args[key].toString();
-    } else {
-        value = QString();
     };
     return value;
 }
@@ -82,56 +82,6 @@ int     writeFile(const QString &_path, const QString &entry)
         ret = -1;
     };
     return ret;
-}
-QString changePort(const QString &entry, const QString &_port)
-{
-    //QTextStream s(stdout);
-    bool portChanged = false;
-    QStringList _strings = entry.split("\n");
-    QStringList changedEntry;
-    foreach (QString _str, _strings) {
-        QString changedString;
-        if ( _str.startsWith("ExecStart") ) {
-            QStringList _parts = _str.split("=");
-            QStringList _changedParts;
-            if ( _parts.count()>1 && !_parts.at(1).isEmpty() ) {
-                foreach (QString _part, _parts) {
-                    if ( _part=="ExecStart" ) continue;
-                    QStringList _words = _part.split(" ");
-                    QStringList _changedWords;
-                    foreach (QString _word, _words) {
-                        QString _changedWord;
-                        //s << _word << endl;
-                        if ( _word.startsWith("127.0.0") ) {
-                            QStringList _ip = _word.split(":");
-                            if ( _ip.count()>1 && !_ip.at(1).isEmpty() ) {
-                                if ( _port!=_ip.at(1) ) {
-                                    //s << "not equal" << endl;
-                                    _changedWord = QString("%1:%2")
-                                            .arg(_ip.at(0))
-                                            .arg(_port);
-                                    portChanged = true;
-                                };
-                            };
-                            //break;
-                        } else {
-                            _changedWord = _word;
-                        };
-                        _changedWords.append(_changedWord);
-                    };
-                    _changedParts.append(_changedWords.join(" "));
-                };
-                //break;
-            } else {
-
-            };
-            changedString.append(_changedParts.join(" ").prepend("ExecStart="));
-        } else {
-            changedString.append(_str);
-        };
-        changedEntry.append(changedString);
-    };
-    return ( portChanged ) ? changedEntry.join("\n") : QString();
 }
 
 DNSCryptClientHelper::DNSCryptClientHelper(QObject *parent) :
@@ -506,108 +456,6 @@ ActionReply DNSCryptClientHelper::stopslice(const QVariantMap args) const
         retdata["code"]     = QString::number(-1);
         break;
     };
-
-    reply.setData(retdata);
-    return reply;
-}
-
-ActionReply DNSCryptClientHelper::setports(const QVariantMap args) const
-{
-    ActionReply reply;
-
-    const QString act = get_key_varmap(args, "action");
-    if ( act!="setPorts" ) {
-        QVariantMap err;
-        err["result"] = QString::number(-1);
-        reply.setData(err);
-        return reply;
-    };
-
-    QString unitPath("/usr/lib/systemd/system/");
-    QString jobUnitPath = QString("%1%2@.service")
-            .arg(unitPath).arg(UnitName);
-    QString testUnitPath = QString("%1%2_test@.service")
-            .arg(unitPath).arg(UnitName);
-
-    QString jobPort = get_key_varmap(args, "JobPort");
-    QString jobUnitText = changePort(
-                readFile(jobUnitPath), jobPort);
-
-    QString testPort = get_key_varmap(args, "TestPort");
-    QString testUnitText = changePort(
-                readFile(testUnitPath), testPort);
-
-    QVariantMap retdata;
-    if ( !jobUnitText.isEmpty() ) {
-        retdata["jobPort"]      = writeFile(jobUnitPath, jobUnitText);
-        // reload unit
-        QDBusMessage msg = QDBusMessage::createMethodCall(
-                    "org.freedesktop.systemd1",
-                    "/org/freedesktop/systemd1",
-                    "org.freedesktop.systemd1.Manager",
-                    "ReloadUnit");
-        QList<QVariant> _args;
-        _args<<QString("%1@.service").arg(UnitName)
-             <<"fail";
-        msg.setArguments(_args);
-        QDBusMessage res = QDBusConnection::systemBus()
-                .call(msg, QDBus::Block);
-        QString str;
-        foreach (QVariant arg, res.arguments()) {
-            str.append(QDBusUtil::argumentToString(arg));
-            str.append("\n");
-        };
-        retdata["msg"]          = str;
-        switch (res.type()) {
-        case QDBusMessage::ReplyMessage:
-            retdata["code"]     = QString::number(0);
-            break;
-        case QDBusMessage::ErrorMessage:
-        default:
-            retdata["code"]     = QString::number(-1);
-            retdata["err"]      = res.errorMessage();
-            break;
-        };
-    } else {
-        retdata["jobPort"]      = 0;
-        retdata["code"]         = QString::number(-1);
-    };
-    if ( !testUnitText.isEmpty() ) {
-        retdata["testPort"]     = writeFile(testUnitPath, testUnitText);
-        // reload unit
-        QDBusMessage msg = QDBusMessage::createMethodCall(
-                    "org.freedesktop.systemd1",
-                    "/org/freedesktop/systemd1",
-                    "org.freedesktop.systemd1.Manager",
-                    "ReloadUnit");
-        QList<QVariant> _args;
-        _args<<QString("%1_test@.service").arg(UnitName)
-             <<"fail";
-        msg.setArguments(_args);
-        QDBusMessage res = QDBusConnection::systemBus()
-                .call(msg, QDBus::Block);
-        QString str;
-        foreach (QVariant arg, res.arguments()) {
-            str.append(QDBusUtil::argumentToString(arg));
-            str.append("\n");
-        };
-        retdata["msg"]          = str;
-        switch (res.type()) {
-        case QDBusMessage::ReplyMessage:
-            retdata["code"]     = QString::number(0);
-            break;
-        case QDBusMessage::ErrorMessage:
-        default:
-            retdata["code"]     = QString::number(-1);
-            retdata["err"]      = res.errorMessage();
-            break;
-        };
-    } else {
-        retdata["testPort"]     = 0;
-        retdata["code"]         = QString::number(-1);
-    };
-    retdata["jobUnitText"]      = jobUnitText;
-    retdata["testUnitText"]     = testUnitText;
 
     reply.setData(retdata);
     return reply;

@@ -2,7 +2,7 @@
 %global app_name DNSCryptClient
 
 Name:          dnscrypt-proxy-gui
-Version:       1.9.8
+Version:       1.10.8
 Release:       1%{?dist}
 Summary:       GUI wrapper for dnscrypt-proxy
 License:       GPLv2+
@@ -84,12 +84,20 @@ fi
 %{_datadir}/dbus-1/system-services/pro.russianfedora.dnscryptclienttest.service
 %{_datadir}/polkit-1/actions/pro.russianfedora.dnscryptclienttest.policy
 %{_sysconfdir}/dbus-1/system.d/pro.russianfedora.dnscryptclienttest.conf
+%{_libexecdir}/kf5/kauth/dnscrypt_client_reload_helper
+%{_datadir}/dbus-1/system-services/pro.russianfedora.dnscryptclientreload.service
+%{_datadir}/polkit-1/actions/pro.russianfedora.dnscryptclientreload.policy
+%{_sysconfdir}/dbus-1/system.d/pro.russianfedora.dnscryptclientreload.conf
 %{_datadir}/knotifications5/%{app_name}.notifyrc
 %{_unitdir}/%{app_name}@.service
 %{_unitdir}/%{app_name}_test@.service
 %{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog
+* Sat Jun  3 2017 Fl@sh <kaperang07@gmail.com> - 1.10.8-1
+- changed %%files for reload_helper;
+- version updated;
+
 * Mon May 22 2017 Fl@sh <kaperang07@gmail.com> - 1.9.8-1
 - changed %%files for test_helper;
 - version updated;

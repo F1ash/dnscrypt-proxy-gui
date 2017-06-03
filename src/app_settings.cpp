@@ -40,8 +40,8 @@ AppSettings::AppSettings(QWidget *parent) :
     headWdg->setContentsMargins(0, 0, 0, 0);
     headWdg->setLayout(headLayout);
 
-    advancedlabel = new QLabel(this);
-    advancedlabel->setText("<font color='red'>Advanced settings</font>");
+    advancedLabel = new QLabel(this);
+    advancedLabel->setText("<font color='red'>Advanced settings</font>");
 
     runAtStart = new QCheckBox(
                 "run service at start",
@@ -56,6 +56,16 @@ AppSettings::AppSettings(QWidget *parent) :
     restoreAtClose = new QCheckBox(
                 "restore DNS system resolver settings at close",
                 this);
+
+    asUser = new QCheckBox("Use as user", this);
+    asUserLine = new QLineEdit(this);
+    asUserLine->setEnabled(false);
+    asUserLine->setPlaceholderText("dnscrypt");
+    asUserLayout = new QHBoxLayout(this);
+    asUserLayout->addWidget(asUser);
+    asUserLayout->addWidget(asUserLine);
+    asUserWdg = new QWidget(this);
+    asUserWdg->setLayout(asUserLayout);
 
     jobPort = new PortSettings(this, JOB_PORT);
     jobPort->setName("port for receive DNS");
@@ -80,7 +90,8 @@ AppSettings::AppSettings(QWidget *parent) :
     appSettingsLayout->addWidget(findActiveService);
     appSettingsLayout->addWidget(useFastOnly);
     appSettingsLayout->addWidget(restoreAtClose);
-    appSettingsLayout->addWidget(advancedlabel, 0, Qt::AlignCenter);
+    appSettingsLayout->addWidget(advancedLabel, 0, Qt::AlignCenter);
+    appSettingsLayout->addWidget(asUserWdg, 0, Qt::AlignLeft);
     appSettingsLayout->addWidget(jobPort, 0, Qt::AlignLeft);
     appSettingsLayout->addWidget(testPort, 0, Qt::AlignLeft);
     appSettingsLayout->addWidget(advancedButtons, 0, Qt::AlignCenter);
@@ -114,15 +125,30 @@ AppSettings::AppSettings(QWidget *parent) :
     //connect(testPort, SIGNAL(valueChanged(int)),
     //        this, SIGNAL(testPortChanged(int)));
     connect(jobPort, SIGNAL(valueChanged(int)),
-            this, SLOT(portChanged()));
+            this, SLOT(unitChanged()));
     connect(testPort, SIGNAL(valueChanged(int)),
-            this, SLOT(portChanged()));
+            this, SLOT(unitChanged()));
     connect(restoreDefaultBtn, SIGNAL(clicked(bool)),
-            this, SLOT(setPorts()));
+            this, SLOT(setUnits()));
     connect(applyNewPortsBtn, SIGNAL(clicked(bool)),
-            this, SLOT(setPorts()));
+            this, SLOT(setUnits()));
+    connect(asUser, SIGNAL(toggled(bool)),
+            asUserLine, SLOT(setEnabled(bool)));
+    connect(asUser, SIGNAL(toggled(bool)),
+            asUserLine, SLOT(clear()));
+    connect(asUser, SIGNAL(toggled(bool)),
+            this, SLOT(unitChanged()));
+    connect(asUserLine, SIGNAL(textChanged(QString)),
+            this, SLOT(unitChanged()));
 }
 
+void AppSettings::setUserName(QString _user)
+{
+    if ( !_user.isEmpty() ) {
+        asUser->setChecked(true);
+        asUserLine->setText(_user);
+    };
+}
 bool AppSettings::getRunAtStartState() const
 {
     return runAtStart->isChecked();
@@ -145,22 +171,25 @@ void AppSettings::setRestoreAtClose(bool state)
 {
     restoreAtClose->setChecked(state);
 }
-void AppSettings::runChangePorts()
+void AppSettings::runChangeUnits()
 {
     //QTextStream s(stdout);
-    //s << "runChangePorts" << endl;
+    //s << "runChangeUnits" << endl;
     QVariantMap args;
-    args["action"]      = "setPorts";
+    args["action"]      = "setUnits";
     args["JobPort"]     = jobPort->getPort();
     args["TestPort"]    = testPort->getPort();
-    Action act("pro.russianfedora.dnscryptclient.setports");
-    act.setHelperId("pro.russianfedora.dnscryptclient");
+    if ( asUser->isChecked() ) {
+        args["User"]    = asUserLine->text();
+    };
+    Action act("pro.russianfedora.dnscryptclientreload.setunits");
+    act.setHelperId("pro.russianfedora.dnscryptclientreload");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
     job->setParent(this);
     job->setAutoDelete(true);
     connect(job, SIGNAL(result(KJob*)),
-            this, SLOT(resultChangePorts(KJob*)));
+            this, SLOT(resultChangeUnits(KJob*)));
     job->start();
 }
 
@@ -182,47 +211,62 @@ void AppSettings::enableUseFastOnly(bool state)
     useFastOnly->setChecked(false);
     useFastOnly->setEnabled(state);
 }
-void AppSettings::portChanged()
+void AppSettings::unitChanged()
 {
     applyNewPortsBtn->setEnabled(true);
 }
-void AppSettings::setPorts()
+void AppSettings::setUnits()
 {
+    if ( asUser->isChecked() && (
+         asUserLine->text().isEmpty() ||
+         asUserLine->text().contains(" ")) ) {
+        asUserLine->clear();
+        asUser->setChecked(false);
+        KNotification::event(
+                    KNotification::Notification,
+                    "DNSCryptClient",
+                    QString("Username contains blanks or empty."));
+        return;
+    };
     scrolled->setEnabled(false);
     if ( sender()==restoreDefaultBtn ) {
         jobPort->setPort(JOB_PORT);
         testPort->setPort(TEST_PORT);
+        asUser->setChecked(false);
     };
     emit stopSystemdAppUnits();
 }
 
-void AppSettings::resultChangePorts(KJob *_job)
+void AppSettings::resultChangeUnits(KJob *_job)
 {
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
     if ( job!=nullptr ) {
         //QTextStream s(stdout);
-        if ( job->data().value("jobPort").toInt()>0 ) {
+        if ( job->data().value("jobUnit").toInt()>0 ) {
             emit jobPortChanged(jobPort->getPort());
+            emit userChanged(asUserLine->text());
             KNotification::event(
                         KNotification::Notification,
                         "DNSCryptClient",
-                        QString("Job Port changed."));
+                        QString("Job systemd unit changed."));
         };
-        if ( job->data().value("testPort").toInt()>0 ) {
+        if ( job->data().value("testUnit").toInt()>0 ) {
             emit testPortChanged(testPort->getPort());
             KNotification::event(
                         KNotification::Notification,
                         "DNSCryptClient",
-                        QString("Test Port changed."));
+                        QString("Test systemd unit changed."));
         };
+        //s << "jobUnit "<< job->data().value("jobUnit").toString() << endl;
+        //s << "testUnit "<< job->data().value("testUnit").toString() << endl;
         //s << job->data().value("jobUnitText").toString() << endl;
         //s << job->data().value("testUnitText").toString() << endl;
     } else {
         KNotification::event(
                     KNotification::Notification,
                     "DNSCryptClient",
-                    QString("Ports not changed."));
+                    QString("Units not changed."));
     };
     scrolled->setEnabled(true);
-    emit changePortsFinished();
+    emit changeUnitsFinished();
 }

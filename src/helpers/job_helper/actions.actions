@@ -27,9 +27,3 @@ Name=Stop DNSCrypt proxy service by stop slice
 Description=User DNSCrypt
 Policy=yes
 Persistence=session
-
-[pro.russianfedora.dnscryptclient.setports]
-Name=Set ports to systemd DNSCrypt units
-Description=User DNSCrypt
-Policy=yes
-Persistence=session

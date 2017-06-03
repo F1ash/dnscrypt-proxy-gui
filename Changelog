@@ -35,3 +35,10 @@ implemented test_helper
 implemented check and change job\test ports
    to according with settings
    if application was updated or reinstalled;
+
+v.1.10.8 :
+implemented 'asUser' parameter
+    for DNSCryptClient systemd unit;
+implemented reload_helper
+    for avoid deadlock
+    between job, test, reload actions;

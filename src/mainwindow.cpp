@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     stopManually = false;
     restoreFlag = false;
     restoreAtClose = false;
-    stopForChangePorts = false;
+    stopForChangeUnits = false;
     probeCount = 0;
 
     serverWdg = new ServerPanel(this);
@@ -98,10 +98,12 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(changeJobPort(int)));
     connect(appSettings, SIGNAL(testPortChanged(int)),
             this, SLOT(changeTestPort(int)));
+    connect(appSettings, SIGNAL(userChanged(QString)),
+            this, SLOT(changeUserName(QString)));
     connect(appSettings, SIGNAL(stopSystemdAppUnits()),
             this, SLOT(stopSystemdAppUnits()));
-    connect(appSettings, SIGNAL(changePortsFinished()),
-            this, SLOT(changePortsFinished()));
+    connect(appSettings, SIGNAL(changeUnitsFinished()),
+            this, SLOT(changeUnitsFinished()));
 
     readSettings();
 }
@@ -124,6 +126,8 @@ void MainWindow::readSettings()
     testPort = settings.value("TestPort", TEST_PORT).toInt();
     appSettings->testPort->setPort(testPort);
     testRespond->testWdg->setTestPort(testPort);
+    asUser = settings.value("AsUser").toString();
+    appSettings->setUserName(asUser);
     settings.beginGroup("Entries");
     foreach ( QString _key, settings.allKeys() ) {
         resolverEntries.append(settings.value(_key).toString());
@@ -136,6 +140,7 @@ void MainWindow::setSettings()
     settings.setValue("RunAtStart", appSettings->getRunAtStartState());
     settings.setValue("JobPort", jobPort);
     settings.setValue("TestPort", testPort);
+    settings.setValue("AsUser", asUser);
     settings.setValue("FindActiveService", findActiveService);
     settings.setValue("UseFastOnly", useFastOnly);
     settings.setValue("LastServer", serverWdg->getCurrentServer());
@@ -471,10 +476,10 @@ void MainWindow::testFinished()
     if ( srvStatus==FAILED   ||
          srvStatus==INACTIVE ||
          srvStatus==READY ) {
-        if ( stopForChangePorts ) {
-            stopForChangePorts = false;
-            appSettings->runChangePorts();
-            //s << "runChangePorts ";
+        if ( stopForChangeUnits ) {
+            stopForChangeUnits = false;
+            appSettings->runChangeUnits();
+            //s << "runChangeUnits ";
         };
     };
     //s << "testFinished" << endl;
@@ -500,7 +505,7 @@ void MainWindow::firstServiceStart()
     settings.endGroup();
     // check and change job\test ports to according with settings
     // if application was updated or reinstalled
-    appSettings->runChangePorts();
+    appSettings->runChangeUnits();
 }
 void MainWindow::startServiceJobFinished(KJob *_job)
 {
@@ -674,6 +679,10 @@ void MainWindow::changeTestPort(int port)
     //QTextStream s(stdout);
     //s << "test port" << testPort << endl;
 }
+void MainWindow::changeUserName(QString _user)
+{
+    asUser = _user;
+}
 void MainWindow::startService()
 {
     probeCount = 0;
@@ -807,11 +816,11 @@ void MainWindow::changeAppState(SRV_STATUS status)
         } else {
             emit serviceStateChanged(READY);
         };
-        if ( stopForChangePorts ) {
+        if ( stopForChangeUnits ) {
             if ( !testRespond->testWdg->isActive() ) {
-                stopForChangePorts = false;
-                appSettings->runChangePorts();
-                //s << "runChangePorts ";
+                stopForChangeUnits = false;
+                appSettings->runChangeUnits();
+                //s << "runChangeUnits ";
             };
             //s << "srvStatus inactive" << endl;
         };
@@ -879,13 +888,13 @@ void MainWindow::stopSystemdAppUnits()
 {
     //QTextStream s(stdout);
     //s << "stopSystemdAppUnits" << endl;
-    stopForChangePorts = true;
+    stopForChangeUnits = true;
     buttonsWdg->setEnabled(false);
     testRespond->testWdg->setEnabled(false);
     stopService();
     testRespond->testWdg->stopTest();
 }
-void MainWindow::changePortsFinished()
+void MainWindow::changeUnitsFinished()
 {
     buttonsWdg->setEnabled(true);
     testRespond->testWdg->setEnabled(true);
