@@ -43,8 +43,6 @@ QString get_key_varmap(const QVariantMap &args, const QString& key)
     QString value;
     if (args.keys().contains(key)) {
         value = args[key].toString();
-    } else {
-        value = QString();
     };
     return value;
 }
