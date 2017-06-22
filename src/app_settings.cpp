@@ -194,18 +194,6 @@ void AppSettings::runChangeUnits()
 }
 
 /* private slots */
-void AppSettings::resizeEvent(QResizeEvent *ev)
-{
-    /*
-    int h = ev->size().height()-12;
-    QSize s = QSize(h, h);
-    setLabel->setFixedHeight(h);
-    nameLabel->setFixedHeight(h);
-    baseButton->setFixedHeight(h);
-    baseButton->setIconSize(s);
-    */
-    ev->accept();
-}
 void AppSettings::enableUseFastOnly(bool state)
 {
     useFastOnly->setChecked(false);

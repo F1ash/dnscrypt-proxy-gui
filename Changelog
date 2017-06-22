@@ -42,3 +42,7 @@ implemented 'asUser' parameter
 implemented reload_helper
     for avoid deadlock
     between job, test, reload actions;
+
+v.1.10.9 :
+fixed activation the Start button
+    after cancel the restore dialog;

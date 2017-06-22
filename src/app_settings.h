@@ -61,7 +61,6 @@ private:
 public slots:
 
 private slots:
-    void            resizeEvent(QResizeEvent*);
     void            enableUseFastOnly(bool);
     void            unitChanged();
     void            setUnits();

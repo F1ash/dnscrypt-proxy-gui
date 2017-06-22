@@ -382,7 +382,7 @@ void MainWindow::restoreSettingsProcess()
     restoreFlag = false;
     QString selectedEntry = showResolverEntries();
     if ( selectedEntry.isEmpty() ) {
-        emit serviceStateChanged(READY);
+        emit serviceStateChanged(RESTORED);
         return;
     };
     QVariantMap args;
