@@ -111,7 +111,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::readSettings()
 {
-    restoreGeometry(settings.value("Geometry").toByteArray());
+    QByteArray _geometry = settings.value("Geometry").toByteArray();
     runAtStart = settings.value("RunAtStart", false).toBool();
     appSettings->setRunAtStartState(runAtStart);
     findActiveService = settings.value("FindActiveService", true).toBool();
@@ -134,6 +134,11 @@ void MainWindow::readSettings()
         resolverEntries.append(settings.value(_key).toString());
     };
     settings.endGroup();
+    if ( _geometry.isEmpty() ) {
+        adjustSize();
+    } else {
+        restoreGeometry(_geometry);
+    };
 }
 void MainWindow::setSettings()
 {
