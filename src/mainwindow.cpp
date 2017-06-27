@@ -2,16 +2,17 @@
 #include "resolver_entries.h"
 #include <private/qdbusutil_p.h>
 #include <QRegExp>
+#include <QApplication>
+#include <QDesktopWidget>
 //#include <QTextStream>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     connection(QDBusConnection::systemBus())
 {
-    setSizePolicy(
-                QSizePolicy(
-                    QSizePolicy::MinimumExpanding,
-                    QSizePolicy::MinimumExpanding));
+    const QSize d = QApplication::desktop()->screenGeometry().size();
+    setMaximumHeight(d.height()/2);
+    setMaximumWidth(d.width()/2);
     setWindowTitle("DNSCryptClient");
     QIcon::setThemeName("DNSCryptClient");
     setWindowIcon(QIcon::fromTheme(

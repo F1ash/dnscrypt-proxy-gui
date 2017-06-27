@@ -46,3 +46,7 @@ implemented reload_helper
 v.1.10.9 :
 fixed activation the Start button
     after cancel the restore dialog;
+
+v.1.10.10 :
+fixed the uncontrol expanding mainwindow
+    at first start;
