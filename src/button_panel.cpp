@@ -44,6 +44,8 @@ ButtonPanel::ButtonPanel(QWidget *parent) :
     baseLayout->addWidget(start);
     baseLayout->addWidget(stop);
     baseLayout->addWidget(restore);
+
+    setContentsMargins(0, 0, 0, 0);
     setLayout(baseLayout);
 
     connect(start, SIGNAL(released()),
@@ -98,16 +100,15 @@ void ButtonPanel::changeAppState(SRV_STATUS state)
 /* private slots */
 void ButtonPanel::resizeEvent(QResizeEvent *ev)
 {
-    int h = ev->size().height()-10;
-    int w = ev->size().width()/3-9;
-    int m = (h<w)? h : w;
-    QSize s = QSize(m, m);
-    start->setFixedSize(s);
-    start->setIconSize(s);
-    stop->setFixedSize(s);
-    stop->setIconSize(s);
-    restore->setFixedSize(s);
-    restore->setIconSize(s);
     ev->accept();
+    int h = ev->size().height();
+    int w = ev->size().width()/3;
+    //int m = (h<w)? h : w;
+    QSize s = QSize(w, h);
+    start->setIconSize(s);
+    start->setMaximumSize(s);
+    stop->setIconSize(s);
+    stop->setMaximumSize(s);
+    restore->setIconSize(s);
+    restore->setMaximumSize(s);
 }
-

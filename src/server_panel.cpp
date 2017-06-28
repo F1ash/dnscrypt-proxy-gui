@@ -15,12 +15,15 @@ ServerPanel::ServerPanel(QWidget *parent) :
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
+    servLabel->setContentsMargins(0, 0, 0, 0);
     servItems = QList<QStandardItem*>();
     servList = new QComboBox(this);
     servList->setDuplicatesEnabled(false);
     servList->setContextMenuPolicy(Qt::NoContextMenu);
+    servList->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     servItemModel = new QStandardItemModel(this);
     servList->setModel(servItemModel);
+    servList->setContentsMargins(0, 0, 0, 0);
     servInfo = new QPushButton(
                 QIcon::fromTheme("DNSCryptClient_info",
                                  QIcon(":/info.png")),
@@ -31,6 +34,7 @@ ServerPanel::ServerPanel(QWidget *parent) :
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
+    servInfo->setContentsMargins(0, 0, 0, 0);
     appSettings = new QPushButton(
                 QIcon::fromTheme("DNSCryptClient_settings",
                                  QIcon(":/settings.png")),
@@ -41,6 +45,7 @@ ServerPanel::ServerPanel(QWidget *parent) :
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
+    appSettings->setContentsMargins(0, 0, 0, 0);
     testRespond = new QPushButton(
                 QIcon::fromTheme("DNSCryptClient_test",
                                  QIcon(":/test.png")),
@@ -51,13 +56,17 @@ ServerPanel::ServerPanel(QWidget *parent) :
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
+    testRespond->setContentsMargins(0, 0, 0, 0);
     baseLayout = new QHBoxLayout(this);
     baseLayout->addWidget(servLabel, 1);
-    baseLayout->addWidget(servList, 10);
+    baseLayout->addWidget(servList, 6);
     baseLayout->addWidget(servInfo, 1);
     baseLayout->addWidget(appSettings, 1);
     baseLayout->addWidget(testRespond, 1);
+
+    setContentsMargins(0, 0, 0, 0);
     setLayout(baseLayout);
+
     connect(appSettings, SIGNAL(released()),
             this, SIGNAL(toSettings()));
     connect(testRespond, SIGNAL(released()),
@@ -156,16 +165,20 @@ void ServerPanel::setItemIcon(QString name, QString icon_name)
 /* private slots */
 void ServerPanel::resizeEvent(QResizeEvent *ev)
 {
-    int h = ev->size().height()-12;
-    QSize s = QSize(h, h);
-    servLabel->setFixedHeight(h);
-    servList->setFixedHeight(h);
-    servList->setIconSize(s);
-    servInfo->setFixedHeight(h);
-    servInfo->setIconSize(s);
-    appSettings->setFixedHeight(h);
-    appSettings->setIconSize(s);
     ev->accept();
+    // (widget+combobox+shadow+itemborder\buttonborder)*2
+    // (1+1+1+3)*2 = 12
+    int h = ev->size().height();
+    QSize s = QSize(h-12, h-12);
+    servLabel->setMaximumHeight(h);
+    //servList->setIconSize(s1);
+    servList->setMaximumHeight(h);
+    servInfo->setIconSize(s);
+    servInfo->setMaximumHeight(h);
+    appSettings->setIconSize(s);
+    appSettings->setMaximumHeight(h);
+    testRespond->setIconSize(s);
+    testRespond->setMaximumHeight(h);
 }
 void ServerPanel::serverDataChanged(int idx)
 {

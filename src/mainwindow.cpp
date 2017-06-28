@@ -36,7 +36,9 @@ MainWindow::MainWindow(QWidget *parent) :
     baseLayout->addWidget(serverWdg, 1);
     baseLayout->addWidget(infoWdg, 3);
     baseLayout->addWidget(buttonsWdg, 5);
+    baseLayout->addStretch(-1);
     baseWdg = new QWidget(this);
+    baseWdg->setContentsMargins(0, 0, 0, 0);
     baseWdg->setLayout(baseLayout);
 
     appSettings = new AppSettings(this);
@@ -46,7 +48,9 @@ MainWindow::MainWindow(QWidget *parent) :
     commonWdg->addWidget(baseWdg);
     commonWdg->addWidget(appSettings);
     commonWdg->addWidget(testRespond);
+    commonWdg->setContentsMargins(0, 0, 0, 0);
 
+    setContentsMargins(0, 0, 0, 0);
     setCentralWidget(commonWdg);
 
     initTrayIcon();

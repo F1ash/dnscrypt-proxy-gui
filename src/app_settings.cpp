@@ -120,10 +120,6 @@ AppSettings::AppSettings(QWidget *parent) :
             this, SIGNAL(useFastOnlyStateChanged(bool)));
     connect(restoreAtClose, SIGNAL(toggled(bool)),
             this, SIGNAL(restoreAtCloseChanged(bool)));
-    //connect(jobPort, SIGNAL(valueChanged(int)),
-    //        this, SIGNAL(jobPortChanged(int)));
-    //connect(testPort, SIGNAL(valueChanged(int)),
-    //        this, SIGNAL(testPortChanged(int)));
     connect(jobPort, SIGNAL(valueChanged(int)),
             this, SLOT(unitChanged()));
     connect(testPort, SIGNAL(valueChanged(int)),

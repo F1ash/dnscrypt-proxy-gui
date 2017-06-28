@@ -21,6 +21,7 @@ InfoPanel::InfoPanel(QWidget *parent) :
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
+    servInfo->setContentsMargins(0, 0, 0, 0);
     servInfo->setLayout(servLayout);
 
     attention = new QLabel(this);
@@ -31,10 +32,12 @@ InfoPanel::InfoPanel(QWidget *parent) :
                 QSizePolicy(
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
+    attentions->setContentsMargins(0, 0, 0, 0);
     attentions->setLayout(attentLayout);
 
     addWidget(servInfo);
     addWidget(attentions);
+    setContentsMargins(0, 0, 0, 0);
 }
 
 /* public slots */
