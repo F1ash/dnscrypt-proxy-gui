@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     serverWdg = new ServerPanel(this);
     buttonsWdg = new ButtonPanel(this);
     infoWdg = new InfoPanel(this);
-    baseLayout = new QVBoxLayout(this);
+    baseLayout = new QVBoxLayout();
     baseLayout->addWidget(serverWdg, 1);
     baseLayout->addWidget(infoWdg, 3);
     baseLayout->addWidget(buttonsWdg, 5);

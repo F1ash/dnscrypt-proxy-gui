@@ -12,7 +12,7 @@ InfoPanel::InfoPanel(QWidget *parent) :
     fullName = new QLabel(this);
     description = new QLabel(this);
     location = new QLabel(this);
-    servLayout = new QVBoxLayout(this);
+    servLayout = new QVBoxLayout();
     servLayout->addWidget(fullName);
     servLayout->addWidget(description);
     servLayout->addWidget(location);
@@ -25,7 +25,7 @@ InfoPanel::InfoPanel(QWidget *parent) :
     servInfo->setLayout(servLayout);
 
     attention = new QLabel(this);
-    attentLayout = new QVBoxLayout(this);
+    attentLayout = new QVBoxLayout();
     attentLayout->addWidget(attention);
     attentions = new QWidget(this);
     attentions->setSizePolicy(
