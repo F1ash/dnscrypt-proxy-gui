@@ -4,7 +4,7 @@
 #include <QRegExp>
 #include <QApplication>
 #include <QDesktopWidget>
-//#include <QTextStream>
+#include <QTextStream>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -143,6 +143,8 @@ void MainWindow::readSettings()
     } else {
         restoreGeometry(_geometry);
     };
+    QTextStream s(stdout);
+    s << "readSettings" << endl;
 }
 void MainWindow::setSettings()
 {
@@ -192,6 +194,8 @@ void MainWindow::initTrayIcon()
 }
 void MainWindow::changeVisibility()
 {
+    QTextStream s(stdout);
+    s << "changeVisibility "<< this->isVisible() << endl;
     ( this->isVisible() ) ? this->hide() : this->show();
 }
 void MainWindow::connectToClientService()
@@ -504,6 +508,8 @@ void MainWindow::checkRespondSettings(const QString name, const QString icon)
 }
 void MainWindow::firstServiceStart()
 {
+    QTextStream s(stdout);
+    s << "firstServiceStart" << endl;
     settings.beginGroup("Responds");
     testRespond->testWdg->setServerList(settings.allKeys());
     //foreach ( QString _key, settings.allKeys() ) {
@@ -695,6 +701,8 @@ void MainWindow::changeUserName(QString _user)
 }
 void MainWindow::startService()
 {
+    QTextStream s(stdout);
+    s << "startService" << endl;
     probeCount = 0;
     stopManually = false;
     switch (checkSliceStatus()) {
@@ -766,6 +774,8 @@ void MainWindow::closeEvent(QCloseEvent *ev)
     };
     setSettings();
     trayIcon->hide();
+    QTextStream s(stdout);
+    s << "closeEvent" << endl;
 }
 void MainWindow::receiveServiceStatus(QDBusMessage _msg)
 {
@@ -799,7 +809,7 @@ void MainWindow::changeAppState(SRV_STATUS status)
 {
     SRV_STATUS prevSrvStatus = srvStatus;
     if ( status!=READY && status!=PROCESSING ) srvStatus = status;
-    //QTextStream s(stdout);
+    QTextStream s(stdout);
     switch ( status ) {
     case INACTIVE:
     case FAILED:
@@ -810,7 +820,7 @@ void MainWindow::changeAppState(SRV_STATUS status)
                         QString("DNSCryptClient service is %1.")
                         .arg((status==FAILED)? "failed" : "inactive"));
         };
-        //s << "INACTIVE/FAILED" << endl;
+        s << "INACTIVE/FAILED" << endl;
         trayIcon->setIcon(
                     QIcon::fromTheme("DNSCryptClient_closed",
                                      QIcon(":/closed.png")));
@@ -830,9 +840,9 @@ void MainWindow::changeAppState(SRV_STATUS status)
             if ( !testRespond->testWdg->isActive() ) {
                 stopForChangeUnits = false;
                 appSettings->runChangeUnits();
-                //s << "runChangeUnits ";
+                s << "runChangeUnits ";
             };
-            //s << "srvStatus inactive" << endl;
+            s << "srvStatus inactive" << endl;
         };
         break;
     case ACTIVE:
@@ -849,7 +859,7 @@ void MainWindow::changeAppState(SRV_STATUS status)
         trayIcon->setToolTip(QString("%1\n%2")
                              .arg(windowTitle())
                              .arg(serverWdg->getCurrentServer()));
-        //s << "ACTIVE" << endl;
+        s << "ACTIVE" << endl;
         emit serviceStateChanged(READY);
         break;
     case DEACTIVATING:
@@ -857,14 +867,14 @@ void MainWindow::changeAppState(SRV_STATUS status)
         trayIcon->setIcon(
                     QIcon::fromTheme("DNSCryptClient_reload",
                                      QIcon(":/reload.png")));
-        //s << "DEACTIVATING/ACTIVATING" << endl;
+        s << "DEACTIVATING/ACTIVATING" << endl;
         break;
     case STOP_SLICE:
         trayIcon->setIcon(
                     QIcon::fromTheme("DNSCryptClient",
                                      QIcon(":/DNSCryptClient.png")));
         // need to restart the slice and proxying
-        //s << "STOP_SLICE" << endl;
+        s << "STOP_SLICE" << endl;
         emit serviceStateChanged(PROCESSING);
         stopSliceProcess();
         break;
@@ -875,6 +885,7 @@ void MainWindow::changeAppState(SRV_STATUS status)
         trayIcon->setToolTip(QString("%1\n%2")
                              .arg(windowTitle())
                              .arg("--restored--"));
+        s << "RESTORED" << endl;
         emit serviceStateChanged(READY);
     default:
         break;
@@ -906,6 +917,8 @@ void MainWindow::stopSystemdAppUnits()
 }
 void MainWindow::changeUnitsFinished()
 {
+    QTextStream s(stdout);
+    s << "changeUnitsFinished" << endl;
     buttonsWdg->setEnabled(true);
     testRespond->testWdg->setEnabled(true);
 
