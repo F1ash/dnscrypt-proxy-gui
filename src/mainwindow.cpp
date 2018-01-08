@@ -752,7 +752,7 @@ void MainWindow::restoreSystemSettings()
 void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason r)
 {
     QTextStream s(stdout);
-    s << "trayIconActivated" << endl;
+    s << "trayIconActivated; reason: "<< r << endl;
     if ( r==QSystemTrayIcon::Trigger ) changeVisibility();
 }
 void MainWindow::servicePropertyChanged(QDBusMessage message)
