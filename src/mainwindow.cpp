@@ -751,6 +751,8 @@ void MainWindow::restoreSystemSettings()
 }
 void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason r)
 {
+    QTextStream s(stdout);
+    s << "trayIconActivated" << endl;
     if ( r==QSystemTrayIcon::Trigger ) changeVisibility();
 }
 void MainWindow::servicePropertyChanged(QDBusMessage message)
@@ -762,6 +764,16 @@ void MainWindow::servicePropertyChanged(QDBusMessage message)
 }
 void MainWindow::closeEvent(QCloseEvent *ev)
 {
+    QTextStream s(stdout);
+    QString _sender;
+    if ( sender()==trayIcon->closeAction ) {
+        _sender.append("trayIcon->closeAction");
+    } else if ( sender()==trayIcon ) {
+        _sender.append("trayIcon");
+    } else {
+        _sender.append(sender()->objectName());
+    };
+    s << "closeEvent 0; sender: " << _sender<<endl;
     ev->accept();
     stopManually = true;
     testRespond->testWdg->stopTest();
@@ -774,8 +786,7 @@ void MainWindow::closeEvent(QCloseEvent *ev)
     };
     setSettings();
     trayIcon->hide();
-    QTextStream s(stdout);
-    s << "closeEvent" << endl;
+    s << "closeEvent 1" << endl;
 }
 void MainWindow::receiveServiceStatus(QDBusMessage _msg)
 {
