@@ -938,4 +938,5 @@ void MainWindow::changeUnitsFinished()
         runAtStart = false;
         startService();
     };
+    this->show();
 }
