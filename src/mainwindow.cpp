@@ -112,6 +112,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     readSettings();
 }
+MainWindow::~MainWindow()
+{
+    QTextStream s(stdout);
+    s << "destructor" << endl;
+}
 
 void MainWindow::readSettings()
 {
@@ -771,7 +776,7 @@ void MainWindow::closeEvent(QCloseEvent *ev)
     } else if ( sender()==trayIcon ) {
         _sender.append("trayIcon");
     } else {
-        _sender.append(sender()->objectName());
+        _sender.append("unknown");
     };
     s << "closeEvent 0; sender: " << _sender<<endl;
     ev->accept();
