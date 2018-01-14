@@ -43,17 +43,20 @@ AppSettings::AppSettings(QWidget *parent) :
     advancedLabel = new QLabel(this);
     advancedLabel->setText("<font color='red'>Advanced settings</font>");
 
-    runAtStart = new QCheckBox(
+    runAtStart          = new QCheckBox(
                 "run service at start",
                 this);
-    findActiveService = new QCheckBox(
+    unhideAtStart       = new QCheckBox(
+                "unhide at start",
+                this);
+    findActiveService   = new QCheckBox(
                 "find the active service automatically",
                 this);
-    useFastOnly = new QCheckBox(
+    useFastOnly         = new QCheckBox(
                 "Use fast servers only",
                 this);
     useFastOnly->setEnabled(false);
-    restoreAtClose = new QCheckBox(
+    restoreAtClose      = new QCheckBox(
                 "restore DNS system resolver settings at close",
                 this);
 
@@ -87,6 +90,7 @@ AppSettings::AppSettings(QWidget *parent) :
 
     appSettingsLayout = new QVBoxLayout(this);
     appSettingsLayout->addWidget(runAtStart);
+    appSettingsLayout->addWidget(unhideAtStart);
     appSettingsLayout->addWidget(findActiveService);
     appSettingsLayout->addWidget(useFastOnly);
     appSettingsLayout->addWidget(restoreAtClose);
@@ -152,6 +156,14 @@ bool AppSettings::getRunAtStartState() const
 void AppSettings::setRunAtStartState(bool state)
 {
     runAtStart->setChecked(state);
+}
+bool AppSettings::getUnhideAtStartState() const
+{
+    return unhideAtStart->isChecked();
+}
+void AppSettings::setUnhideAtStartState(bool state)
+{
+    unhideAtStart->setChecked(state);
 }
 void AppSettings::setFindActiveServiceState(bool state)
 {

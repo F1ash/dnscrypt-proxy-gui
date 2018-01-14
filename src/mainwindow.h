@@ -28,7 +28,7 @@ private:
     bool                runAtStart, findActiveService,
                         useFastOnly, stopManually,
                         restoreFlag, restoreAtClose,
-                        stopForChangeUnits;
+                        stopForChangeUnits, unhideAtStart;
     int                 probeCount, jobPort, testPort;
     SRV_STATUS          srvStatus;
     ServerPanel        *serverWdg;

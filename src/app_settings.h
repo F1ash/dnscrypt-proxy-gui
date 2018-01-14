@@ -26,6 +26,8 @@ public:
     void            setUserName(QString);
     bool            getRunAtStartState() const;
     void            setRunAtStartState(bool);
+    bool            getUnhideAtStartState() const;
+    void            setUnhideAtStartState(bool);
     void            setFindActiveServiceState(bool);
     void            setUseFastOnlyState(bool);
     void            setRestoreAtClose(bool);
@@ -51,7 +53,7 @@ private:
     QHBoxLayout    *advancedButtonsLayout;
     QCheckBox      *runAtStart, *findActiveService,
                    *useFastOnly, *restoreAtClose,
-                   *asUser;
+                   *asUser, *unhideAtStart;
     QWidget        *headWdg, *appSettings,
                    *asUserWdg, *advancedButtons;
     QScrollArea    *scrolled;
