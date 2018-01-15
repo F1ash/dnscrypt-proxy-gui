@@ -54,3 +54,6 @@ fixed the uncontrol expanding mainwindow
 v.1.11.10 :
 enhanceded icon set and some fixes
     for resizing;
+
+v.1.11.11 :
+added UnhideAtStart settings;

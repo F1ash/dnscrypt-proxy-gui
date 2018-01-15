@@ -118,7 +118,7 @@ void MainWindow::readSettings()
     QByteArray _geometry = settings.value("Geometry").toByteArray();
     runAtStart = settings.value("RunAtStart", false).toBool();
     appSettings->setRunAtStartState(runAtStart);
-    unhideAtStart = settings.value("UnhideAtStart", false).toBool();
+    unhideAtStart = settings.value("UnhideAtStart", true).toBool();
     appSettings->setUnhideAtStartState(unhideAtStart);
     findActiveService = settings.value("FindActiveService", true).toBool();
     appSettings->setFindActiveServiceState(findActiveService);
@@ -912,7 +912,7 @@ void MainWindow::changeUnitsFinished()
     buttonsWdg->setEnabled(true);
     testRespond->testWdg->setEnabled(true);
     this->show();
-    if ( unhideAtStart ) changeVisibility();
+    if ( !unhideAtStart ) changeVisibility();
 
     // for first service start; can be changed.
     if ( runAtStart ) {
