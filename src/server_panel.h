@@ -23,6 +23,7 @@ public:
     QString          getRespondIconName(int) const;
     bool             getItemState(int) const;
     bool             serverIsEnabled() const;
+    void             changeServerInfo();
 
 signals:
     void             toSettings();

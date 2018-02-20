@@ -126,6 +126,11 @@ bool ServerPanel::serverIsEnabled() const
 {
     return getItemState(servList->currentIndex());
 }
+void ServerPanel::changeServerInfo()
+{
+    QVariantMap servData = servList->currentData().toMap();
+    emit serverData(servData);
+}
 
 /* public slots */
 void ServerPanel::changeAppState(SRV_STATUS state)
@@ -183,8 +188,9 @@ void ServerPanel::resizeEvent(QResizeEvent *ev)
 void ServerPanel::serverDataChanged(int idx)
 {
     Q_UNUSED(idx)
-    QVariantMap servData = servList->currentData().toMap();
-    emit serverData(servData);
+    //QVariantMap servData = servList->currentData().toMap();
+    //emit serverData(servData);
+    changeServerInfo();
 }
 void ServerPanel::addServer(const QVariantMap &_data)
 {

@@ -10,9 +10,9 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     connection(QDBusConnection::systemBus())
 {
-    const QSize d = QApplication::desktop()->screenGeometry().size();
-    setMaximumHeight(d.height()/2);
-    setMaximumWidth(d.width()/2);
+    //const QSize d = QApplication::desktop()->screenGeometry().size();
+    //setMaximumHeight(d.height()/2);
+    //setMaximumWidth(d.width()/2);
     setWindowTitle("DNSCryptClient");
     QIcon::setThemeName("DNSCryptClient");
     setWindowIcon(QIcon::fromTheme(
@@ -468,9 +468,8 @@ void MainWindow::testStarted()
     trayIcon->setIcon(
                 QIcon::fromTheme("DNSCryptClient_test",
                                  QIcon(":/test.png")));
-    trayIcon->setToolTip(QString("%1\n%2")
-                         .arg(windowTitle())
-                         .arg("--testing--"));
+    trayIcon->setToolTip(
+                QString("%1\n%2").arg(windowTitle()).arg("--testing--"));
 }
 void MainWindow::testFinished()
 {
@@ -543,6 +542,7 @@ void MainWindow::startServiceJobFinished(KJob *_job)
             if ( answ.toInt()<1 ) {
                 serverWdg->setItemIcon(
                             serverWdg->getCurrentServer(), "none");
+                serverWdg->changeServerInfo();
                 emit serviceStateChanged(STOP_SLICE);
                 return;
             };
@@ -568,6 +568,7 @@ void MainWindow::startServiceJobFinished(KJob *_job)
         emit serviceStateChanged(STOP_SLICE);
         return;
     };
+    serverWdg->changeServerInfo();
     switch (checkSliceStatus()) {
     case  1:
         emit serviceStateChanged(ACTIVE);
@@ -703,15 +704,15 @@ void MainWindow::startService()
     switch (checkSliceStatus()) {
     case -2:
     case  0:     // ready for start
-        if ( findActiveService ) {
-            emit serviceStateChanged(INACTIVE);
+        if ( serverWdg->serverIsEnabled() ) {
+            startServiceProcess();
+            emit serviceStateChanged(PROCESSING);
         } else {
-            if ( serverWdg->serverIsEnabled() ) {
-                startServiceProcess();
-                emit serviceStateChanged(PROCESSING);
-            } else {
-                findActiveServiceProcess();
-            };
+            KNotification::event(
+                        KNotification::Notification,
+                        "DNSCryptClient",
+                        QString("%1 isn't enabled in list.")
+                        .arg(serverWdg->getCurrentServer()));
         };
         break;
     case  1:    // incorrectly for start;
@@ -885,15 +886,17 @@ void MainWindow::changeAppState(SRV_STATUS status)
 }
 void MainWindow::probeNextServer()
 {
-    if ( useFastOnly ) {
-        if ( 0!=serverWdg->getCurrentRespondIconName().compare("fast") ) {
-            findActiveServiceProcess();
-            return;
-        };
-    };
     if ( serverWdg->serverIsEnabled() ) {
+        if ( useFastOnly ) {
+            if ( 0!=serverWdg->getCurrentRespondIconName().compare("fast") ) {
+                if ( findActiveService ) {
+                    findActiveServiceProcess();
+                };
+                return;
+            };
+        };
         startServiceProcess();
-    } else {
+    } else if ( findActiveService ) {
         findActiveServiceProcess();
     };
 }

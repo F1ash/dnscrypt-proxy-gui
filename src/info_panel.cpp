@@ -12,10 +12,14 @@ InfoPanel::InfoPanel(QWidget *parent) :
     fullName = new QLabel(this);
     description = new QLabel(this);
     location = new QLabel(this);
+    respond = new QLabel(this);
+    srvState = new QLabel(this);
     servLayout = new QVBoxLayout();
     servLayout->addWidget(fullName);
     servLayout->addWidget(description);
     servLayout->addWidget(location);
+    servLayout->addWidget(respond);
+    servLayout->addWidget(srvState);
     servInfo = new QWidget(this);
     servInfo->setSizePolicy(
                 QSizePolicy(
@@ -101,6 +105,12 @@ void InfoPanel::setServerDescription(const QVariantMap &_data)
     description->setToolTip(_data.value("Description").toString());
     location->setText(_data.value("Location").toString());
     location->setToolTip(_data.value("Location").toString());
+    respond->setText(QString("Current respond from server: %1")
+                        .arg(_data.value("Respond").toString()));
+    respond->setToolTip(_data.value("Respond").toString());
+    srvState->setText(QString("Server is used: %1")
+                        .arg(_data.value("Enable").toBool()? "yes":"no"));
+    srvState->setToolTip(_data.value("Enable").toBool()? "yes":"no");
     setCurrentIndex(0);
 }
 
