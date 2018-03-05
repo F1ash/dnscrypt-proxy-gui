@@ -73,6 +73,8 @@ ServerPanel::ServerPanel(QWidget *parent) :
             this, SIGNAL(toTest()));
     connect(servList, SIGNAL(currentIndexChanged(int)),
             this, SLOT(serverDataChanged(int)));
+    connect(servList, SIGNAL(activated(int)),
+            this, SIGNAL(serverActivated()));
     connect(servList->model(), SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(changeItemState(QModelIndex, QModelIndex)));
     connect(servInfo, SIGNAL(released()),

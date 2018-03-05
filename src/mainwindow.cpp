@@ -83,6 +83,8 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(restoreSystemSettings()));
     connect(serverWdg, SIGNAL(serverData(const QVariantMap&)),
             infoWdg, SLOT(setServerDescription(const QVariantMap&)));
+    connect(serverWdg, SIGNAL(serverActivated()),
+            this, SLOT(startService()));
     connect(this, SIGNAL(serviceStateChanged(SRV_STATUS)),
             serverWdg, SLOT(changeAppState(SRV_STATUS)));
     connect(this, SIGNAL(serviceStateChanged(SRV_STATUS)),
@@ -713,6 +715,7 @@ void MainWindow::startService()
                         "DNSCryptClient",
                         QString("%1 isn't enabled in list.")
                         .arg(serverWdg->getCurrentServer()));
+            emit serviceStateChanged(STOP_SLICE);
         };
         break;
     case  1:    // incorrectly for start;

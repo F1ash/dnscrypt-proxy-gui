@@ -31,6 +31,7 @@ signals:
     void             serverData(const QVariantMap&);
     void             readyForStart();
     void             checkItem(const QString, const QString);
+    void             serverActivated();
 
 private:
     QString          lastServer;
