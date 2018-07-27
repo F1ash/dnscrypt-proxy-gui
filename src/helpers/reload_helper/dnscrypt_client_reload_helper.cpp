@@ -43,14 +43,14 @@ QString readFile(const QString &_path)
     QFile f(_path);
     bool opened = f.open(QIODevice::ReadOnly);
     if ( opened ) {
-        ret = QString:: fromUtf8( f.readAll() );
+        ret = QString::fromUtf8( f.readAll() );
         f.close();
     };
     return ret;
 }
-int     writeFile(const QString &_path, const QString &entry)
+qint64  writeFile(const QString &_path, const QString &entry)
 {
-    int ret = 0;
+    qint64 ret = 0;
     QFile f(_path);
     bool opened = f.open(QIODevice::WriteOnly);
     if ( opened ) {

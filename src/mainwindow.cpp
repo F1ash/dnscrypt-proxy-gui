@@ -4,6 +4,7 @@
 #include <QRegExp>
 #include <QApplication>
 #include <QDesktopWidget>
+#include <QStatusBar>
 //#include <QTextStream>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -112,7 +113,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(appSettings, SIGNAL(changeUnitsFinished()),
             this, SLOT(changeUnitsFinished()));
 
-    readSettings();
+    setStatusBar(new QStatusBar(this));
+    getDNSCryptProxyServiceVersion();
+    //readSettings();
 }
 
 void MainWindow::readSettings()
@@ -301,7 +304,7 @@ int  MainWindow::checkSliceStatus()
         _args<<"org.freedesktop.systemd1.Slice"<<"TasksCurrent";
         msg.setArguments(_args);
         answer = connection.call(msg);
-        int currTasks;
+        qulonglong currTasks;
         QRegExp rx("[0-1]{1}");
         QStringList captured;
         switch (answer.type()) {
@@ -808,83 +811,84 @@ void MainWindow::changeAppState(SRV_STATUS status)
     if ( status!=READY && status!=PROCESSING ) srvStatus = status;
     //QTextStream s(stdout);
     switch ( status ) {
-    case INACTIVE:
-    case FAILED:
-        if ( prevSrvStatus!=srvStatus ) {
-            KNotification::event(
-                        KNotification::Notification,
-                        "DNSCryptClient",
-                        QString("DNSCryptClient service is %1.")
-                        .arg((status==FAILED)? "failed" : "inactive"));
-        };
-        //s << "INACTIVE/FAILED" << endl;
-        trayIcon->setIcon(
-                    QIcon::fromTheme("DNSCryptClient_closed",
-                                     QIcon(":/closed.png")));
-        trayIcon->setToolTip(QString("%1\n%2")
-                             .arg(windowTitle())
-                             .arg("--stopped--"));
-        if ( !stopManually && findActiveService ) {
-            findActiveServiceProcess();
-            emit serviceStateChanged(PROCESSING);
-        } else if ( restoreFlag ) {
-            emit serviceStateChanged(PROCESSING);
-            restoreSettingsProcess();
-        } else {
-            emit serviceStateChanged(READY);
-        };
-        if ( stopForChangeUnits ) {
-            if ( !testRespond->testWdg->isActive() ) {
-                stopForChangeUnits = false;
-                appSettings->runChangeUnits();
-                //s << "runChangeUnits ";
+        case INACTIVE:
+        case FAILED:
+            if ( prevSrvStatus!=srvStatus ) {
+                KNotification::event(
+                            KNotification::Notification,
+                            "DNSCryptClient",
+                            QString("DNSCryptClient service is %1.")
+                            .arg((status==FAILED)? "failed" : "inactive"));
             };
-            //s << "srvStatus inactive" << endl;
-        };
-        break;
-    case ACTIVE:
-        if ( prevSrvStatus!=srvStatus ) {
-            KNotification::event(
-                        KNotification::Notification,
-                        "DNSCryptClient",
-                        QString("DNSCryptClient service is active."));
-        };
-        connectToClientService();
-        trayIcon->setIcon(
-                    QIcon::fromTheme("DNSCryptClient_opened",
-                                     QIcon(":/opened.png")));
-        trayIcon->setToolTip(QString("%1\n%2")
-                             .arg(windowTitle())
-                             .arg(serverWdg->getCurrentServer()));
-        //s << "ACTIVE" << endl;
-        emit serviceStateChanged(READY);
-        break;
-    case DEACTIVATING:
-    case   ACTIVATING:
-        trayIcon->setIcon(
-                    QIcon::fromTheme("DNSCryptClient_reload",
-                                     QIcon(":/reload.png")));
-        //s << "DEACTIVATING/ACTIVATING" << endl;
-        break;
-    case STOP_SLICE:
-        trayIcon->setIcon(
-                    QIcon::fromTheme("DNSCryptClient",
-                                     QIcon(":/DNSCryptClient.png")));
-        // need to restart the slice and proxying
-        //s << "STOP_SLICE" << endl;
-        emit serviceStateChanged(PROCESSING);
-        stopSliceProcess();
-        break;
-    case RESTORED:
-        trayIcon->setIcon(
-                    QIcon::fromTheme("DNSCryptClient_restore",
-                                     QIcon(":/restore.png")));
-        trayIcon->setToolTip(QString("%1\n%2")
-                             .arg(windowTitle())
-                             .arg("--restored--"));
-        emit serviceStateChanged(READY);
-    default:
-        break;
+            //s << "INACTIVE/FAILED" << endl;
+            trayIcon->setIcon(
+                        QIcon::fromTheme("DNSCryptClient_closed",
+                                         QIcon(":/closed.png")));
+            trayIcon->setToolTip(QString("%1\n%2")
+                                 .arg(windowTitle())
+                                 .arg("--stopped--"));
+            if ( !stopManually && findActiveService ) {
+                findActiveServiceProcess();
+                emit serviceStateChanged(PROCESSING);
+            } else if ( restoreFlag ) {
+                emit serviceStateChanged(PROCESSING);
+                restoreSettingsProcess();
+            } else {
+                emit serviceStateChanged(READY);
+            };
+            if ( stopForChangeUnits ) {
+                if ( !testRespond->testWdg->isActive() ) {
+                    stopForChangeUnits = false;
+                    appSettings->runChangeUnits();
+                    //s << "runChangeUnits ";
+                };
+                //s << "srvStatus inactive" << endl;
+            };
+            break;
+        case ACTIVE:
+            if ( prevSrvStatus!=srvStatus ) {
+                KNotification::event(
+                            KNotification::Notification,
+                            "DNSCryptClient",
+                            QString("DNSCryptClient service is active."));
+            };
+            connectToClientService();
+            trayIcon->setIcon(
+                        QIcon::fromTheme("DNSCryptClient_opened",
+                                         QIcon(":/opened.png")));
+            trayIcon->setToolTip(QString("%1\n%2")
+                                 .arg(windowTitle())
+                                 .arg(serverWdg->getCurrentServer()));
+            //s << "ACTIVE" << endl;
+            emit serviceStateChanged(READY);
+            break;
+        case DEACTIVATING:
+        case   ACTIVATING:
+            trayIcon->setIcon(
+                        QIcon::fromTheme("DNSCryptClient_reload",
+                                         QIcon(":/reload.png")));
+            //s << "DEACTIVATING/ACTIVATING" << endl;
+            break;
+        case STOP_SLICE:
+            trayIcon->setIcon(
+                        QIcon::fromTheme("DNSCryptClient",
+                                         QIcon(":/DNSCryptClient.png")));
+            // need to restart the slice and proxying
+            //s << "STOP_SLICE" << endl;
+            emit serviceStateChanged(PROCESSING);
+            stopSliceProcess();
+            break;
+        case RESTORED:
+            trayIcon->setIcon(
+                        QIcon::fromTheme("DNSCryptClient_restore",
+                                         QIcon(":/restore.png")));
+            trayIcon->setToolTip(QString("%1\n%2")
+                                 .arg(windowTitle())
+                                 .arg("--restored--"));
+            emit serviceStateChanged(READY);
+            break;
+        default:
+            break;
     };
 }
 void MainWindow::probeNextServer()
@@ -925,4 +929,30 @@ void MainWindow::changeUnitsFinished()
         runAtStart = false;
         startService();
     };
+}
+
+void MainWindow::getDNSCryptProxyServiceVersion()
+{
+    QVariantMap args;
+    args["action"] = "getVersion";
+    Action act("pro.russianfedora.dnscryptclienttest.getversion");
+    act.setHelperId("pro.russianfedora.dnscryptclienttest");
+    act.setArguments(args);
+    ExecuteJob *job = act.execute();
+    job->setParent(this);
+    job->setAutoDelete(true);
+    connect(job, SIGNAL(result(KJob*)),
+            this, SLOT(getVersionJobFinished(KJob*)));
+    job->start();
+}
+void MainWindow::getVersionJobFinished(KJob *_job)
+{
+    ExecuteJob *job = static_cast<ExecuteJob*>(_job);
+    if ( job!=nullptr ) {
+        serviceVersion = job->data().value("version").toString();
+    };
+    //QTextStream s(stdout);
+    //s<<"service version "<<serviceVersion<<endl;
+    statusBar()->showMessage(
+                QString("DNSCrypt-proxy service version %1").arg(serviceVersion));
 }

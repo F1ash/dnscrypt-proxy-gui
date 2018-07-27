@@ -44,7 +44,7 @@ private:
     QDBusConnection     connection;
     QStringList         resolverEntries;
     QString             currentUnitTranscription,
-                        asUser;
+                        asUser, serviceVersion;
 
     void                readSettings();
     void                setSettings();
@@ -61,6 +61,7 @@ private:
     void                findActiveServiceProcess();
     void                addServerEnrty(const QString&);
     QString             showResolverEntries();
+    void                getDNSCryptProxyServiceVersion();
 
 private slots:
     void                toSettings();
@@ -91,6 +92,7 @@ private slots:
     void                probeNextServer();
     void                stopSystemdAppUnits();
     void                changeUnitsFinished();
+    void                getVersionJobFinished(KJob*);
 };
 
 #endif // MAINWINDOW_H

@@ -1,4 +1,4 @@
-extern "C" {
+﻿extern "C" {
 #include "dns.h"
 }
 #include "dnscrypt_client_test_helper.h"
@@ -7,6 +7,7 @@ extern "C" {
 #include <private/qdbusmetatype_p.h>
 #include <private/qdbusutil_p.h>
 #include <QFile>
+#include <QProcess>
 //#include <QTextStream>
 
 struct PrimitivePair
@@ -52,14 +53,14 @@ QString readFile(const QString &_path)
     QFile f(_path);
     bool opened = f.open(QIODevice::ReadOnly);
     if ( opened ) {
-        ret = QString:: fromUtf8( f.readAll() );
+        ret = QString::fromUtf8( f.readAll() );
         f.close();
     };
     return ret;
 }
-int     writeFile(const QString &_path, const QString &entry)
+qint64  writeFile(const QString &_path, const QString &entry)
 {
-    int ret = 0;
+    qint64 ret = 0;
     QFile f(_path);
     bool opened = f.open(QIODevice::WriteOnly);
     if ( opened ) {
@@ -176,7 +177,7 @@ ActionReply DNSCryptClientTestHelper::starttest(const QVariantMap args) const
     QString servName = get_key_varmap(args, "server");
     int testPort     = get_key_varmap(args, "port").toInt();
 
-    int code = 0;
+    qint64 code = 0;
     QString entry = readFile("/etc/resolv.conf");
     if ( !entry.startsWith("nameserver 127.0.0.1\n") ) {
         entry.clear();
@@ -272,6 +273,36 @@ ActionReply DNSCryptClientTestHelper::stoptestslice(const QVariantMap args) cons
         break;
     };
 
+    reply.setData(retdata);
+    return reply;
+}
+
+ActionReply DNSCryptClientTestHelper::getversion(const QVariantMap args) const
+{
+    ActionReply reply;
+
+    const QString act = get_key_varmap(args, "action");
+    if ( act!="getVersion" ) {
+        QVariantMap err;
+        err["result"] = QString::number(-1);
+        reply.setData(err);
+        return reply;
+    };
+
+    QVariantMap retdata;
+    QString _str, _ver;
+    QProcess p;
+    p.setProgram("dnscrypt-proxy");
+    p.setArguments(QStringList()<<"--version");
+    p.start(QIODevice::ReadOnly);
+    bool ready = p.waitForReadyRead(-1);
+    if ( ready ) {
+        _str = QString::fromUtf8(p.readAllStandardOutput());
+        _ver = _str.split(" ").last();
+    };
+    p.close();
+
+    retdata["version"]          = _ver;
     reply.setData(retdata);
     return reply;
 }

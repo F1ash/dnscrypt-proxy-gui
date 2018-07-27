@@ -10,4 +10,5 @@ public:
 public slots:
     ActionReply     starttest(const QVariantMap args) const;
     ActionReply     stoptestslice(const QVariantMap args) const;
+    ActionReply     getversion(const QVariantMap args) const;
 };

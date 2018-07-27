@@ -9,3 +9,9 @@ Name=Stop DNSCrypt proxy test service by stop slice
 Description=User DNSCrypt test
 Policy=yes
 Persistence=session
+
+[pro.russianfedora.dnscryptclienttest.getversion]
+Name=Stop DNSCrypt proxy test service by stop slice
+Description=User DNSCrypt test
+Policy=yes
+Persistence=session

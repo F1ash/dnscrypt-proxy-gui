@@ -65,14 +65,14 @@ QString readFile(const QString &_path)
     QFile f(_path);
     bool opened = f.open(QIODevice::ReadOnly);
     if ( opened ) {
-        ret = QString:: fromUtf8( f.readAll() );
+        ret = QString::fromUtf8( f.readAll() );
         f.close();
     };
     return ret;
 }
-int     writeFile(const QString &_path, const QString &entry)
+qint64  writeFile(const QString &_path, const QString &entry)
 {
-    int ret = 0;
+    qint64 ret = 0;
     QFile f(_path);
     bool opened = f.open(QIODevice::WriteOnly);
     if ( opened ) {
@@ -284,7 +284,7 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
     QString servName = get_key_varmap(args, "server");
     int jobPort      = get_key_varmap(args, "port").toInt();
 
-    int code = 0;
+    qint64 code = 0;
     QString entry = readFile("/etc/resolv.conf");
     if ( entry.startsWith("nameserver 127.0.0.1\n") ) entry.clear();
     code = writeFile("/etc/resolv.conf", "nameserver 127.0.0.1\n");
@@ -399,7 +399,7 @@ ActionReply DNSCryptClientHelper::restore(const QVariantMap args) const
         return reply;
     };
 
-    int code = -1;
+    qint64 code = -1;
     QString entry = args["entry"].toString();
     code = writeFile("/etc/resolv.conf", entry);
     QVariantMap retdata;
