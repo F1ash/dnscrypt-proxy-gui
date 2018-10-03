@@ -1,5 +1,5 @@
 [pro.russianfedora.dnscryptclienttest.starttest]
-Name=Sart DNSCrypt proxy test service
+Name=Start DNSCrypt proxy test service
 Description=User DNSCrypt test
 Policy=yes
 Persistence=session
@@ -11,7 +11,13 @@ Policy=yes
 Persistence=session
 
 [pro.russianfedora.dnscryptclienttest.getversion]
-Name=Stop DNSCrypt proxy test service by stop slice
+Name=Get DNSCrypt proxy service version
+Description=User DNSCrypt test
+Policy=yes
+Persistence=session
+
+[pro.russianfedora.dnscryptclienttest.getlistofservers]
+Name=Get DNSCrypt proxy servers list and data
 Description=User DNSCrypt test
 Policy=yes
 Persistence=session

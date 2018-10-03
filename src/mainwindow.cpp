@@ -5,7 +5,7 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QStatusBar>
-//#include <QTextStream>
+#include <QTextStream>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -114,8 +114,8 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(changeUnitsFinished()));
 
     setStatusBar(new QStatusBar(this));
-    getDNSCryptProxyServiceVersion();
-    //readSettings();
+    getServiceVersion();
+    readSettings();
 }
 
 void MainWindow::readSettings()
@@ -150,6 +150,9 @@ void MainWindow::readSettings()
     } else {
         restoreGeometry(_geometry);
     };
+    if ( serviceVersion.compare("2")>0 ) {
+        getListOfServersV2();
+    }
 }
 void MainWindow::setSettings()
 {
@@ -930,8 +933,7 @@ void MainWindow::changeUnitsFinished()
         startService();
     };
 }
-
-void MainWindow::getDNSCryptProxyServiceVersion()
+void MainWindow::getServiceVersion()
 {
     QVariantMap args;
     args["action"] = "getVersion";
@@ -942,10 +944,10 @@ void MainWindow::getDNSCryptProxyServiceVersion()
     job->setParent(this);
     job->setAutoDelete(true);
     connect(job, SIGNAL(result(KJob*)),
-            this, SLOT(getVersionJobFinished(KJob*)));
+            this, SLOT(getServiceVersionFinished(KJob*)));
     job->start();
 }
-void MainWindow::getVersionJobFinished(KJob *_job)
+void MainWindow::getServiceVersionFinished(KJob *_job)
 {
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
     if ( job!=nullptr ) {
@@ -953,6 +955,37 @@ void MainWindow::getVersionJobFinished(KJob *_job)
     };
     //QTextStream s(stdout);
     //s<<"service version "<<serviceVersion<<endl;
+    if ( serviceVersion.compare("2")<0 ) {
+        if ( serviceVersion.isEmpty() ) {
+            serviceVersion.append("1.x.x");
+        };
+    };
     statusBar()->showMessage(
                 QString("DNSCrypt-proxy service version %1").arg(serviceVersion));
+}
+
+// for DNSCrypt-proxy service version 2.x.x
+void MainWindow::getListOfServersV2()
+{
+    QVariantMap args;
+    args["action"] = "getListOfServers";
+    Action act("pro.russianfedora.dnscryptclienttest.getlistofservers");
+    act.setHelperId("pro.russianfedora.dnscryptclienttest");
+    act.setArguments(args);
+    ExecuteJob *job = act.execute();
+    job->setParent(this);
+    job->setAutoDelete(true);
+    connect(job, SIGNAL(result(KJob*)),
+            this, SLOT(getListOfServersV2Finished(KJob*)));
+    job->start();
+}
+void MainWindow::getListOfServersV2Finished(KJob *_job)
+{
+    ExecuteJob *job = static_cast<ExecuteJob*>(_job);
+    QStringList _l;
+    if ( job!=nullptr ) {
+        _l= job->data().value("listOfServers").toStringList();
+    };
+    QTextStream s(stdout);
+    s<<"ListOfServers "<<_l.join("; ")<<endl;
 }

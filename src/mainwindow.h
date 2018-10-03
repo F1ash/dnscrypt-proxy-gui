@@ -61,7 +61,6 @@ private:
     void                findActiveServiceProcess();
     void                addServerEnrty(const QString&);
     QString             showResolverEntries();
-    void                getDNSCryptProxyServiceVersion();
 
 private slots:
     void                toSettings();
@@ -92,7 +91,12 @@ private slots:
     void                probeNextServer();
     void                stopSystemdAppUnits();
     void                changeUnitsFinished();
-    void                getVersionJobFinished(KJob*);
+    void                getServiceVersion();
+    void                getServiceVersionFinished(KJob*);
+
+// for DNSCrypt-proxy service version 2.x.x
+    void                getListOfServersV2();
+    void                getListOfServersV2Finished(KJob*);
 };
 
 #endif // MAINWINDOW_H

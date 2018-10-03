@@ -306,5 +306,47 @@ ActionReply DNSCryptClientTestHelper::getversion(const QVariantMap args) const
     reply.setData(retdata);
     return reply;
 }
+ActionReply DNSCryptClientTestHelper::getlistofservers(const QVariantMap args) const
+{
+    ActionReply reply;
+
+    const QString act = get_key_varmap(args, "action");
+    if ( act!="getListOfServers" ) {
+        QVariantMap err;
+        err["result"] = QString::number(-1);
+        reply.setData(err);
+        return reply;
+    };
+
+    QVariantMap retdata;
+    QString _md = readFile("/var/cache/dnscrypt-proxy/public-resolvers.md");
+    QStringList _md_lines, _list, _description;
+    _md_lines = _md.split("\n");
+    bool _records_began = false;
+    QString currServerName;
+    foreach(QString _s, _md_lines) {
+        if ( !_records_began && _s.startsWith("## ") ) {
+            _records_began = true;
+        } else if ( !_records_began ) {
+            continue;
+        };
+        if ( _s.isEmpty() ) continue;
+        if ( _s.startsWith("## ") ) {
+            currServerName.append( _s.split("## ").last() );
+            _list.append(currServerName);
+            continue;
+        };
+        _description.append(_s);
+        if ( _s.startsWith("sdns://") ) {
+            retdata[currServerName] = _description;
+            currServerName.clear();
+            _description.clear();
+        };
+    };
+
+    retdata["listOfServers"]    = _list;
+    reply.setData(retdata);
+    return reply;
+}
 
 KAUTH_HELPER_MAIN("pro.russianfedora.dnscryptclienttest", DNSCryptClientTestHelper)
