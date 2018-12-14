@@ -7,6 +7,10 @@ HelpThread::HelpThread(QObject *parent) :
 
 }
 
+void HelpThread::setServerDataMap(const QVariantMap _map)
+{
+    listOfServers = _map;
+}
 QString HelpThread::readToNextComma(QString *_str)
 {
     QString item;
@@ -86,16 +90,36 @@ void HelpThread::readServerData(QString servData)
 
 void HelpThread::run()
 {
-    QFile f("/usr/share/dnscrypt-proxy/dnscrypt-resolvers.csv");
-    bool opened = f.open(QIODevice::ReadOnly);
-    if ( opened ) {
-        QString _data = QString::fromUtf8(f.readAll());
-        QStringList _dataList = _data.split("\n");
-        _dataList.removeFirst();
-        foreach (QString s, _dataList) {
-            if ( s.isEmpty() ) continue;
-            readServerData(s);
+    if ( listOfServers.isEmpty() ) {
+        QFile f("/usr/share/dnscrypt-proxy/dnscrypt-resolvers.csv");
+        bool opened = f.open(QIODevice::ReadOnly);
+        if ( opened ) {
+            QString _data = QString::fromUtf8(f.readAll());
+            QStringList _dataList = _data.split("\n");
+            _dataList.removeFirst();
+            foreach (QString s, _dataList) {
+                if ( s.isEmpty() ) continue;
+                readServerData(s);
+            };
+            f.close();
         };
-        f.close();
-    };
+    } else {
+        foreach (QString _key, listOfServers.keys()) {
+            QStringList _srvData = listOfServers.value(_key).toStringList();
+            QVariantMap _data;
+            _data.insert("Name", _key);
+            _srvData.removeLast();
+            _data.insert("Description", _srvData.join("\n"));
+            settings.beginGroup("Responds");
+            QString respondIconName = settings.value(_key).toString();
+            if ( respondIconName.isEmpty() ) respondIconName.append("none");
+            settings.endGroup();
+            settings.beginGroup("Enables");
+            bool state = settings.value(_key, true).toBool();
+            settings.endGroup();
+            _data.insert("Respond", respondIconName);
+            _data.insert("Enable", state);
+            emit newDNSCryptSever(_data);
+        };
+    }
 }

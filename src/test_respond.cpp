@@ -1,7 +1,7 @@
 #include "test_respond.h"
 
-TestRespond::TestRespond(QWidget *parent) :
-    QWidget(parent)
+TestRespond::TestRespond(QWidget *parent, QString ver) :
+    QWidget(parent), serviceVersion(ver)
 {
     setContentsMargins(0, 0, 0, 0);
     testLabel = new QLabel(this);

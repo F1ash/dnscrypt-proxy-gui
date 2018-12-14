@@ -3,8 +3,8 @@
 #include "server_info.h"
 //#include <QTextStream>
 
-ServerPanel::ServerPanel(QWidget *parent) :
-    QWidget(parent)
+ServerPanel::ServerPanel(QWidget *parent, QString ver) :
+    QWidget(parent), serviceVersion(ver)
 {
     servLabel = new QLabel(this);
     servLabel->setPixmap(
@@ -81,10 +81,17 @@ ServerPanel::ServerPanel(QWidget *parent) :
             this, SLOT(showServerInfo()));
 }
 
+void ServerPanel::setServerDataMap(const QVariantMap _map)
+{
+    listOfServers = _map;
+}
 void ServerPanel::setLastServer(const QString &_server)
 {
     lastServer = _server;
     HelpThread *hlpThread = new HelpThread(this);
+    if ( serviceVersion.compare("2")>0 ) {
+        hlpThread->setServerDataMap(listOfServers);
+    };
     connect(hlpThread, SIGNAL(newDNSCryptSever(const QVariantMap&)),
             this, SLOT(addServer(const QVariantMap&)));
     connect(hlpThread, SIGNAL(finished()),
@@ -255,3 +262,5 @@ void ServerPanel::changeItemState(QModelIndex topLeft, QModelIndex bottomRight)
     //QTextStream s(stdout);
     //s<< _item->text()<<" " << _item->checkState() << endl;
 }
+
+// for DNSCrypt-proxy service version 2.x.x

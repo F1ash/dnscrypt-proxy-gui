@@ -10,7 +10,7 @@ class TestRespond : public QWidget
 {
     Q_OBJECT
 public:
-    explicit TestRespond(QWidget *parent = nullptr);
+    explicit TestRespond(QWidget *parent = nullptr, QString ver = "");
     TestWidget     *testWdg;
 
 signals:
@@ -19,6 +19,7 @@ signals:
     void            restoreAtCloseChanged(bool);
 
 private:
+    const QString   serviceVersion;
     QLabel         *testLabel, *nameLabel;
     QPushButton    *baseButton;
     QHBoxLayout    *headLayout;

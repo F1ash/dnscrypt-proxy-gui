@@ -30,7 +30,14 @@ MainWindow::MainWindow(QWidget *parent) :
     stopForChangeUnits = false;
     probeCount = 0;
 
-    serverWdg = new ServerPanel(this);
+    setStatusBar(new QStatusBar(this));
+    getServiceVersion();
+}
+
+void MainWindow::initWidgets()
+{
+    serverWdg = new ServerPanel(this, serviceVersion);
+    serverWdg->setServerDataMap(listOfServers);
     buttonsWdg = new ButtonPanel(this);
     infoWdg = new InfoPanel(this);
     baseLayout = new QVBoxLayout();
@@ -42,8 +49,8 @@ MainWindow::MainWindow(QWidget *parent) :
     baseWdg->setContentsMargins(0, 0, 0, 0);
     baseWdg->setLayout(baseLayout);
 
-    appSettings = new AppSettings(this);
-    testRespond = new TestRespond(this);
+    appSettings = new AppSettings(this, serviceVersion);
+    testRespond = new TestRespond(this, serviceVersion);
 
     commonWdg = new QStackedWidget(this);
     commonWdg->addWidget(baseWdg);
@@ -113,8 +120,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(appSettings, SIGNAL(changeUnitsFinished()),
             this, SLOT(changeUnitsFinished()));
 
-    setStatusBar(new QStatusBar(this));
-    getServiceVersion();
     readSettings();
 }
 
@@ -150,9 +155,6 @@ void MainWindow::readSettings()
     } else {
         restoreGeometry(_geometry);
     };
-    if ( serviceVersion.compare("2")>0 ) {
-        getListOfServersV2();
-    }
 }
 void MainWindow::setSettings()
 {
@@ -945,7 +947,7 @@ void MainWindow::getServiceVersion()
     job->setAutoDelete(true);
     connect(job, SIGNAL(result(KJob*)),
             this, SLOT(getServiceVersionFinished(KJob*)));
-    job->start();
+    job->exec();
 }
 void MainWindow::getServiceVersionFinished(KJob *_job)
 {
@@ -953,8 +955,6 @@ void MainWindow::getServiceVersionFinished(KJob *_job)
     if ( job!=nullptr ) {
         serviceVersion = job->data().value("version").toString();
     };
-    //QTextStream s(stdout);
-    //s<<"service version "<<serviceVersion<<endl;
     if ( serviceVersion.compare("2")<0 ) {
         if ( serviceVersion.isEmpty() ) {
             serviceVersion.append("1.x.x");
@@ -962,6 +962,9 @@ void MainWindow::getServiceVersionFinished(KJob *_job)
     };
     statusBar()->showMessage(
                 QString("DNSCrypt-proxy service version %1").arg(serviceVersion));
+    if ( serviceVersion.compare("2")>0 ) {
+        getListOfServersV2();
+    };
 }
 
 // for DNSCrypt-proxy service version 2.x.x
@@ -981,11 +984,17 @@ void MainWindow::getListOfServersV2()
 }
 void MainWindow::getListOfServersV2Finished(KJob *_job)
 {
+    //QTextStream s(stdout);
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
     QStringList _l;
     if ( job!=nullptr ) {
-        _l= job->data().value("listOfServers").toStringList();
+        _l = job->data().value("listOfServers").toStringList();
+        foreach (QString _s, _l) {
+            listOfServers.insert(_s, job->data().value(_s));
+            //s<<"Server: "<<_s<<endl;
+            //s<<listOfServers.value(_s).toStringList().join(";")<<endl;
+            //s<<endl;
+        };
     };
-    QTextStream s(stdout);
-    s<<"ListOfServers "<<_l.join("; ")<<endl;
+    initWidgets();
 }

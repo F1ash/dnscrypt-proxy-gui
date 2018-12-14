@@ -20,7 +20,7 @@ class AppSettings : public QWidget
 {
     Q_OBJECT
 public:
-    explicit AppSettings(QWidget *parent = nullptr);
+    explicit AppSettings(QWidget *parent = nullptr, QString ver = "");
     PortSettings   *jobPort, *testPort;
     QPushButton    *applyNewPortsBtn;
     void            setUserName(QString);
@@ -45,6 +45,7 @@ signals:
     void            changeUnitsFinished();
 
 private:
+    const QString   serviceVersion;
     QLabel         *setLabel, *nameLabel, *advancedLabel;
     QLineEdit      *asUserLine;
     QPushButton    *baseButton, *restoreDefaultBtn;

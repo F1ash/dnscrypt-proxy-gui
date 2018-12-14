@@ -1,8 +1,8 @@
 #include "app_settings.h"
 //#include <QTextStream>
 
-AppSettings::AppSettings(QWidget *parent) :
-    QWidget(parent)
+AppSettings::AppSettings(QWidget *parent, QString ver) :
+    QWidget(parent), serviceVersion(ver)
 {
     setLabel = new QLabel(this);
     setLabel->setPixmap(QIcon::fromTheme(

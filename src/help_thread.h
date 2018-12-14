@@ -10,6 +10,7 @@ class HelpThread : public QThread
     Q_OBJECT
 public:
     explicit HelpThread(QObject *parent = nullptr);
+    void            setServerDataMap(const QVariantMap);
 
 signals:
     void            newDNSCryptSever(const QVariantMap&);
@@ -20,6 +21,7 @@ private:
     QString         readToNextQuotes(QString*);
     QString         readNextItem(QString*);
     void            readServerData(QString);
+    QVariantMap     listOfServers;
 
 private slots:
     void            run();

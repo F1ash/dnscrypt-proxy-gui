@@ -13,7 +13,8 @@ class ServerPanel : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ServerPanel(QWidget *parent = nullptr);
+    explicit ServerPanel(QWidget *parent = nullptr, QString ver = "");
+    void             setServerDataMap(const QVariantMap);
     void             setLastServer(const QString&);
     QString          getCurrentServer() const;
     QString          getCurrentRespondIconName() const;
@@ -34,6 +35,7 @@ signals:
     void             serverActivated();
 
 private:
+    const QString    serviceVersion;
     QString          lastServer;
     QLabel          *servLabel;
     QComboBox       *servList;
@@ -44,6 +46,7 @@ private:
                     *servItemModel;
     QList<QStandardItem*>
                      servItems;
+    QVariantMap      listOfServers;
 
 public slots:
     void             changeAppState(SRV_STATUS);

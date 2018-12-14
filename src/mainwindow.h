@@ -45,7 +45,9 @@ private:
     QStringList         resolverEntries;
     QString             currentUnitTranscription,
                         asUser, serviceVersion;
+    QVariantMap         listOfServers;
 
+    void                initWidgets();
     void                readSettings();
     void                setSettings();
     void                initTrayIcon();
