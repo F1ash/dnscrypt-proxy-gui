@@ -461,4 +461,36 @@ ActionReply DNSCryptClientHelper::stopslice(const QVariantMap args) const
     return reply;
 }
 
+ActionReply DNSCryptClientHelper::startv2(const QVariantMap args) const
+{
+    ActionReply reply;
+
+    const QString act = get_key_varmap(args, "action");
+    if ( act!="start" ) {
+        QVariantMap err;
+        err["result"] = QString::number(-1);
+        reply.setData(err);
+        return reply;
+    };
+    QVariantMap retdata;
+    reply.setData(retdata);
+    return reply;
+}
+
+ActionReply DNSCryptClientHelper::stopv2(const QVariantMap args) const
+{
+    ActionReply reply;
+
+    const QString act = get_key_varmap(args, "action");
+    if ( act!="stop" ) {
+        QVariantMap err;
+        err["result"] = QString::number(-1);
+        reply.setData(err);
+        return reply;
+    };
+    QVariantMap retdata;
+    reply.setData(retdata);
+    return reply;
+}
+
 KAUTH_HELPER_MAIN("pro.russianfedora.dnscryptclient", DNSCryptClientHelper)

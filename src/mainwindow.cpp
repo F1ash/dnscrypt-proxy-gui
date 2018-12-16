@@ -579,6 +579,9 @@ void MainWindow::startServiceJobFinished(KJob *_job)
         return;
     };
     serverWdg->changeServerInfo();
+    if ( serviceVersion.compare("2")>0 ) {
+        return;
+    };
     switch (checkSliceStatus()) {
     case  1:
         emit serviceStateChanged(ACTIVE);
@@ -610,6 +613,9 @@ void MainWindow::stopServiceJobFinished(KJob *_job)
                    KNotification::Notification,
                    "DNSCryptClient",
                    QString("Stop status unknown."));
+    };
+    if ( serviceVersion.compare("2")>0 ) {
+        return;
     };
     switch (checkSliceStatus()) {
     case -2:
@@ -711,6 +717,10 @@ void MainWindow::startService()
 {
     probeCount = 0;
     stopManually = false;
+    if ( serviceVersion.compare("2")>0 ) {
+        startServiceV2();
+        return;
+    };
     switch (checkSliceStatus()) {
     case -2:
     case  0:     // ready for start
@@ -737,6 +747,10 @@ void MainWindow::stopService()
 {
     probeCount = 0;
     stopManually = true;
+    if ( serviceVersion.compare("2")>0 ) {
+        stopServiceV2();
+        return;
+    };
     switch (checkSliceStatus()) {
     case -2:
     case  0:    // stop slice or service unnecessary
@@ -997,4 +1011,34 @@ void MainWindow::getListOfServersV2Finished(KJob *_job)
         };
     };
     initWidgets();
+}
+void MainWindow::startServiceV2()
+{
+    QVariantMap args;
+    args["action"] = "start";
+    args["server"] = serverWdg->getCurrentServer();
+    Action act("pro.russianfedora.dnscryptclient.startv2");
+    act.setHelperId("pro.russianfedora.dnscryptclient");
+    act.setArguments(args);
+    ExecuteJob *job = act.execute();
+    job->setParent(this);
+    job->setAutoDelete(true);
+    connect(job, SIGNAL(result(KJob*)),
+            this, SLOT(startServiceJobFinished(KJob*)));
+    job->start();
+}
+void MainWindow::stopServiceV2()
+{
+    disconnectFromClientService();
+    QVariantMap args;
+    args["action"] = "stop";
+    Action act("pro.russianfedora.dnscryptclient.stopv2");
+    act.setHelperId("pro.russianfedora.dnscryptclient");
+    act.setArguments(args);
+    ExecuteJob *job = act.execute();
+    job->setParent(this);
+    job->setAutoDelete(true);
+    connect(job, SIGNAL(result(KJob*)),
+            this, SLOT(stopServiceJobFinished(KJob*)));
+    job->start();
 }

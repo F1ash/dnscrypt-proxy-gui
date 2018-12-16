@@ -13,4 +13,6 @@ public slots:
     ActionReply     stop(const QVariantMap args) const;
     ActionReply     restore(const QVariantMap args) const;
     ActionReply     stopslice(const QVariantMap args) const;
+    ActionReply     startv2(const QVariantMap args) const;
+    ActionReply     stopv2(const QVariantMap args) const;
 };

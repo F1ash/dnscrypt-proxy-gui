@@ -262,5 +262,3 @@ void ServerPanel::changeItemState(QModelIndex topLeft, QModelIndex bottomRight)
     //QTextStream s(stdout);
     //s<< _item->text()<<" " << _item->checkState() << endl;
 }
-
-// for DNSCrypt-proxy service version 2.x.x
