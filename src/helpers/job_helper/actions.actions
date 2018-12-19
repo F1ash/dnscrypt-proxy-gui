@@ -27,3 +27,15 @@ Name=Stop DNSCrypt proxy service by stop slice
 Description=User DNSCrypt
 Policy=yes
 Persistence=session
+
+[pro.russianfedora.dnscryptclient.startv2]
+Name=Start DNSCrypt proxy ver.2.x.x service
+Description=User DNSCrypt
+Policy=yes
+Persistence=session
+
+[pro.russianfedora.dnscryptclient.stopv2]
+Name=Stop DNSCrypt proxy ver.2.x.x service
+Description=User DNSCrypt
+Policy=yes
+Persistence=session

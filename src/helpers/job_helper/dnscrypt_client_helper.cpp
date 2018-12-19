@@ -472,7 +472,75 @@ ActionReply DNSCryptClientHelper::startv2(const QVariantMap args) const
         reply.setData(err);
         return reply;
     };
+
+    QDBusMessage msg = QDBusMessage::createMethodCall(
+                "org.freedesktop.systemd1",
+                "/org/freedesktop/systemd1",
+                "org.freedesktop.systemd1.Manager",
+                "StopUnit");
+    QList<QVariant> _args;
+    _args<<"dnscrypt-proxy.service"<<"fail";
+    msg.setArguments(_args);
+    QDBusMessage res = QDBusConnection::systemBus()
+            .call(msg, QDBus::Block);
+
+    const QString curr_srv = get_key_varmap(args, "server");
+    qint64 code = 0;
+    QString entry = readFile("/etc/dnscrypt-proxy/dnscrypt-proxy.toml");
+    QStringList _data, _new_data;
+    _data = entry.split("\n");
+    foreach(QString _s, _data) {
+        if ( _s.startsWith("server_names") ) {
+            QStringList _parts = _s.split(" = ");
+            _s.clear();
+            _s.append(_parts.first());
+            _s.append(" = ");
+            _s.append(QString("['%1']").arg(curr_srv));
+        };
+        _new_data.append(_s);
+    };
+    code = writeFile("/etc/dnscrypt-proxy/dnscrypt-proxy.toml", _new_data.join("\n"));
+    entry = readFile("/etc/resolv.conf");
+    if ( entry.startsWith("nameserver 127.0.0.1\n") ) entry.clear();
+    code = writeFile("/etc/resolv.conf", "nameserver 127.0.0.1\n");
+
     QVariantMap retdata;
+    msg = QDBusMessage::createMethodCall(
+                "org.freedesktop.systemd1",
+                "/org/freedesktop/systemd1",
+                "org.freedesktop.systemd1.Manager",
+                "StartUnit");
+    //QList<QVariant> _args;
+    _args.clear();
+    _args<<"dnscrypt-proxy.service"<<"fail";
+    msg.setArguments(_args);
+    res = QDBusConnection::systemBus()
+            .call(msg, QDBus::Block);
+    QString str;
+    foreach (QVariant arg, res.arguments()) {
+        str.append(QDBusUtil::argumentToString(arg));
+        str.append("\n");
+    };
+
+    retdata["msg"]          = str;
+    long unsigned int t     = 0;
+    int domain = (curr_srv.endsWith("ipv6") || curr_srv.contains("ip6")) ? 6 : 4;
+    switch (res.type()) {
+    case QDBusMessage::ReplyMessage:
+        retdata["entry"]    = entry;
+        retdata["code"]     = QString::number(0);
+        retdata["answ"]     = QString::number(
+                    is_responsible(&t, 53, domain)); // used default DNS port
+        retdata["resp"]     = getRespondIconName(qreal(t)/1000000);
+        break;
+    case QDBusMessage::ErrorMessage:
+    default:
+        retdata["entry"]    = entry;
+        retdata["code"]     = QString::number(-1);
+        retdata["err"]      = res.errorMessage();
+        break;
+    };
+
     reply.setData(retdata);
     return reply;
 }
@@ -488,7 +556,38 @@ ActionReply DNSCryptClientHelper::stopv2(const QVariantMap args) const
         reply.setData(err);
         return reply;
     };
+
     QVariantMap retdata;
+    QDBusMessage msg = QDBusMessage::createMethodCall(
+                "org.freedesktop.systemd1",
+                "/org/freedesktop/systemd1",
+                "org.freedesktop.systemd1.Manager",
+                "StopUnit");
+    QList<QVariant> _args;
+    _args<<"dnscrypt-proxy.service"<<"fail";
+    msg.setArguments(_args);
+    QDBusMessage res = QDBusConnection::systemBus()
+            .call(msg, QDBus::Block);
+    QString str;
+    foreach (QVariant arg, res.arguments()) {
+        str.append(QDBusUtil::argumentToString(arg));
+        str.append("\n");
+    };
+    retdata["msg"]          = str;
+    switch (res.type()) {
+    case QDBusMessage::ReplyMessage:
+        retdata["code"]     = QString::number(0);
+        break;
+    case QDBusMessage::ErrorMessage:
+        retdata["code"]     = QString::number(-1);
+        retdata["err"]      = res.errorMessage();
+        break;
+    default:
+        retdata["msg"]      = "Stop failed";
+        retdata["code"]     = QString::number(-1);
+        break;
+    };
+
     reply.setData(retdata);
     return reply;
 }
