@@ -5,7 +5,7 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QStatusBar>
-#include <QTextStream>
+//#include <QTextStream>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -279,10 +279,16 @@ void MainWindow::checkServiceStatus()
 int  MainWindow::checkSliceStatus()
 {
     //QTextStream s(stdout);
-    int ret = -2;
+    QString _path;
+    if ( serviceVersion.compare("2")>0 ) {
+        _path = "/org/freedesktop/systemd1/unit/dnscrypt_2dproxy_2eservice";
+    } else {
+        _path = "/org/freedesktop/systemd1/unit/system_2dDNSCryptClient_2eslice";
+    };
+    int ret = -1; // default the error state for reinit check status
     QDBusMessage msg = QDBusMessage::createMethodCall(
                 "org.freedesktop.systemd1",
-                "/org/freedesktop/systemd1/unit/system_2dDNSCryptClient_2eslice",
+                _path,
                 "org.freedesktop.DBus.Properties",
                 "Get");
     QVariantList _args;
@@ -304,6 +310,9 @@ int  MainWindow::checkSliceStatus()
         // service failed; to STOP_SLICE
         return 0;
     } else if ( status=="active" ) {
+        if ( serviceVersion.compare("2")>0 ) {
+            return 1;
+        };
         // if active then check task count
         _args.clear();
         _args<<"org.freedesktop.systemd1.Slice"<<"TasksCurrent";
@@ -346,7 +355,7 @@ int  MainWindow::checkSliceStatus()
             break;
         };
     } else {
-        ret = -2; // slice not exist
+        ret = -2; // slice not exist or another status
     };
     //s << "ret "<<ret << endl;
     return ret;
@@ -354,10 +363,15 @@ int  MainWindow::checkSliceStatus()
 void MainWindow::startServiceProcess()
 {
     QVariantMap args;
+    Action act;
     args["action"] = "start";
-    args["port"]   = jobPort;
+    if ( serviceVersion.compare("2")>0 ) {
+        act.setName("pro.russianfedora.dnscryptclient.startv2");
+    } else {
+        args["port"]   = jobPort;
+        act.setName("pro.russianfedora.dnscryptclient.start");
+    };
     args["server"] = serverWdg->getCurrentServer();
-    Action act("pro.russianfedora.dnscryptclient.start");
     act.setHelperId("pro.russianfedora.dnscryptclient");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
@@ -373,9 +387,14 @@ void MainWindow::stopServiceProcess()
     // for stop and remove instantiated services used 'stopSliceProcess'
     disconnectFromClientService();
     QVariantMap args;
+    Action act;
     args["action"] = "stop";
-    args["server"] = serverWdg->getCurrentServer();
-    Action act("pro.russianfedora.dnscryptclient.stop");
+    if ( serviceVersion.compare("2")>0 ) {
+        act.setName("pro.russianfedora.dnscryptclient.stopv2");
+    } else {
+        act.setName("pro.russianfedora.dnscryptclient.stop");
+        args["server"] = serverWdg->getCurrentServer();
+    };
     act.setHelperId("pro.russianfedora.dnscryptclient");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
@@ -389,8 +408,14 @@ void MainWindow::stopSliceProcess()
 {
     disconnectFromClientService();
     QVariantMap args;
-    args["action"] = "stopslice";
-    Action act("pro.russianfedora.dnscryptclient.stopslice");
+    Action act;
+    if ( serviceVersion.compare("2")>0 ) {
+        args["action"] = "stop";
+        act.setName("pro.russianfedora.dnscryptclient.stopv2");
+    } else {
+        args["action"] = "stopslice";
+        act.setName("pro.russianfedora.dnscryptclient.stopslice");
+    };
     act.setHelperId("pro.russianfedora.dnscryptclient");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
@@ -579,9 +604,7 @@ void MainWindow::startServiceJobFinished(KJob *_job)
         return;
     };
     serverWdg->changeServerInfo();
-    if ( serviceVersion.compare("2")>0 ) {
-        return;
-    };
+
     switch (checkSliceStatus()) {
     case  1:
         emit serviceStateChanged(ACTIVE);
@@ -614,9 +637,7 @@ void MainWindow::stopServiceJobFinished(KJob *_job)
                    "DNSCryptClient",
                    QString("Stop status unknown."));
     };
-    if ( serviceVersion.compare("2")>0 ) {
-        return;
-    };
+
     switch (checkSliceStatus()) {
     case -2:
     case  0:
@@ -717,10 +738,6 @@ void MainWindow::startService()
 {
     probeCount = 0;
     stopManually = false;
-    if ( serviceVersion.compare("2")>0 ) {
-        startServiceV2();
-        return;
-    };
     switch (checkSliceStatus()) {
     case -2:
     case  0:     // ready for start
@@ -747,10 +764,6 @@ void MainWindow::stopService()
 {
     probeCount = 0;
     stopManually = true;
-    if ( serviceVersion.compare("2")>0 ) {
-        stopServiceV2();
-        return;
-    };
     switch (checkSliceStatus()) {
     case -2:
     case  0:    // stop slice or service unnecessary
@@ -786,12 +799,10 @@ void MainWindow::closeEvent(QCloseEvent *ev)
     ev->accept();
     stopManually = true;
     testRespond->testWdg->stopTest();
+    stopSliceProcess();
     if ( restoreAtClose && srvStatus!=RESTORED ) {
         show();
-        stopSliceProcess();
         restoreSettingsProcess();
-    } else {
-        stopSliceProcess();
     };
     setSettings();
     trayIcon->hide();
@@ -1011,34 +1022,4 @@ void MainWindow::getListOfServersV2Finished(KJob *_job)
         };
     };
     initWidgets();
-}
-void MainWindow::startServiceV2()
-{
-    QVariantMap args;
-    args["action"] = "start";
-    args["server"] = serverWdg->getCurrentServer();
-    Action act("pro.russianfedora.dnscryptclient.startv2");
-    act.setHelperId("pro.russianfedora.dnscryptclient");
-    act.setArguments(args);
-    ExecuteJob *job = act.execute();
-    job->setParent(this);
-    job->setAutoDelete(true);
-    connect(job, SIGNAL(result(KJob*)),
-            this, SLOT(startServiceJobFinished(KJob*)));
-    job->start();
-}
-void MainWindow::stopServiceV2()
-{
-    disconnectFromClientService();
-    QVariantMap args;
-    args["action"] = "stop";
-    Action act("pro.russianfedora.dnscryptclient.stopv2");
-    act.setHelperId("pro.russianfedora.dnscryptclient");
-    act.setArguments(args);
-    ExecuteJob *job = act.execute();
-    job->setParent(this);
-    job->setAutoDelete(true);
-    connect(job, SIGNAL(result(KJob*)),
-            this, SLOT(stopServiceJobFinished(KJob*)));
-    job->start();
 }

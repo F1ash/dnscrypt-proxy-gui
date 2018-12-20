@@ -99,8 +99,6 @@ private slots:
 // for DNSCrypt-proxy service version 2.x.x
     void                getListOfServersV2();
     void                getListOfServersV2Finished(KJob*);
-    void                startServiceV2();
-    void                stopServiceV2();
 };
 
 #endif // MAINWINDOW_H

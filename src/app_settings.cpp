@@ -74,6 +74,10 @@ AppSettings::AppSettings(QWidget *parent, QString ver) :
     jobPort->setName("port for receive DNS");
     testPort = new PortSettings(this, TEST_PORT);
     testPort->setName("port for testing server's responds");
+    if ( serviceVersion.compare("2")>0 ) {
+        asUserWdg->hide();
+        jobPort->hide();
+    };
 
     restoreDefaultBtn = new QPushButton(
                 "Restore default",
