@@ -989,6 +989,8 @@ void MainWindow::getServiceVersionFinished(KJob *_job)
                 QString("DNSCrypt-proxy service version %1").arg(serviceVersion));
     if ( serviceVersion.compare("2")>0 ) {
         getListOfServersV2();
+    } else {
+        initWidgets();
     };
 }
 
