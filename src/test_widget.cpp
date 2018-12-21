@@ -1,8 +1,8 @@
 #include "test_widget.h"
 //#include <QTextStream>
 
-TestWidget::TestWidget(QWidget *parent) :
-    QWidget(parent)
+TestWidget::TestWidget(QWidget *parent, QString ver, QString cfg) :
+    QWidget(parent), serviceVersion(ver), cfg_data(cfg)
 {
     processing = false;
     active = false;
@@ -85,7 +85,13 @@ void TestWidget::checkServerRespond()
     args["action"] = "startTest";
     args["port"]   = testPort;
     args["server"] = list.at(counter);
-    Action act("pro.russianfedora.dnscryptclienttest.starttest");
+    Action act;
+    if ( serviceVersion.compare("2")>0 ) {
+        args["cfg_data"] = cfg_data;
+        act.setName("pro.russianfedora.dnscryptclienttest.starttestv2");
+    } else {
+        act.setName("pro.russianfedora.dnscryptclienttest.starttest");
+    };
     act.setHelperId("pro.russianfedora.dnscryptclienttest");
     act.setArguments(args);
     ExecuteJob *job = act.execute();
@@ -100,7 +106,8 @@ void TestWidget::stopServiceSlice()
 {
     //QTextStream s(stdout);
     QVariantMap args;
-    args["action"] = "stopTestSlice";
+    args["action"]  = "stopTestSlice";
+    args["version"] = serviceVersion;
     Action act("pro.russianfedora.dnscryptclienttest.stoptestslice");
     act.setHelperId("pro.russianfedora.dnscryptclienttest");
     act.setArguments(args);

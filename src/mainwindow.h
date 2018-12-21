@@ -44,7 +44,7 @@ private:
     QDBusConnection     connection;
     QStringList         resolverEntries;
     QString             currentUnitTranscription,
-                        asUser, serviceVersion;
+                        asUser, serviceVersion, cfg_data;
     QVariantMap         listOfServers;
 
     void                initWidgets();

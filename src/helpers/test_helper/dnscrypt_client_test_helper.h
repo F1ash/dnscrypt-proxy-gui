@@ -12,4 +12,5 @@ public slots:
     ActionReply     stoptestslice(const QVariantMap args) const;
     ActionReply     getversion(const QVariantMap args) const;
     ActionReply     getlistofservers(const QVariantMap args) const;
+    ActionReply     starttestv2(const QVariantMap args) const;
 };

@@ -29,7 +29,7 @@ BuildRequires: extra-cmake-modules
 BuildRequires: systemd
 
 %description
-The Qt/KF5 GUI wrapper over dnscrypt-proxy
+The Qt/KF5 GUI wrapper over dnscrypt-proxy (version 1, 2)
 for encrypting all DNS traffic between the user and DNS resolvers,
 preventing any spying, spoofing or man-in-the-middle attacks.
 
@@ -91,6 +91,7 @@ fi
 %{_datadir}/knotifications5/%{app_name}.notifyrc
 %{_unitdir}/%{app_name}@.service
 %{_unitdir}/%{app_name}_test@.service
+%{_unitdir}/%{app_name}_test_v2.service
 %{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog

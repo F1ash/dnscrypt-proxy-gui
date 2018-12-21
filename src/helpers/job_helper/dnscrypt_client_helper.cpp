@@ -487,7 +487,7 @@ ActionReply DNSCryptClientHelper::startv2(const QVariantMap args) const
     QDBusMessage res = QDBusConnection::systemBus()
             .call(msg, QDBus::Block);
 
-    const QString curr_srv = get_key_varmap(args, "server");
+    const QString servName = get_key_varmap(args, "server");
     qint64 code = 0;
     QString entry = readFile("/etc/dnscrypt-proxy/dnscrypt-proxy.toml");
     QStringList _data, _new_data;
@@ -498,7 +498,7 @@ ActionReply DNSCryptClientHelper::startv2(const QVariantMap args) const
             _s.clear();
             _s.append(_parts.first());
             _s.append(" = ");
-            _s.append(QString("['%1']").arg(curr_srv));
+            _s.append(QString("['%1']").arg(servName));
         };
         _new_data.append(_s);
     };
@@ -531,7 +531,7 @@ ActionReply DNSCryptClientHelper::startv2(const QVariantMap args) const
 
     retdata["msg"]          = str;
     long unsigned int t     = 0;
-    int domain = (curr_srv.endsWith("ipv6") || curr_srv.contains("ip6")) ? 6 : 4;
+    int domain = (servName.endsWith("ipv6") || servName.contains("ip6")) ? 6 : 4;
     switch (res.type()) {
     case QDBusMessage::ReplyMessage:
         retdata["entry"]    = entry;

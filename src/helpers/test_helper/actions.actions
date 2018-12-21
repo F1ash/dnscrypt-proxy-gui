@@ -21,3 +21,9 @@ Name=Get DNSCrypt proxy servers list and data
 Description=User DNSCrypt test
 Policy=yes
 Persistence=session
+
+[pro.russianfedora.dnscryptclienttest.starttestv2]
+Name=Start DNSCrypt v2 proxy test service
+Description=User DNSCrypt test
+Policy=yes
+Persistence=session

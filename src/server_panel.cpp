@@ -57,9 +57,7 @@ ServerPanel::ServerPanel(QWidget *parent, QString ver) :
                     QSizePolicy::Ignored,
                     QSizePolicy::Ignored));
     testRespond->setContentsMargins(0, 0, 0, 0);
-    if ( serviceVersion.compare("2")>0 ) {
-        testRespond->setDisabled(true);
-    };
+
     baseLayout = new QHBoxLayout(this);
     baseLayout->addWidget(servLabel, 1);
     baseLayout->addWidget(servList, 6);

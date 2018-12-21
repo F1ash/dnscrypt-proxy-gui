@@ -1,0 +1,16 @@
+[Unit]
+Description=DNSCrypt-proxy v2 client
+Documentation=https://github.com/jedisct1/dnscrypt-proxy/wiki
+
+After=network-online.target
+Wants=network-online.target
+
+Before=nss-lookup.target
+Wants=nss-lookup.target
+
+[Service]
+NonBlocking=true
+ExecStart=/usr/bin/dnscrypt-proxy --config /tmp/DNSCryptClientV2.toml
+
+[Install]
+

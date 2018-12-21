@@ -50,7 +50,7 @@ void MainWindow::initWidgets()
     baseWdg->setLayout(baseLayout);
 
     appSettings = new AppSettings(this, serviceVersion);
-    testRespond = new TestRespond(this, serviceVersion);
+    testRespond = new TestRespond(this, serviceVersion, cfg_data);
 
     commonWdg = new QStackedWidget(this);
     commonWdg->addWidget(baseWdg);
@@ -1022,6 +1022,7 @@ void MainWindow::getListOfServersV2Finished(KJob *_job)
             //s<<listOfServers.value(_s).toStringList().join(";")<<endl;
             //s<<endl;
         };
+        cfg_data = job->data().value("cfg_data").toString();
     };
     initWidgets();
 }

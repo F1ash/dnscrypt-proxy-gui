@@ -1,6 +1,6 @@
 #include "test_respond.h"
 
-TestRespond::TestRespond(QWidget *parent, QString ver) :
+TestRespond::TestRespond(QWidget *parent, QString ver, QString cfg) :
     QWidget(parent), serviceVersion(ver)
 {
     setContentsMargins(0, 0, 0, 0);
@@ -40,7 +40,7 @@ TestRespond::TestRespond(QWidget *parent, QString ver) :
     headWdg->setContentsMargins(0, 0, 0, 0);
     headWdg->setLayout(headLayout);
 
-    testWdg = new TestWidget(this);
+    testWdg = new TestWidget(this, serviceVersion, cfg);
 
     commonLayout = new QVBoxLayout(this);
     commonLayout->addWidget(headWdg, 1);

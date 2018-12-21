@@ -13,7 +13,9 @@ class TestWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit TestWidget(QWidget *parent = nullptr);
+    explicit TestWidget(QWidget *parent = nullptr,
+                        QString ver = "",
+                        QString cfg = "");
     void                setServerList(QStringList);
     void                setTestPort(int);
     bool                isActive() const;
@@ -35,6 +37,7 @@ private:
     QVBoxLayout        *commonLayout;
 
     QStringList         list;
+    QString             serviceVersion, cfg_data;
 
 private slots:
     void                startTest();
