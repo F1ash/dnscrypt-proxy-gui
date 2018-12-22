@@ -234,6 +234,8 @@ ActionReply DNSCryptClientReloadHelper::setunits(const QVariantMap args) const
     QString testUnitPath = QString("%1%2_test@.service")
             .arg(unitPath).arg(UnitName);
 
+    QString serviceVersion = get_key_varmap(args, "version");
+
     QString _User = get_key_varmap(args, "User");
     bool asUser = !_User.isEmpty();
 
@@ -247,7 +249,7 @@ ActionReply DNSCryptClientReloadHelper::setunits(const QVariantMap args) const
                 readFile(testUnitPath), testPort);
 
     QVariantMap retdata;
-    if ( !jobUnitText.isEmpty() ) {
+    if ( serviceVersion.compare("2")<0 && !jobUnitText.isEmpty() ) {
         retdata["jobUnit"]      = QString::number(
                     writeFile(jobUnitPath, jobUnitText));
         // reload unit
@@ -278,11 +280,14 @@ ActionReply DNSCryptClientReloadHelper::setunits(const QVariantMap args) const
             retdata["err"]      = res.errorMessage();
             break;
         };
+    } else if ( serviceVersion.compare("2")>0 ) {
+        retdata["code"]         = QString::number(0);
+        retdata["jobUnit"]      = QString::number(1);
     } else {
         retdata["jobUnit"]      = QString::number(0);
         retdata["code"]         = QString::number(-1);
     };
-    if ( !testUnitText.isEmpty() ) {
+    if ( serviceVersion.compare("2")<0 && !testUnitText.isEmpty() ) {
         retdata["testUnit"]     = QString::number(
                     writeFile(testUnitPath, testUnitText));
         // reload unit
@@ -313,6 +318,9 @@ ActionReply DNSCryptClientReloadHelper::setunits(const QVariantMap args) const
             retdata["err"]      = res.errorMessage();
             break;
         };
+    } else if ( serviceVersion.compare("2")>0 ) {
+        retdata["code"]         = QString::number(0);
+        retdata["testUnit"]     = QString::number(1);
     } else {
         retdata["testUnit"]     = QString::number(0);
         retdata["code"]         = QString::number(-1);

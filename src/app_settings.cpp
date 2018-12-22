@@ -189,6 +189,7 @@ void AppSettings::runChangeUnits()
     //s << "runChangeUnits" << endl;
     QVariantMap args;
     args["action"]      = "setUnits";
+    args["version"]     = serviceVersion;
     args["JobPort"]     = jobPort->getPort();
     args["TestPort"]    = testPort->getPort();
     if ( asUser->isChecked() ) {

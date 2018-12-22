@@ -384,6 +384,8 @@ ActionReply DNSCryptClientTestHelper::starttestv2(const QVariantMap args) const
     _tmp_cfg.setFileName("/tmp/DNSCryptClientV2.toml");
     _tmp_cfg.setAutoRemove(false);
     _tmp_cfg.open();
+    int domain = (servName.endsWith("ipv6") || servName.contains("ip6")) ? 6 : 4;
+    QString _loopback = (domain==6) ? "[::1]" : "127.0.0.1";
     QStringList _cfg;
     foreach(QString s, cfg_data.split("\n")) {
         if ( s.startsWith("server_names") ) {
@@ -398,7 +400,7 @@ ActionReply DNSCryptClientTestHelper::starttestv2(const QVariantMap args) const
             s.clear();
             s.append(_parts.first());
             s.append(" = ");
-            s.append(QString("['127.0.0.1:%1']").arg(testPort));
+            s.append(QString("['%1:%2']").arg(_loopback).arg(testPort));
         };
         _cfg.append(s);
     };
@@ -425,7 +427,6 @@ ActionReply DNSCryptClientTestHelper::starttestv2(const QVariantMap args) const
         };
         retdata["msg"]          = str;
         long unsigned int t     = 0;
-        int domain = (servName.endsWith("ipv6") || servName.contains("ip6")) ? 6 : 4;
         switch (res.type()) {
         case QDBusMessage::ReplyMessage:
             retdata["entry"]    = entry;

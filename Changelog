@@ -65,3 +65,7 @@ some enhancements
 v.1.11.15 :
 some enhancements
     ( fixed issues #14);
+
+v.1.20.15 :
+adopted for using dnscrypt-proxy v2
+    ( fixed issues #9);
