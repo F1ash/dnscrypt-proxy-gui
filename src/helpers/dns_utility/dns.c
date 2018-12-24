@@ -96,19 +96,27 @@ uint16_t is_responsible(unsigned long *t, int _port, int _family)
 
     //printf("Resolving %s" , host);
 
-    struct sockaddr_in dest;
-
-    int s = socket(AF_INET , SOCK_DGRAM , IPPROTO_UDP); //UDP packet for DNS queries
+    int s = socket((_family==6)? AF_INET6:AF_INET, SOCK_DGRAM, IPPROTO_UDP); //UDP packet for DNS queries
     struct timeval tv;
     tv.tv_sec  = 3;
     tv.tv_usec = 0;
     if (setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
         //perror(" setsocketopt Error");
     }
-    dest.sin_family = AF_INET;
-    dest.sin_port = htons(_port);
-    //dns servers resolver
-    dest.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    struct sockaddr_in dest;
+    struct sockaddr_in6 dest6;
+    if (_family==4) {
+        dest.sin_family = AF_INET;
+        dest.sin_port = htons(_port);
+        //dns servers resolver
+        dest.sin_addr.s_addr = inet_addr("127.0.0.1");
+    } else {
+        dest6.sin6_family = AF_INET6;
+        dest6.sin6_port = htons(_port);
+        //dns servers resolver
+        inet_pton(AF_INET6, "::1", &(dest6.sin6_addr));
+    }
 
     //Set the DNS structure to standard queries
     dns = (struct DNS_HEADER *)&buf;
@@ -148,8 +156,8 @@ uint16_t is_responsible(unsigned long *t, int _port, int _family)
                     + (strlen((const char*)qname)+1)
                     + sizeof(struct QUESTION),
                 0,
-                (struct sockaddr*)&dest,
-                sizeof(dest));
+                (_family==6)? (struct sockaddr*)&dest6:(struct sockaddr*)&dest,
+                (_family==6)? sizeof(dest6):sizeof(dest));
 
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
@@ -159,8 +167,8 @@ uint16_t is_responsible(unsigned long *t, int _port, int _family)
                 (void*)buf,
                 65536,
                 0,
-                (struct sockaddr*)&dest,
-                (socklen_t*)sizeof(dest));
+                (_family==6)? (struct sockaddr*)&dest6:(struct sockaddr*)&dest,
+                (_family==6)? (socklen_t*)sizeof(dest6):(socklen_t*)sizeof(dest));
     clock_gettime(CLOCK_MONOTONIC_RAW, &end);
     close(s);
 

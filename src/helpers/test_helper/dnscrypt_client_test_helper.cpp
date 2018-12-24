@@ -180,9 +180,9 @@ ActionReply DNSCryptClientTestHelper::starttest(const QVariantMap args) const
 
     qint64 code = 0;
     QString entry = readFile("/etc/resolv.conf");
-    if ( !entry.startsWith("nameserver 127.0.0.1\n") ) {
+    if ( !entry.startsWith("nameserver 127.0.0.1\nnameserver ::1\n") ) {
         entry.clear();
-        entry.append("nameserver 127.0.0.1\n");
+        entry.append("nameserver 127.0.0.1\nnameserver ::1\n");
         code = writeFile("/etc/resolv.conf", entry);
     };
     QVariantMap retdata;
@@ -374,9 +374,9 @@ ActionReply DNSCryptClientTestHelper::starttestv2(const QVariantMap args) const
 
     qint64 code = 0;
     QString entry = readFile("/etc/resolv.conf");
-    if ( !entry.startsWith("nameserver 127.0.0.1\n") ) {
+    if ( !entry.startsWith("nameserver 127.0.0.1\nnameserver ::1\n") ) {
         entry.clear();
-        entry.append("nameserver 127.0.0.1\n");
+        entry.append("nameserver 127.0.0.1\nnameserver ::1\n");
         code = writeFile("/etc/resolv.conf", entry);
     };
 

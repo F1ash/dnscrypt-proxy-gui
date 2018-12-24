@@ -286,10 +286,10 @@ ActionReply DNSCryptClientHelper::start(const QVariantMap args) const
 
     qint64 code = 0;
     QString entry = readFile("/etc/resolv.conf");
-    if ( entry.startsWith("nameserver 127.0.0.1\n") ) {
+    if ( entry.startsWith("nameserver 127.0.0.1\nnameserver ::1\n") ) {
         entry.clear();
     } else {
-        code = writeFile("/etc/resolv.conf", "nameserver 127.0.0.1\n");
+        code = writeFile("/etc/resolv.conf", "nameserver 127.0.0.1\nnameserver ::1\n");
     };
     QVariantMap retdata;
     if ( code != -1 ) {
@@ -505,10 +505,10 @@ ActionReply DNSCryptClientHelper::startv2(const QVariantMap args) const
     code = writeFile("/etc/dnscrypt-proxy/dnscrypt-proxy.toml", _new_data.join("\n"));
     entry = readFile("/etc/resolv.conf");
     code = 0;
-    if ( entry.startsWith("nameserver 127.0.0.1\n") ) {
+    if ( entry.startsWith("nameserver 127.0.0.1\nnameserver ::1\n") ) {
         entry.clear();
     } else {
-        code = writeFile("/etc/resolv.conf", "nameserver 127.0.0.1\n");
+        code = writeFile("/etc/resolv.conf", "nameserver 127.0.0.1\nnameserver ::1\n");
     };
 
     QVariantMap retdata;
