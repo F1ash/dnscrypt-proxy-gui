@@ -55,10 +55,12 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 %systemd_post %{app_name}@.service
 %systemd_post %{app_name}_test@.service
+%systemd_post %{app_name}_test_v2.service
 
 %preun
 %systemd_preun %{app_name}@.service
 %systemd_preun %{app_name}_test@.service
+%systemd_post %{app_name}_test_v2.service
 
 %postun
 if [ $1 -eq 0 ] ; then
@@ -67,6 +69,7 @@ if [ $1 -eq 0 ] ; then
 fi
 %systemd_postun %{app_name}@.service
 %systemd_postun %{app_name}_test@.service
+%systemd_post %{app_name}_test_v2.service
 
 %posttrans
 /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
@@ -95,9 +98,9 @@ fi
 %{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog
-* Sat Dec 22 2018 Fl@sh <kaperang07@gmail.com> - 1.20.15-1
+* Mon Dec 24 2018 Fl@sh <kaperang07@gmail.com> - 1.20.15-1
 - enhanced %%description;
-- added new unit file to %%files;
+- added new unit file to %%files, %%post, %%preun, %%postun;
 - version updated;
 
 * Mon Mar  5 2018 Fl@sh <kaperang07@gmail.com> - 1.11.15-1

@@ -2,7 +2,7 @@
 Name=DNSCryptClient
 GenericName=Qt DNSCrypt proxy client
 Type=Application
-Categories=Utility;Network;
+Categories=Network;
 Icon=DNSCryptClient
 Exec=DNSCryptClient
 Terminal=false
