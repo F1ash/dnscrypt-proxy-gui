@@ -20,6 +20,8 @@ install ( FILES       ${APP_NAME}@.service
           DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system )
 install ( FILES       ${APP_NAME}_test@.service
           DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system )
+install ( FILES       ${APP_NAME}_test_v2.service
+          DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system )
 install ( FILES src/icons/64x64/status/${APP_NAME}.png
           DESTINATION ${SHARE_INSTALL_PREFIX}/icons/hicolor/64x64/apps
           RENAME ${APP_NAME}.png )
