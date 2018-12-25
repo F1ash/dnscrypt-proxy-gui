@@ -7,6 +7,7 @@
 #include <QSettings>
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusMessage>
+#include <QFileSystemWatcher>
 #include "server_panel.h"
 #include "button_panel.h"
 #include "info_panel.h"
@@ -28,7 +29,9 @@ private:
     bool                runAtStart, findActiveService,
                         useFastOnly, stopManually,
                         restoreFlag, restoreAtClose,
-                        stopForChangeUnits, unhideAtStart;
+                        stopForChangeUnits, unhideAtStart,
+                        restoreResolvFileFlag,
+                        showMessages, showBasicMsgOnly;
     int                 probeCount, jobPort, testPort;
     SRV_STATUS          srvStatus;
     ServerPanel        *serverWdg;
@@ -46,6 +49,7 @@ private:
     QString             currentUnitTranscription,
                         asUser, serviceVersion, cfg_data;
     QVariantMap         listOfServers;
+    QFileSystemWatcher *watcher;
 
     void                initWidgets();
     void                readSettings();
@@ -60,6 +64,7 @@ private:
     void                stopServiceProcess();
     void                stopSliceProcess();
     void                restoreSettingsProcess();
+    void                restoreResolvFileProcess();
     void                findActiveServiceProcess();
     void                addServerEnrty(const QString&);
     QString             showResolverEntries();
@@ -79,6 +84,8 @@ private slots:
     void                changeFindActiveServiceState(bool);
     void                changeUseFastOnlyState(bool);
     void                changeRestoreAtCloseState(bool);
+    void                changeShowMessagesState(bool);
+    void                changeShowBasicMsgOnlyState(bool);
     void                changeJobPort(int);
     void                changeTestPort(int);
     void                changeUserName(QString);
@@ -95,6 +102,7 @@ private slots:
     void                changeUnitsFinished();
     void                getServiceVersion();
     void                getServiceVersionFinished(KJob*);
+    void                watchedFileChanged(const QString&);
 
 // for DNSCrypt-proxy service version 2.x.x
     void                getListOfServersV2();

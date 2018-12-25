@@ -7,6 +7,8 @@
 #include <QStatusBar>
 //#include <QTextStream>
 
+#define RESOLV_CONF QString("/etc/resolv.conf")
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     connection(QDBusConnection::systemBus())
@@ -28,7 +30,13 @@ MainWindow::MainWindow(QWidget *parent) :
     restoreFlag = false;
     restoreAtClose = false;
     stopForChangeUnits = false;
+    restoreResolvFileFlag = false;
+    showMessages = false;
+    showBasicMsgOnly = false;
     probeCount = 0;
+    watcher = new QFileSystemWatcher();
+    connect(watcher, SIGNAL(fileChanged(const QString&)),
+            this, SLOT(watchedFileChanged(const QString&)));
 
     setStatusBar(new QStatusBar(this));
     getServiceVersion();
@@ -83,6 +91,10 @@ void MainWindow::initWidgets()
             this, SLOT(changeUseFastOnlyState(bool)));
     connect(appSettings, SIGNAL(restoreAtCloseChanged(bool)),
             this, SLOT(changeRestoreAtCloseState(bool)));
+    connect(appSettings, SIGNAL(showMsgStateChanged(bool)),
+            this, SLOT(changeShowMessagesState(bool)));
+    connect(appSettings, SIGNAL(showBasicMsgOnlyStateChanged(bool)),
+            this, SLOT(changeShowBasicMsgOnlyState(bool)));
     connect(buttonsWdg, SIGNAL(startProxing()),
             this, SLOT(startService()));
     connect(buttonsWdg, SIGNAL(stopProxing()),
@@ -136,6 +148,10 @@ void MainWindow::readSettings()
     appSettings->setUseFastOnlyState(useFastOnly);
     restoreAtClose = settings.value("RestoreAtClose", true).toBool();
     appSettings->setRestoreAtClose(restoreAtClose);
+    showMessages = settings.value("ShowMessages", true).toBool();
+    appSettings->setShowMessagesState(showMessages);
+    showBasicMsgOnly = settings.value("ShowBasicMsgOnly", true).toBool();
+    appSettings->setShowBasicMsgOnlyState(showBasicMsgOnly);
     QString lastServer = settings.value("LastServer").toString();
     serverWdg->setLastServer(lastServer);
     jobPort = settings.value("JobPort", JOB_PORT).toInt();
@@ -168,6 +184,8 @@ void MainWindow::setSettings()
     settings.setValue("UseFastOnly", useFastOnly);
     settings.setValue("LastServer", serverWdg->getCurrentServer());
     settings.setValue("RestoreAtClose", restoreAtClose);
+    settings.setValue("ShowMessages", showMessages);
+    settings.setValue("ShowBasicMsgOnly", showBasicMsgOnly);
     settings.beginGroup("Entries");
     uint i = 0;
     foreach ( QString _val, resolverEntries ) {
@@ -210,10 +228,13 @@ void MainWindow::changeVisibility()
 void MainWindow::connectToClientService()
 {
     if ( !connection.isConnected() ) {
-        KNotification::event(
-                    KNotification::Notification,
-                    "DNSCryptClient",
-                    QString("Not connected to org.freedesktop.systemd1"));
+        if ( showMessages && !showBasicMsgOnly ) {
+            // is not basic message
+            KNotification::event(
+                        KNotification::Notification,
+                        "DNSCryptClient",
+                        QString("Not connected to org.freedesktop.systemd1"));
+        };
         return;
     };
     connection = QDBusConnection::systemBus();
@@ -229,19 +250,25 @@ void MainWindow::connectToClientService()
                 "PropertiesChanged",
                 this,
                 SLOT(servicePropertyChanged(QDBusMessage)));
-    const QString _state = ( connected )? "Connected" : "Not connected";
-    KNotification::event(
-                KNotification::Notification,
-                "DNSCryptClient",
-                QString("%1 for monitoring status of service").arg(_state));
+    if ( showMessages && !showBasicMsgOnly ) {
+        // is not basic message
+        const QString _state = ( connected )? "Connected" : "Not connected";
+        KNotification::event(
+                    KNotification::Notification,
+                    "DNSCryptClient",
+                    QString("%1 for monitoring status of service").arg(_state));
+    };
 }
 void MainWindow::disconnectFromClientService()
 {
     if ( !connection.isConnected() ) {
-        KNotification::event(
-                    KNotification::Notification,
-                    "DNSCryptClient",
-                    QString("Not connected to org.freedesktop.systemd1"));
+        if ( showMessages && !showBasicMsgOnly ) {
+            // is not basic message
+            KNotification::event(
+                        KNotification::Notification,
+                        "DNSCryptClient",
+                        QString("Not connected to org.freedesktop.systemd1"));
+        };
         return;
     };
     connection = QDBusConnection::systemBus();
@@ -254,11 +281,14 @@ void MainWindow::disconnectFromClientService()
                 "PropertiesChanged",
                 this,
                 SLOT(servicePropertyChanged(QDBusMessage)));
-    const QString _state = ( disconnected )? "" : "not";
-    KNotification::event(
-                KNotification::Notification,
-                "DNSCryptClient",
-                QString("Monitoring %1 disconnected.").arg(_state));
+    if ( showMessages && !showBasicMsgOnly ) {
+        // is not basic message
+        const QString _state = ( disconnected )? "" : "not";
+        KNotification::event(
+                    KNotification::Notification,
+                    "DNSCryptClient",
+                    QString("Monitoring %1 disconnected.").arg(_state));
+    };
 }
 void MainWindow::checkServiceStatus()
 {
@@ -362,6 +392,7 @@ int  MainWindow::checkSliceStatus()
 }
 void MainWindow::startServiceProcess()
 {
+    watcher->removePath(RESOLV_CONF);
     QVariantMap args;
     Action act;
     args["action"] = "start";
@@ -385,6 +416,7 @@ void MainWindow::stopServiceProcess()
 {
     // unused;
     // for stop and remove instantiated services used 'stopSliceProcess'
+    watcher->removePath(RESOLV_CONF);
     disconnectFromClientService();
     QVariantMap args;
     Action act;
@@ -406,6 +438,7 @@ void MainWindow::stopServiceProcess()
 }
 void MainWindow::stopSliceProcess()
 {
+    watcher->removePath(RESOLV_CONF);
     disconnectFromClientService();
     QVariantMap args;
     Action act;
@@ -446,6 +479,22 @@ void MainWindow::restoreSettingsProcess()
             this, SLOT(restoreSettingsProcessFinished(KJob*)));
     job->start();
 }
+void MainWindow::restoreResolvFileProcess()
+{
+    restoreResolvFileFlag = true;
+    QVariantMap args;
+    args["action"] = "restore";
+    args["entry"]  = "nameserver 127.0.0.1\nnameserver ::1\n";
+    Action act("pro.russianfedora.dnscryptclient.restore");
+    act.setHelperId("pro.russianfedora.dnscryptclient");
+    act.setArguments(args);
+    ExecuteJob *job = act.execute();
+    job->setParent(this);
+    job->setAutoDelete(true);
+    connect(job, SIGNAL(finished(KJob*)),
+            this, SLOT(restoreSettingsProcessFinished(KJob*)));
+    job->start();
+}
 void MainWindow::findActiveServiceProcess()
 {
     if ( srvStatus==FAILED || srvStatus==INACTIVE ) {
@@ -453,10 +502,13 @@ void MainWindow::findActiveServiceProcess()
             serverWdg->setNextServer();
             emit nextServer();
         } else {
-            KNotification::event(
-                        KNotification::Notification,
-                        "DNSCryptClient",
-                        "All servers probed and failed");
+            if ( showMessages ) {
+                // is basic message
+                KNotification::event(
+                            KNotification::Notification,
+                            "DNSCryptClient",
+                            "All servers probed and failed");
+            };
         };
     } else if ( srvStatus==ACTIVE || srvStatus==RESTORED ) {
         probeCount = 0;
@@ -508,17 +560,6 @@ void MainWindow::testStarted()
 }
 void MainWindow::testFinished()
 {
-    /*
-    emit serviceStateChanged(READY);
-    trayIcon->setIcon(
-                QIcon::fromTheme("DNSCryptClient_closed",
-                                 QIcon(":/closed.png")));
-    trayIcon->setToolTip(QString("%1\n%2")
-                         .arg(windowTitle())
-                         .arg("--tested--"));
-    stopService();
-    */
-
     //QTextStream s(stdout);
     if ( srvStatus==FAILED   ||
          srvStatus==INACTIVE ||
@@ -567,11 +608,6 @@ void MainWindow::startServiceJobFinished(KJob *_job)
         //QTextStream s(stdout);
         //s << "dns entries  : " << answ << endl;
         //s << "response time: " << resp_icon << endl;
-        //KNotification::event(
-        //           KNotification::Notification,
-        //           "DNSCryptClient",
-        //           QString("Session open with exit code: %1\nMSG: %2\nERR: %3")
-        //           .arg(code).arg(msg).arg(err));
         addServerEnrty(entry);
         if ( code.toInt()==0 ) {
             if ( answ.toInt()<1 ) {
@@ -590,14 +626,6 @@ void MainWindow::startServiceJobFinished(KJob *_job)
     } else {
         //QTextStream s(stdout);
         //s << "action failed" << endl;
-        //KNotification::event(
-        //           KNotification::Notification,
-        //           "DNSCryptClient",
-        //           QString("Start Service ERROR: %1\n%2")
-        //           .arg(job->error()).arg(job->errorText()));
-        //trayIcon->setIcon(
-        //            QIcon::fromTheme("DNSCryptClient_closed",
-        //                             QIcon(":/closed.png")));
         serverWdg->setItemIcon(
                     serverWdg->getCurrentServer(), "none");
         emit serviceStateChanged(STOP_SLICE);
@@ -626,16 +654,22 @@ void MainWindow::stopServiceJobFinished(KJob *_job)
         QString code = job->data().value("code").toString();
         QString msg  = job->data().value("msg").toString();
         QString err  = job->data().value("err").toString();
-        KNotification::event(
-                   KNotification::Notification,
-                   "DNSCryptClient",
-                   QString("Session closed with exit code: %1\nMSG: %2\nERR: %3")
-                   .arg(code).arg(msg).arg(err));
+        if ( showMessages ) {
+            // is basic message
+            KNotification::event(
+                       KNotification::Notification,
+                       "DNSCryptClient",
+                       QString("Session closed with exit code: %1\nMSG: %2\nERR: %3")
+                       .arg(code).arg(msg).arg(err));
+        };
     } else {
-        KNotification::event(
-                   KNotification::Notification,
-                   "DNSCryptClient",
-                   QString("Stop status unknown."));
+        if ( showMessages ) {
+            // is basic message
+            KNotification::event(
+                       KNotification::Notification,
+                       "DNSCryptClient",
+                       QString("Stop status unknown."));
+        };
     };
 
     switch (checkSliceStatus()) {
@@ -657,42 +691,45 @@ void MainWindow::restoreSettingsProcessFinished(KJob *_job)
         QString code = job->data().value("code").toString();
         QString msg  = job->data().value("msg").toString();
         QString err  = job->data().value("err").toString();
-        KNotification::event(
-                   KNotification::Notification,
-                   "DNSCryptClient",
-                   QString("Restore exit code: %1\nMSG: %2\nERR: %3")
-                   .arg(code).arg(msg).arg((err.isEmpty())? "None" : err));
-        if ( code.toInt()!=-1 ) srvStatus = RESTORED;
+        if ( restoreResolvFileFlag ) {
+            if ( showMessages && !showBasicMsgOnly ) {
+                // is not basic message
+                KNotification::event(
+                           KNotification::Notification,
+                           "DNSCryptClient",
+                           QString("%1 was restored for using with active srvice.")
+                           .arg(RESOLV_CONF));
+            };
+        } else {
+            if ( showMessages ) {
+                // is basic message
+                KNotification::event(
+                           KNotification::Notification,
+                           "DNSCryptClient",
+                           QString("Restore exit code: %1\nMSG: %2\nERR: %3")
+                           .arg(code).arg(msg).arg((err.isEmpty())? "None" : err));
+            };
+            if ( code.toInt()!=-1 ) srvStatus = RESTORED;
+        };
     } else {
-        KNotification::event(
-                   KNotification::Notification,
-                   "DNSCryptClient",
-                   QString("ERROR: restore status unknown."));
+        if ( showMessages ) {
+            // is basic message
+            KNotification::event(
+                       KNotification::Notification,
+                       "DNSCryptClient",
+                       QString("ERROR: restore status unknown."));
+        };
     };
-    emit serviceStateChanged(srvStatus);
+    if ( !restoreResolvFileFlag ) {
+        emit serviceStateChanged(srvStatus);
+    } else {
+        restoreResolvFileFlag = false;
+        watcher->addPath(RESOLV_CONF);
+    };
 }
 void MainWindow::stopsliceJobFinished(KJob *_job)
 {
-    ExecuteJob *job = static_cast<ExecuteJob*>(_job);
-    if ( job!=nullptr ) {
-        //QString code = job->data().value("code").toString();
-        //QString msg  = job->data().value("msg").toString();
-        //QString err  = job->data().value("err").toString();
-        //KNotification::event(
-        //           KNotification::Notification,
-        //           "DNSCryptClient",
-        //           QString("Slice closed with exit code: %1\nMSG: %2\nERR: %3")
-        //           .arg(code).arg(msg).arg(err));
-    } else {
-        //KNotification::event(
-        //           KNotification::Notification,
-        //           "DNSCryptClient",
-        //           QString("Stop Slice ERROR: %1\n%2")
-        //           .arg(job->error()).arg(job->errorText()));
-        //trayIcon->setIcon(
-        //            QIcon::fromTheme("DNSCryptClient_close",
-        //                             QIcon(":/close.png")));
-    };
+    Q_UNUSED(_job);
     switch (checkSliceStatus()) {
     case -2:
     case  0:
@@ -716,6 +753,14 @@ void MainWindow::changeUseFastOnlyState(bool state)
 void MainWindow::changeRestoreAtCloseState(bool state)
 {
     restoreAtClose = state;
+}
+void MainWindow::changeShowMessagesState(bool state)
+{
+    showMessages = state;
+}
+void MainWindow::changeShowBasicMsgOnlyState(bool state)
+{
+    showBasicMsgOnly = state;
 }
 void MainWindow::changeJobPort(int port)
 {
@@ -745,11 +790,14 @@ void MainWindow::startService()
             startServiceProcess();
             emit serviceStateChanged(PROCESSING);
         } else {
-            KNotification::event(
-                        KNotification::Notification,
-                        "DNSCryptClient",
-                        QString("%1 isn't enabled in list.")
-                        .arg(serverWdg->getCurrentServer()));
+            if ( showMessages && !showBasicMsgOnly ) {
+                // is not basic message
+                KNotification::event(
+                            KNotification::Notification,
+                            "DNSCryptClient",
+                            QString("%1 isn't enabled in list.")
+                            .arg(serverWdg->getCurrentServer()));
+            };
             emit serviceStateChanged(STOP_SLICE);
         };
         break;
@@ -844,11 +892,14 @@ void MainWindow::changeAppState(SRV_STATUS status)
         case INACTIVE:
         case FAILED:
             if ( prevSrvStatus!=srvStatus ) {
-                KNotification::event(
-                            KNotification::Notification,
-                            "DNSCryptClient",
-                            QString("DNSCryptClient service is %1.")
-                            .arg((status==FAILED)? "failed" : "inactive"));
+                if ( showMessages ) {
+                    // is basic message
+                    KNotification::event(
+                                KNotification::Notification,
+                                "DNSCryptClient",
+                                QString("DNSCryptClient service is %1.")
+                                .arg((status==FAILED)? "failed" : "inactive"));
+                };
             };
             //s << "INACTIVE/FAILED" << endl;
             trayIcon->setIcon(
@@ -876,11 +927,15 @@ void MainWindow::changeAppState(SRV_STATUS status)
             };
             break;
         case ACTIVE:
+            watcher->addPath(RESOLV_CONF);
             if ( prevSrvStatus!=srvStatus ) {
-                KNotification::event(
-                            KNotification::Notification,
-                            "DNSCryptClient",
-                            QString("DNSCryptClient service is active."));
+                if ( showMessages ) {
+                    // is basic message
+                    KNotification::event(
+                                KNotification::Notification,
+                                "DNSCryptClient",
+                                QString("DNSCryptClient service is active."));
+                };
             };
             connectToClientService();
             trayIcon->setIcon(
@@ -992,6 +1047,18 @@ void MainWindow::getServiceVersionFinished(KJob *_job)
     } else {
         initWidgets();
     };
+}
+void MainWindow::watchedFileChanged(const QString &_fileName)
+{
+    if ( showMessages && !showBasicMsgOnly ) {
+        // is not basic message
+        KNotification::event(
+                    KNotification::Notification,
+                    "DNSCryptClient",
+                    QString("%1 is changed.").arg(_fileName));
+    };
+    watcher->removePath(RESOLV_CONF);
+    restoreResolvFileProcess();
 }
 
 // for DNSCrypt-proxy service version 2.x.x

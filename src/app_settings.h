@@ -31,6 +31,8 @@ public:
     void            setFindActiveServiceState(bool);
     void            setUseFastOnlyState(bool);
     void            setRestoreAtClose(bool);
+    void            setShowMessagesState(bool);
+    void            setShowBasicMsgOnlyState(bool);
     void            runChangeUnits();
 
 signals:
@@ -38,6 +40,8 @@ signals:
     void            findActiveServiceStateChanged(bool);
     void            useFastOnlyStateChanged(bool);
     void            restoreAtCloseChanged(bool);
+    void            showMsgStateChanged(bool);
+    void            showBasicMsgOnlyStateChanged(bool);
     void            jobPortChanged(int);
     void            testPortChanged(int);
     void            userChanged(QString);
@@ -54,7 +58,8 @@ private:
     QHBoxLayout    *advancedButtonsLayout;
     QCheckBox      *runAtStart, *findActiveService,
                    *useFastOnly, *restoreAtClose,
-                   *asUser, *unhideAtStart;
+                   *asUser, *unhideAtStart,
+                   *showMessages, *showBasicMsgOnly;
     QWidget        *headWdg, *appSettings,
                    *asUserWdg, *advancedButtons;
     QScrollArea    *scrolled;

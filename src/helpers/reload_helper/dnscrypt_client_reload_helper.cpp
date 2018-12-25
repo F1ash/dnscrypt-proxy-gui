@@ -280,12 +280,9 @@ ActionReply DNSCryptClientReloadHelper::setunits(const QVariantMap args) const
             retdata["err"]      = res.errorMessage();
             break;
         };
-    } else if ( serviceVersion.compare("2")>0 ) {
-        retdata["code"]         = QString::number(0);
-        retdata["jobUnit"]      = QString::number(1);
     } else {
+        retdata["code"]         = QString::number(0);
         retdata["jobUnit"]      = QString::number(0);
-        retdata["code"]         = QString::number(-1);
     };
     if ( serviceVersion.compare("2")<0 && !testUnitText.isEmpty() ) {
         retdata["testUnit"]     = QString::number(
@@ -318,12 +315,9 @@ ActionReply DNSCryptClientReloadHelper::setunits(const QVariantMap args) const
             retdata["err"]      = res.errorMessage();
             break;
         };
-    } else if ( serviceVersion.compare("2")>0 ) {
-        retdata["code"]         = QString::number(0);
-        retdata["testUnit"]     = QString::number(1);
     } else {
+        retdata["code"]         = QString::number(0);
         retdata["testUnit"]     = QString::number(0);
-        retdata["code"]         = QString::number(-1);
     };
     // retdata["jobUnitText"]      = jobUnitText;
     // retdata["testUnitText"]     = testUnitText;

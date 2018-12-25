@@ -59,6 +59,12 @@ AppSettings::AppSettings(QWidget *parent, QString ver) :
     restoreAtClose      = new QCheckBox(
                 "restore DNS system resolver settings at close",
                 this);
+    showMessages        = new QCheckBox(
+                "show messages",
+                this);
+    showBasicMsgOnly    = new QCheckBox(
+                "show basic messages only",
+                this);
 
     asUser = new QCheckBox("Use as user", this);
     asUserLine = new QLineEdit(this);
@@ -98,6 +104,8 @@ AppSettings::AppSettings(QWidget *parent, QString ver) :
     appSettingsLayout->addWidget(findActiveService);
     appSettingsLayout->addWidget(useFastOnly);
     appSettingsLayout->addWidget(restoreAtClose);
+    appSettingsLayout->addWidget(showMessages);
+    appSettingsLayout->addWidget(showBasicMsgOnly);
     appSettingsLayout->addWidget(advancedLabel, 0, Qt::AlignCenter);
     appSettingsLayout->addWidget(asUserWdg, 0, Qt::AlignLeft);
     appSettingsLayout->addWidget(jobPort, 0, Qt::AlignLeft);
@@ -128,6 +136,12 @@ AppSettings::AppSettings(QWidget *parent, QString ver) :
             this, SIGNAL(useFastOnlyStateChanged(bool)));
     connect(restoreAtClose, SIGNAL(toggled(bool)),
             this, SIGNAL(restoreAtCloseChanged(bool)));
+    connect(showMessages, SIGNAL(toggled(bool)),
+            showBasicMsgOnly, SLOT(setEnabled(bool)));
+    connect(showMessages, SIGNAL(toggled(bool)),
+            this, SIGNAL(showMsgStateChanged(bool)));
+    connect(showBasicMsgOnly, SIGNAL(toggled(bool)),
+            this, SIGNAL(showBasicMsgOnlyStateChanged(bool)));
     connect(jobPort, SIGNAL(valueChanged(int)),
             this, SLOT(unitChanged()));
     connect(testPort, SIGNAL(valueChanged(int)),
@@ -183,6 +197,15 @@ void AppSettings::setRestoreAtClose(bool state)
 {
     restoreAtClose->setChecked(state);
 }
+void AppSettings::setShowMessagesState(bool state)
+{
+    showMessages->setChecked(state);
+}
+void AppSettings::setShowBasicMsgOnlyState(bool state)
+{
+    showBasicMsgOnly->setChecked(state);
+    showBasicMsgOnly->setEnabled(showMessages->isChecked());
+}
 void AppSettings::runChangeUnits()
 {
     //QTextStream s(stdout);
@@ -223,10 +246,13 @@ void AppSettings::setUnits()
          asUserLine->text().contains(" ")) ) {
         asUserLine->clear();
         asUser->setChecked(false);
-        KNotification::event(
-                    KNotification::Notification,
-                    "DNSCryptClient",
-                    QString("Username contains blanks or empty."));
+        if ( showMessages->isChecked() ) {
+            // is basic message
+            KNotification::event(
+                        KNotification::Notification,
+                        "DNSCryptClient",
+                        QString("Username contains blanks or empty."));
+        };
         return;
     };
     scrolled->setEnabled(false);
@@ -246,27 +272,58 @@ void AppSettings::resultChangeUnits(KJob *_job)
         if ( job->data().value("jobUnit").toInt()>0 ) {
             emit jobPortChanged(jobPort->getPort());
             emit userChanged(asUserLine->text());
-            KNotification::event(
-                        KNotification::Notification,
-                        "DNSCryptClient",
-                        QString("Job systemd unit changed."));
+            if ( showMessages->isChecked() && !showBasicMsgOnly->isChecked() ) {
+                // is not basic message
+                KNotification::event(
+                            KNotification::Notification,
+                            "DNSCryptClient",
+                            QString("Job systemd unit changed."));
+            };
+        } else {
+            if ( job->data().value("code").toInt()<0 ) {
+                if ( showMessages->isChecked() && !showBasicMsgOnly->isChecked() ) {
+                    // is not basic message
+                    KNotification::event(
+                                KNotification::Notification,
+                                "DNSCryptClient",
+                                QString("Job systemd unit not changed.\nERR: %1")
+                                .arg(job->data().value("err").toString()));
+                };
+            };
         };
         if ( job->data().value("testUnit").toInt()>0 ) {
             emit testPortChanged(testPort->getPort());
-            KNotification::event(
-                        KNotification::Notification,
-                        "DNSCryptClient",
-                        QString("Test systemd unit changed."));
+            if ( showMessages->isChecked() && !showBasicMsgOnly->isChecked() ) {
+                // is not basic message
+                KNotification::event(
+                            KNotification::Notification,
+                            "DNSCryptClient",
+                            QString("Test systemd unit changed."));
+            };
+        } else {
+            if ( job->data().value("code").toInt()<0 ) {
+                if ( showMessages->isChecked() && !showBasicMsgOnly->isChecked() ) {
+                    // is not basic message
+                    KNotification::event(
+                                KNotification::Notification,
+                                "DNSCryptClient",
+                                QString("Test systemd unit not changed.\nERR: %1")
+                                .arg(job->data().value("err").toString()));
+                };
+            };
         };
         //s << "jobUnit "<< job->data().value("jobUnit").toString() << endl;
         //s << "testUnit "<< job->data().value("testUnit").toString() << endl;
         //s << job->data().value("jobUnitText").toString() << endl;
         //s << job->data().value("testUnitText").toString() << endl;
     } else {
-        KNotification::event(
-                    KNotification::Notification,
-                    "DNSCryptClient",
-                    QString("Units not changed."));
+        if ( showMessages->isChecked() && !showBasicMsgOnly->isChecked() ) {
+            // is not basic message
+            KNotification::event(
+                        KNotification::Notification,
+                        "DNSCryptClient",
+                        QString("Units not changed."));
+        };
     };
     scrolled->setEnabled(true);
     emit changeUnitsFinished();
