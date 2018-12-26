@@ -69,3 +69,8 @@ some enhancements
 v.1.20.15 :
 adopted for using dnscrypt-proxy v2
     ( fixed issues #9);
+
+v.1.21.16 :
+added restoring resolv.conf
+    at active service;
+added show messages settings;

@@ -53,7 +53,7 @@ AppSettings::AppSettings(QWidget *parent, QString ver) :
                 "find the active service automatically",
                 this);
     useFastOnly         = new QCheckBox(
-                "Use fast servers only",
+                "use fast servers only",
                 this);
     useFastOnly->setEnabled(false);
     restoreAtClose      = new QCheckBox(

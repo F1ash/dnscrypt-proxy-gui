@@ -2,16 +2,13 @@
 %global app_name DNSCryptClient
 
 Name:          dnscrypt-proxy-gui
-Version:       1.20.15
+Version:       1.21.16
 Release:       1%{?dist}
 Summary:       GUI wrapper for dnscrypt-proxy
 License:       GPLv2+
 Source0:       https://github.com/F1ash/%{name}/archive/%{version}.tar.gz
 URL:           https://github.com/F1ash/%{name}
 
-Requires:      qt5-qtbase
-Requires:      kf5-kauth
-Requires:      kf5-knotifications
 Requires:      systemd
 Requires:      polkit
 Requires:      dnscrypt-proxy
@@ -22,6 +19,8 @@ BuildRequires: cmake
 BuildRequires: glibc-headers
 BuildRequires: desktop-file-utils
 BuildRequires: qt5-qtbase-devel
+BuildRequires: qt5-qtbase-private-devel
+%{?_qt5:Requires: %{_qt5}%{?_isa} = %{_qt5_version}}
 BuildRequires: kf5-kauth-devel
 BuildRequires: kf5-knotifications-devel
 BuildRequires: extra-cmake-modules
@@ -63,16 +62,9 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 %systemd_post %{app_name}_test_v2.service
 
 %postun
-if [ $1 -eq 0 ] ; then
-    /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null
-    /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
-fi
 %systemd_postun %{app_name}@.service
 %systemd_postun %{app_name}_test@.service
 %systemd_post %{app_name}_test_v2.service
-
-%posttrans
-/usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 %files
 %license LICENSE
@@ -98,6 +90,10 @@ fi
 %{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog
+* Mon Dec 26 2018 Fl@sh <kaperang07@gmail.com> - 1.21.16-1
+- enhanced R, BR, %%postun, delete %%posttrans;
+- version updated;
+
 * Mon Dec 24 2018 Fl@sh <kaperang07@gmail.com> - 1.20.15-1
 - enhanced %%description;
 - added new unit file to %%files, %%post, %%preun, %%postun;
