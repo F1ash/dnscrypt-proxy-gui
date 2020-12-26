@@ -49,8 +49,8 @@ AppSettings::AppSettings(QWidget *parent, QString ver) :
     unhideAtStart       = new QCheckBox(
                 "unhide at start",
                 this);
-    findActiveService   = new QCheckBox(
-                "find the active service automatically",
+    useActiveService   = new QCheckBox(
+                "use an active service automatically",
                 this);
     useFastOnly         = new QCheckBox(
                 "use fast servers only",
@@ -101,7 +101,7 @@ AppSettings::AppSettings(QWidget *parent, QString ver) :
     appSettingsLayout = new QVBoxLayout(this);
     appSettingsLayout->addWidget(runAtStart);
     appSettingsLayout->addWidget(unhideAtStart);
-    appSettingsLayout->addWidget(findActiveService);
+    appSettingsLayout->addWidget(useActiveService);
     appSettingsLayout->addWidget(useFastOnly);
     appSettingsLayout->addWidget(restoreAtClose);
     appSettingsLayout->addWidget(showMessages);
@@ -128,9 +128,9 @@ AppSettings::AppSettings(QWidget *parent, QString ver) :
 
     connect(baseButton, SIGNAL(released()),
             this, SIGNAL(toBase()));
-    connect(findActiveService, SIGNAL(toggled(bool)),
+    connect(useActiveService, SIGNAL(toggled(bool)),
             this, SIGNAL(findActiveServiceStateChanged(bool)));
-    connect(findActiveService, SIGNAL(toggled(bool)),
+    connect(useActiveService, SIGNAL(toggled(bool)),
             this, SLOT(enableUseFastOnly(bool)));
     connect(useFastOnly, SIGNAL(toggled(bool)),
             this, SIGNAL(useFastOnlyStateChanged(bool)));
@@ -183,13 +183,13 @@ void AppSettings::setUnhideAtStartState(bool state)
 {
     unhideAtStart->setChecked(state);
 }
-void AppSettings::setFindActiveServiceState(bool state)
+void AppSettings::setUseActiveServiceState(bool state)
 {
-    findActiveService->setChecked(state);
+    useActiveService->setChecked(state);
 }
 void AppSettings::setUseFastOnlyState(bool state)
 {
-    if ( findActiveService->isChecked() ) {
+    if ( useActiveService->isChecked() ) {
         useFastOnly->setChecked(state);
     };
 }
@@ -209,7 +209,9 @@ void AppSettings::setShowBasicMsgOnlyState(bool state)
 void AppSettings::runChangeUnits()
 {
     //QTextStream s(stdout);
-    //s << "runChangeUnits" << endl;
+    //s << "runChangeUnits; ver."<< serviceVersion << Qt::endl;
+    //s << "JobPort >>" << jobPort->getPort() << Qt::endl;
+    //s << "TestPort >>" << testPort->getPort() << Qt::endl;
     QVariantMap args;
     args["action"]      = "setUnits";
     args["version"]     = serviceVersion;
@@ -269,7 +271,7 @@ void AppSettings::resultChangeUnits(KJob *_job)
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
     if ( job!=nullptr ) {
         //QTextStream s(stdout);
-        if ( job->data().value("jobUnit").toInt()>0 ) {
+        if ( job->data().value("jobUnit").toInt() == jobPort->getPort() ) {
             emit jobPortChanged(jobPort->getPort());
             emit userChanged(asUserLine->text());
             if ( showMessages->isChecked() && !showBasicMsgOnly->isChecked() ) {
@@ -291,7 +293,7 @@ void AppSettings::resultChangeUnits(KJob *_job)
                 };
             };
         };
-        if ( job->data().value("testUnit").toInt()>0 ) {
+        if ( job->data().value("testUnit").toInt() == testPort->getPort() ) {
             emit testPortChanged(testPort->getPort());
             if ( showMessages->isChecked() && !showBasicMsgOnly->isChecked() ) {
                 // is not basic message
@@ -312,10 +314,10 @@ void AppSettings::resultChangeUnits(KJob *_job)
                 };
             };
         };
-        //s << "jobUnit "<< job->data().value("jobUnit").toString() << endl;
-        //s << "testUnit "<< job->data().value("testUnit").toString() << endl;
-        //s << job->data().value("jobUnitText").toString() << endl;
-        //s << job->data().value("testUnitText").toString() << endl;
+        //s << "jobUnit "<< job->data().value("jobUnit").toString() << Qt::endl;
+        //s << "testUnit "<< job->data().value("testUnit").toString() << Qt::endl;
+        //s << "jobUnitText: " << job->data().value("jobUnitText").toString() << Qt::endl;
+        //s << "testUnitText: " << job->data().value("testUnitText").toString() << Qt::endl;
     } else {
         if ( showMessages->isChecked() && !showBasicMsgOnly->isChecked() ) {
             // is not basic message

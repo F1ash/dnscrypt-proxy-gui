@@ -26,7 +26,7 @@ signals:
     void                nextServer();
 
 private:
-    bool                runAtStart, findActiveService,
+    bool                runAtStart, useActiveService,
                         useFastOnly, stopManually,
                         restoreFlag, restoreAtClose,
                         stopForChangeUnits, unhideAtStart,
@@ -65,7 +65,7 @@ private:
     void                stopSliceProcess();
     void                restoreSettingsProcess();
     void                restoreResolvFileProcess();
-    void                findActiveServiceProcess();
+    void                passToNextServer();
     void                addServerEnrty(const QString&);
     QString             showResolverEntries();
 
@@ -107,6 +107,8 @@ private slots:
 // for DNSCrypt-proxy service version 2.x.x
     void                getListOfServersV2();
     void                getListOfServersV2Finished(KJob*);
+    void                initServiceV2();
+    void                initServiceV2Finished(KJob*);
 };
 
 #endif // MAINWINDOW_H

@@ -281,8 +281,10 @@ ActionReply DNSCryptClientReloadHelper::setunits(const QVariantMap args) const
             break;
         };
     } else {
-        retdata["code"]         = QString::number(0);
-        retdata["jobUnit"]      = QString::number(0);
+        // For version>=2 nothing to change in service unit file,
+        // because it has new changes at each job iteraton
+        retdata["code"]         = QString::number(1);
+        retdata["jobUnit"]      = jobPort;
     };
     if ( serviceVersion.compare("2")<0 && !testUnitText.isEmpty() ) {
         retdata["testUnit"]     = QString::number(
@@ -316,11 +318,13 @@ ActionReply DNSCryptClientReloadHelper::setunits(const QVariantMap args) const
             break;
         };
     } else {
-        retdata["code"]         = QString::number(0);
-        retdata["testUnit"]     = QString::number(0);
+        // For version>=2 nothing to change in test unit file,
+        // because it created new at each test iteration
+        retdata["code"]         = QString::number(1);
+        retdata["testUnit"]     = testPort;
     };
-    // retdata["jobUnitText"]      = jobUnitText;
-    // retdata["testUnitText"]     = testUnitText;
+    //retdata["jobUnitText"]      = jobUnitText;
+    //retdata["testUnitText"]     = testUnitText;
 
     reply.setData(retdata);
     return reply;

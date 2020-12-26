@@ -13,6 +13,8 @@ Requires:      systemd
 Requires:      polkit
 Requires:      dnscrypt-proxy
 Requires:      hicolor-icon-theme
+Requires:      kf5-kauth
+Requires:      kf5-knotifications
 
 BuildRequires: gcc-c++
 BuildRequires: cmake

@@ -10,6 +10,12 @@ Description=User DNSCrypt test
 Policy=yes
 Persistence=session
 
+[pro.russianfedora.dnscryptclienttest.initialization]
+Name=Initialize DNSCrypt v2 proxy service
+Description=User DNSCrypt test
+Policy=yes
+Persistence=session
+
 [pro.russianfedora.dnscryptclienttest.getversion]
 Name=Get DNSCrypt proxy service version
 Description=User DNSCrypt test

@@ -72,6 +72,125 @@ qint64  writeFile(const QString &_path, const QString &entry)
     };
     return ret;
 }
+QVariantMap    started()
+{
+    QVariantMap _data;
+    QString _str;
+    QProcess p;
+    p.setProcessChannelMode(QProcess::MergedChannels);
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert("LANG", "C"); // Add an environment variable
+    p.setProcessEnvironment(env);
+    p.setProgram("dnscrypt-proxy");
+    p.setArguments(QStringList()<<"-service"<<"start");
+    p.start(QIODevice::ReadOnly);
+    if ( p.waitForFinished(-1) ) {
+        _str = p.readAllStandardOutput().constData();
+    } else {
+        _str = p.errorString();
+    };
+    p.close();
+
+    bool ret = _str.contains("NOTICE") && _str.contains("Service started");
+
+    _data["msg"]        = _str;
+    _data["success"]    = ret;
+    return _data;
+}
+QVariantMap    installed()
+{
+    QVariantMap _data;
+    QString _str;
+    QProcess p;
+    p.setProcessChannelMode(QProcess::MergedChannels);
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert("LANG", "C"); // Add an environment variable
+    p.setProcessEnvironment(env);
+    p.setProgram("dnscrypt-proxy");
+    p.setArguments(QStringList()<<"-service"<<"install");
+    p.start(QIODevice::ReadOnly);
+    if ( p.waitForFinished(-1) ) {
+        _str = p.readAllStandardOutput().constData();
+    } else {
+        _str = p.errorString();
+    };
+    p.close();
+
+    bool ret = _str.contains("NOTICE") && _str.contains("Installed as a service");
+    if ( !ret ) {
+        ret = _str.contains("FATAL") && _str.contains("Init already exists");
+    };
+
+    _data["msg"]        = _str;
+    _data["success"]    = ret;
+    return _data;
+}
+bool           preparedConfig()
+{
+    bool ret = false;
+    QString entry = readFile("/etc/dnscrypt-proxy/dnscrypt-proxy.toml");
+    QStringList _data, _new_data;
+    _data = entry.split("\n");
+    foreach(QString _s, _data) {
+        QString _new_str;
+        if ( _s.contains("server_names") ) {
+            QStringList _parts = _s.split(" ", Qt::KeepEmptyParts);
+            int idx = _parts.indexOf("server_names");
+            if ( idx == 1 ) {
+                _parts.removeFirst();
+                ret = true;
+            } else if ( idx == 0 ) {
+                ret = true;
+            };
+            _new_str.append(_parts.join(" "));
+        } else if ( _s.startsWith("listen_addresses")
+                    && !_s.endsWith("['127.0.0.1:53', '[::1]:53']") ) {
+            QStringList _parts = _s.split(" = ");
+            _parts.removeLast();
+            // Listen for both domain type (ipv4\ipv6)
+            _parts.append("['127.0.0.1:53', '[::1]:53']");
+            _new_str.append(_parts.join(" = "));
+        } else {
+            _new_str.append(_s);
+        };
+        _new_data.append(_new_str);
+    };
+    qint64 code = writeFile("/etc/dnscrypt-proxy/dnscrypt-proxy.toml",
+                            _new_data.join("\n"));
+    ret &= (code > 0);
+
+    return ret;
+}
+bool    preparedServiceUnit()
+{
+    bool ret = false;
+    QString entry = readFile("/etc/systemd/system/dnscrypt-proxy.service");
+    QStringList _data, _new_data;
+    _data = entry.split("\n");
+    foreach(QString _s, _data) {
+        QString _new_str;
+        if ( _s.startsWith("WorkingDirectory")
+             && !_s.endsWith("/etc/dnscrypt-proxy") ) {
+            QStringList _parts = _s.split("=", Qt::KeepEmptyParts);
+            _parts.removeLast();
+            _parts.append("/etc/dnscrypt-proxy");
+            ret = true;
+            _new_str.append(_parts.join("="));
+        } else if ( _s.startsWith("WorkingDirectory")
+                    && _s.endsWith("/etc/dnscrypt-proxy") ) {
+            _new_str.append(_s);
+            ret = true;
+        } else {
+            _new_str.append(_s);
+        };
+        _new_data.append(_new_str);
+    };
+    qint64 code = writeFile("/etc/systemd/system/dnscrypt-proxy.service",
+                            _new_data.join("\n"));
+    ret &= (code > 0);
+
+    return ret;
+}
 
 DNSCryptClientTestHelper::DNSCryptClientTestHelper(QObject *parent) :
     QObject(parent)
@@ -283,6 +402,79 @@ ActionReply DNSCryptClientTestHelper::stoptestslice(const QVariantMap args) cons
     return reply;
 }
 
+ActionReply DNSCryptClientTestHelper::initialization(const QVariantMap args) const
+{
+/*
+ * check for installed dnscrypt-proxy.service;
+ * prepare config file;
+ * start dnscrypt-proxy.service;
+ */
+    ActionReply reply;
+
+    const QString act = get_key_varmap(args, "action");
+    if ( act!="initialization" ) {
+        QVariantMap err;
+        err["result"] = QString::number(-1);
+        reply.setData(err);
+        return reply;
+    };
+
+    QVariantMap retdata, _data, _data1;
+    QString _msg;
+    int code = 0;
+    _data = installed();
+    if ( _data.value("success").toBool() ) {
+        _data1 = started();
+        if ( _data1.value("success").toBool() ) {
+            _msg.append("Service installed and started");
+            if ( preparedConfig() ) {
+                _msg.append(";\nconfig file prepared for use");
+                if ( preparedServiceUnit() ) {
+                    _msg.append(";\nservice unit file prepared for use");
+                    // need to reload services (aka 'daemon-reload')
+                    // for use edited service unit file
+                    QDBusMessage msg = QDBusMessage::createMethodCall(
+                                "org.freedesktop.systemd1",
+                                "/org/freedesktop/systemd1",
+                                "org.freedesktop.systemd1.Manager",
+                                "Reload");
+                    QDBusMessage res = QDBusConnection::systemBus()
+                            .call(msg, QDBus::Block);
+                    QString str;
+                    foreach (QVariant arg, res.arguments()) {
+                        str.append(QDBusUtil::argumentToString(arg));
+                        str.append("\n");
+                    };
+                    _msg.append(";\n");
+                    _msg.append(str);
+                    code = 1;
+                } else {
+                    _msg.append(";\nservice unit file not prepared for use.\n\
+Prepare manually or restart application");
+                    code = -1;
+                };
+            } else {
+                _msg.append(";\nconfig file not prepared for use.\n\
+Prepare manually or restart application");
+                code = -1;
+            };
+        } else {
+            _msg.append("Service installed, but can't start");
+            code = -1;
+        };
+    } else {
+        _msg.append("Service not installed;\n\
+check 'dnscrypt-proxy' package installation");
+        code = -1;
+    };
+
+    retdata["success"]      = _data.value("success");
+    retdata["output"]       = _data.value("msg");
+    retdata["msg"]          = _msg;
+    retdata["code"]         = code;
+    reply.setData(retdata);
+    return reply;
+}
 ActionReply DNSCryptClientTestHelper::getversion(const QVariantMap args) const
 {
     ActionReply reply;
@@ -369,7 +561,7 @@ ActionReply DNSCryptClientTestHelper::starttestv2(const QVariantMap args) const
     };
 
     QString servName = get_key_varmap(args, "server");
-    int testPort     = get_key_varmap(args, "port").toInt();
+    int     testPort = get_key_varmap(args, "port").toInt();
     QString cfg_data = get_key_varmap(args, "cfg_data");
 
     qint64 code = 0;
@@ -385,7 +577,6 @@ ActionReply DNSCryptClientTestHelper::starttestv2(const QVariantMap args) const
     _tmp_cfg.setAutoRemove(false);
     _tmp_cfg.open();
     int domain = (servName.endsWith("ipv6") || servName.contains("ip6")) ? 6 : 4;
-    QString _loopback = (domain==6) ? "[::1]" : "127.0.0.1";
     QStringList _cfg;
     foreach(QString s, cfg_data.split("\n")) {
         if ( s.startsWith("server_names") ) {
@@ -400,7 +591,8 @@ ActionReply DNSCryptClientTestHelper::starttestv2(const QVariantMap args) const
             s.clear();
             s.append(_parts.first());
             s.append(" = ");
-            s.append(QString("['%1:%2']").arg(_loopback).arg(testPort));
+            // Listen for both domain type (ipv4\ipv6)
+            s.append(QString("['127.0.0.1:%1', '[::1]:%1']").arg(testPort));
         };
         _cfg.append(s);
     };

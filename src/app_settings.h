@@ -28,7 +28,7 @@ public:
     void            setRunAtStartState(bool);
     bool            getUnhideAtStartState() const;
     void            setUnhideAtStartState(bool);
-    void            setFindActiveServiceState(bool);
+    void            setUseActiveServiceState(bool);
     void            setUseFastOnlyState(bool);
     void            setRestoreAtClose(bool);
     void            setShowMessagesState(bool);
@@ -56,7 +56,7 @@ private:
     QHBoxLayout    *headLayout, *asUserLayout;
     QVBoxLayout    *appSettingsLayout;
     QHBoxLayout    *advancedButtonsLayout;
-    QCheckBox      *runAtStart, *findActiveService,
+    QCheckBox      *runAtStart, *useActiveService,
                    *useFastOnly, *restoreAtClose,
                    *asUser, *unhideAtStart,
                    *showMessages, *showBasicMsgOnly;

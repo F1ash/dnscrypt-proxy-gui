@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     runAtStart = false;
     srvStatus = INACTIVE;
-    findActiveService = false;
+    useActiveService = false;
     stopManually = false;
     restoreFlag = false;
     restoreAtClose = false;
@@ -142,8 +142,8 @@ void MainWindow::readSettings()
     appSettings->setRunAtStartState(runAtStart);
     unhideAtStart = settings.value("UnhideAtStart", true).toBool();
     appSettings->setUnhideAtStartState(unhideAtStart);
-    findActiveService = settings.value("FindActiveService", true).toBool();
-    appSettings->setFindActiveServiceState(findActiveService);
+    useActiveService = settings.value("useActiveService", true).toBool();
+    appSettings->setUseActiveServiceState(useActiveService);
     useFastOnly = settings.value("UseFastOnly", false).toBool();
     appSettings->setUseFastOnlyState(useFastOnly);
     restoreAtClose = settings.value("RestoreAtClose", true).toBool();
@@ -180,7 +180,7 @@ void MainWindow::setSettings()
     settings.setValue("JobPort", jobPort);
     settings.setValue("TestPort", testPort);
     settings.setValue("AsUser", asUser);
-    settings.setValue("FindActiveService", findActiveService);
+    settings.setValue("useActiveService", useActiveService);
     settings.setValue("UseFastOnly", useFastOnly);
     settings.setValue("LastServer", serverWdg->getCurrentServer());
     settings.setValue("RestoreAtClose", restoreAtClose);
@@ -495,7 +495,7 @@ void MainWindow::restoreResolvFileProcess()
             this, SLOT(restoreSettingsProcessFinished(KJob*)));
     job->start();
 }
-void MainWindow::findActiveServiceProcess()
+void MainWindow::passToNextServer()
 {
     if ( srvStatus==FAILED || srvStatus==INACTIVE ) {
         if ( ++probeCount <= serverWdg->getServerListCount() ) {
@@ -606,8 +606,8 @@ void MainWindow::startServiceJobFinished(KJob *_job)
         QString answ        = job->data().value("answ").toString();
         QString resp_icon   = job->data().value("resp").toString();
         //QTextStream s(stdout);
-        //s << "dns entries  : " << answ << endl;
-        //s << "response time: " << resp_icon << endl;
+        //s << "dns entries  : " << answ << Qt::endl;
+        //s << "response time: " << resp_icon << Qt::endl;
         addServerEnrty(entry);
         if ( code.toInt()==0 ) {
             if ( answ.toInt()<1 ) {
@@ -620,14 +620,14 @@ void MainWindow::startServiceJobFinished(KJob *_job)
             serverWdg->setItemIcon(
                         serverWdg->getCurrentServer(), resp_icon);
         } else {
-            serverWdg->setItemIcon(
-                        serverWdg->getCurrentServer(), "none");
+            //serverWdg->setItemIcon(
+            //            serverWdg->getCurrentServer(), "none");
         };
     } else {
         //QTextStream s(stdout);
-        //s << "action failed" << endl;
-        serverWdg->setItemIcon(
-                    serverWdg->getCurrentServer(), "none");
+        //s << "action failed" << Qt::endl;
+        //serverWdg->setItemIcon(
+        //            serverWdg->getCurrentServer(), "none");
         emit serviceStateChanged(STOP_SLICE);
         return;
     };
@@ -744,7 +744,7 @@ void MainWindow::stopsliceJobFinished(KJob *_job)
 }
 void MainWindow::changeFindActiveServiceState(bool state)
 {
-    findActiveService = state;
+    useActiveService = state;
 }
 void MainWindow::changeUseFastOnlyState(bool state)
 {
@@ -766,14 +766,14 @@ void MainWindow::changeJobPort(int port)
 {
     jobPort = port;
     //QTextStream s(stdout);
-    //s << "job port" << jobPort << endl;
+    //s << "job port << " << jobPort << Qt::endl;
 }
 void MainWindow::changeTestPort(int port)
 {
     testPort = port;
     testRespond->testWdg->setTestPort(testPort);
     //QTextStream s(stdout);
-    //s << "test port" << testPort << endl;
+    //s << "test port << " << testPort << Qt::endl;
 }
 void MainWindow::changeUserName(QString _user)
 {
@@ -908,8 +908,8 @@ void MainWindow::changeAppState(SRV_STATUS status)
             trayIcon->setToolTip(QString("%1\n%2")
                                  .arg(windowTitle())
                                  .arg("--stopped--"));
-            if ( !stopManually && findActiveService ) {
-                findActiveServiceProcess();
+            if ( !stopManually && useActiveService ) {
+                passToNextServer();
                 emit serviceStateChanged(PROCESSING);
             } else if ( restoreFlag ) {
                 emit serviceStateChanged(PROCESSING);
@@ -981,15 +981,15 @@ void MainWindow::probeNextServer()
     if ( serverWdg->serverIsEnabled() ) {
         if ( useFastOnly ) {
             if ( 0!=serverWdg->getCurrentRespondIconName().compare("fast") ) {
-                if ( findActiveService ) {
-                    findActiveServiceProcess();
+                if ( useActiveService ) {
+                    passToNextServer();
                 };
                 return;
             };
         };
         startServiceProcess();
-    } else if ( findActiveService ) {
-        findActiveServiceProcess();
+    } else if ( useActiveService ) {
+        passToNextServer();
     };
 }
 void MainWindow::stopSystemdAppUnits()
@@ -1085,11 +1085,43 @@ void MainWindow::getListOfServersV2Finished(KJob *_job)
         _l = job->data().value("listOfServers").toStringList();
         foreach (QString _s, _l) {
             listOfServers.insert(_s, job->data().value(_s));
-            //s<<"Server: "<<_s<<endl;
-            //s<<listOfServers.value(_s).toStringList().join(";")<<endl;
-            //s<<endl;
+            //s<<"Server: "<<_s<<Qt::endl;
+            //s<<listOfServers.value(_s).toStringList().join(";")<<Qt::endl;
+            //s<<Qt::endl;
         };
         cfg_data = job->data().value("cfg_data").toString();
+    };
+    initServiceV2();
+}
+void MainWindow::initServiceV2()
+{
+    QVariantMap args;
+    args["action"] = "initialization";
+    Action act("pro.russianfedora.dnscryptclienttest.initialization");
+    act.setHelperId("pro.russianfedora.dnscryptclienttest");
+    act.setArguments(args);
+    ExecuteJob *job = act.execute();
+    job->setParent(this);
+    job->setAutoDelete(true);
+    connect(job, SIGNAL(result(KJob*)),
+            this, SLOT(initServiceV2Finished(KJob*)));
+    job->exec();
+}
+void MainWindow::initServiceV2Finished(KJob *_job)
+{
+    ExecuteJob *job = static_cast<ExecuteJob*>(_job);
+    if ( job!=nullptr ) {
+        QString _msg;
+        _msg.append(job->data().value("msg").toString());
+        _msg.append("\nMSG: ");
+        _msg.append(job->data().value("output").toString());
+        _msg.append("\nSUCCESS: ");
+        _msg.append(job->data().value("success").toString());
+        // is a basic message
+        KNotification::event(
+                    KNotification::Notification,
+                    "DNSCryptClient",
+                    _msg);
     };
     initWidgets();
 }
