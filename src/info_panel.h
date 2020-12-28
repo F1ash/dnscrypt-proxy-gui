@@ -12,7 +12,7 @@ class InfoPanel : public QStackedWidget
 {
     Q_OBJECT
 public:
-    explicit InfoPanel(QWidget *parent = nullptr);
+    explicit InfoPanel(QWidget *parent = Q_NULLPTR);
 
 signals:
 

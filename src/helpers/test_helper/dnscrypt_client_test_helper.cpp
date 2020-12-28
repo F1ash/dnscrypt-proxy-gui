@@ -72,9 +72,8 @@ qint64  writeFile(const QString &_path, const QString &entry)
     };
     return ret;
 }
-QVariantMap    started()
+bool    started()
 {
-    QVariantMap _data;
     QString _str;
     QProcess p;
     p.setProcessChannelMode(QProcess::MergedChannels);
@@ -93,13 +92,10 @@ QVariantMap    started()
 
     bool ret = _str.contains("NOTICE") && _str.contains("Service started");
 
-    _data["msg"]        = _str;
-    _data["success"]    = ret;
-    return _data;
+    return ret;
 }
-QVariantMap    installed()
+bool    installed()
 {
-    QVariantMap _data;
     QString _str;
     QProcess p;
     p.setProcessChannelMode(QProcess::MergedChannels);
@@ -121,11 +117,9 @@ QVariantMap    installed()
         ret = _str.contains("FATAL") && _str.contains("Init already exists");
     };
 
-    _data["msg"]        = _str;
-    _data["success"]    = ret;
-    return _data;
+    return ret;
 }
-bool           preparedConfig()
+bool    preparedConfig()
 {
     bool ret = false;
     QString entry = readFile("/etc/dnscrypt-proxy/dnscrypt-proxy.toml");
@@ -406,7 +400,7 @@ ActionReply DNSCryptClientTestHelper::initialization(const QVariantMap args) con
 {
 /*
  * check for installed dnscrypt-proxy.service;
- * prepare config file;
+ * prepare config file and reload units for apply new config;
  * start dnscrypt-proxy.service;
  */
     ActionReply reply;
@@ -419,59 +413,53 @@ ActionReply DNSCryptClientTestHelper::initialization(const QVariantMap args) con
         return reply;
     };
 
-    QVariantMap retdata, _data, _data1;
-    QString _msg;
+    QVariantMap retdata;
     int code = 0;
-    _data = installed();
-    if ( _data.value("success").toBool() ) {
-        _data1 = started();
-        if ( _data1.value("success").toBool() ) {
-            _msg.append("Service installed and started");
-            if ( preparedConfig() ) {
-                _msg.append(";\nconfig file prepared for use");
-                if ( preparedServiceUnit() ) {
-                    _msg.append(";\nservice unit file prepared for use");
-                    // need to reload services (aka 'daemon-reload')
-                    // for use edited service unit file
-                    QDBusMessage msg = QDBusMessage::createMethodCall(
-                                "org.freedesktop.systemd1",
-                                "/org/freedesktop/systemd1",
-                                "org.freedesktop.systemd1.Manager",
-                                "Reload");
-                    QDBusMessage res = QDBusConnection::systemBus()
-                            .call(msg, QDBus::Block);
-                    QString str;
-                    foreach (QVariant arg, res.arguments()) {
-                        str.append(QDBusUtil::argumentToString(arg));
-                        str.append("\n");
-                    };
-                    _msg.append(";\n");
-                    _msg.append(str);
-                    code = 1;
-                } else {
-                    _msg.append(";\nservice unit file not prepared for use.\n\
-Prepare manually or restart application");
-                    code = -1;
+    if ( installed() ) {
+        retdata["installed"] = "Service installed";
+        if ( preparedConfig() ) {
+            retdata["preparedCfg"] = "Config file prepared for use";
+            if ( preparedServiceUnit() ) {
+                retdata["preparedUnit"] = "Service unit file prepared for use";
+                // need to reload services (aka 'daemon-reload')
+                // for use edited service unit file
+                QDBusMessage msg = QDBusMessage::createMethodCall(
+                            "org.freedesktop.systemd1",
+                            "/org/freedesktop/systemd1",
+                            "org.freedesktop.systemd1.Manager",
+                            "Reload");
+                QDBusMessage res = QDBusConnection::systemBus()
+                        .call(msg, QDBus::Block);
+                QString str;
+                foreach (QVariant arg, res.arguments()) {
+                    str.append(QDBusUtil::argumentToString(arg));
+                    str.append("\n");
                 };
+                code = 1;
+                //if ( started() ) {
+                //    retdata["started"] = "Service started";
+                //    code = 1;
+                //} else {
+                //    retdata["started"] = "Service can't to start";
+                //    code = -1;
+                //};
             } else {
-                _msg.append(";\nconfig file not prepared for use.\n\
-Prepare manually or restart application");
+                retdata["preparedUnit"] = "Service unit file not prepared for use.\n\
+Prepare manually or restart application";
                 code = -1;
             };
         } else {
-            _msg.append("Service installed, but can't start");
+            retdata["preparedCfg"] = "Config file not prepared for use.\n\
+Prepare manually or restart application";
             code = -1;
         };
     } else {
-        _msg.append("Service not installed;\n\
-check 'dnscrypt-proxy' package installation");
+        retdata["installed"] = "Service not installed;\n\
+check 'dnscrypt-proxy' package installation";
         code = -1;
     };
 
-    retdata["success"]      = _data.value("success");
-    retdata["output"]       = _data.value("msg");
-    retdata["msg"]          = _msg;
-    retdata["code"]         = code;
+    retdata["code"] = QString::number(code);
     reply.setData(retdata);
     return reply;
 }

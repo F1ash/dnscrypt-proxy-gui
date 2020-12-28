@@ -13,7 +13,7 @@ class TestWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit TestWidget(QWidget *parent = nullptr,
+    explicit TestWidget(QWidget *parent = Q_NULLPTR,
                         QString ver = "",
                         QString cfg = "");
     void                setServerList(QStringList);

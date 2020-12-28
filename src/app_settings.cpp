@@ -269,7 +269,7 @@ void AppSettings::setUnits()
 void AppSettings::resultChangeUnits(KJob *_job)
 {
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
-    if ( job!=nullptr ) {
+    if ( job!=Q_NULLPTR ) {
         //QTextStream s(stdout);
         if ( job->data().value("jobUnit").toInt() == jobPort->getPort() ) {
             emit jobPortChanged(jobPort->getPort());

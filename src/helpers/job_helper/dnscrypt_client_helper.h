@@ -5,7 +5,7 @@ class DNSCryptClientHelper : public QObject
 {
     Q_OBJECT
 public:
-    explicit DNSCryptClientHelper(QObject *parent = nullptr);
+    explicit DNSCryptClientHelper(QObject *parent = Q_NULLPTR);
 
 public slots:
     //ActionReply     create(const QVariantMap args) const;

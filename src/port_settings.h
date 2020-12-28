@@ -9,7 +9,7 @@ class PortSettings : public QWidget
 {
     Q_OBJECT
 public:
-    explicit PortSettings(QWidget *parent = nullptr,
+    explicit PortSettings(QWidget *parent = Q_NULLPTR,
                           int      _port  = 0);
     void         setPort(const int);
     void         setName(const QString&);

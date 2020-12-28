@@ -11,7 +11,7 @@ class ResolverEntries : public QDialog
 {
     Q_OBJECT
 public:
-    explicit ResolverEntries(QWidget *parent = nullptr);
+    explicit ResolverEntries(QWidget *parent = Q_NULLPTR);
     QString         getEntry() const;
     void            setEntries(const QStringList&);
     QStringList     getEntries() const;

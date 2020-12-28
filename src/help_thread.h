@@ -9,7 +9,7 @@ class HelpThread : public QThread
 {
     Q_OBJECT
 public:
-    explicit HelpThread(QObject *parent = nullptr);
+    explicit HelpThread(QObject *parent = Q_NULLPTR);
     void            setServerDataMap(const QVariantMap);
 
 signals:

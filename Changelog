@@ -74,3 +74,9 @@ v.1.21.16 :
 added restoring resolv.conf
     at active service;
 added show messages settings;
+
+v.1.23.17 :
+implemented automated initialization
+    of dnscrypt-proxy service;
+fixed respond test for ver.2;
+some fixes;

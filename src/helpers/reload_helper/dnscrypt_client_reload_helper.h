@@ -5,7 +5,7 @@ class DNSCryptClientReloadHelper : public QObject
 {
     Q_OBJECT
 public:
-    explicit DNSCryptClientReloadHelper(QObject *parent = nullptr);
+    explicit DNSCryptClientReloadHelper(QObject *parent = Q_NULLPTR);
 
 public slots:
     ActionReply     setunits(const QVariantMap args) const;

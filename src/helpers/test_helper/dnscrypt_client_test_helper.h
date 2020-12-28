@@ -5,7 +5,7 @@ class DNSCryptClientTestHelper : public QObject
 {
     Q_OBJECT
 public:
-    explicit DNSCryptClientTestHelper(QObject *parent = nullptr);
+    explicit DNSCryptClientTestHelper(QObject *parent = Q_NULLPTR);
 
 public slots:
     ActionReply     starttest(const QVariantMap args) const;

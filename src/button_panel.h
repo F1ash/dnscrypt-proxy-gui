@@ -10,7 +10,7 @@ class ButtonPanel : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ButtonPanel(QWidget *parent = nullptr);
+    explicit ButtonPanel(QWidget *parent = Q_NULLPTR);
 
 signals:
     void             startProxing();

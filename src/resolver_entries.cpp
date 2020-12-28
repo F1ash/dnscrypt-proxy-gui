@@ -53,7 +53,7 @@ QStringList ResolverEntries::getEntries() const
     QStringList ret;
     for (int i = 0; i<entries->count(); i++ ) {
         QListWidgetItem *item = entries->item(i);
-        if ( item!=nullptr && !item->text().isEmpty() ) {
+        if ( item!=Q_NULLPTR && !item->text().isEmpty() ) {
             ret.append(item->text());
         };
     };
@@ -67,7 +67,7 @@ void ResolverEntries::_close()
     if ( items.count()==0 ) {
         return;
     };
-    if ( items.first()!=nullptr ) {
+    if ( items.first()!=Q_NULLPTR ) {
         selectedEntry = items.first()->text();
     };
     done(0);
@@ -84,11 +84,11 @@ void ResolverEntries::delEntry()
     QList<QListWidgetItem*> items = entries->selectedItems();
     if ( items.count()==0 ) return;
     foreach (QListWidgetItem *item, items) {
-        if ( item!=nullptr ) {
+        if ( item!=Q_NULLPTR ) {
             int idx = entries->row(item);
             entries->takeItem(idx);
             delete item;
-            item = nullptr;
+            item = Q_NULLPTR;
         };
     };
 }

@@ -10,7 +10,7 @@ class TestRespond : public QWidget
 {
     Q_OBJECT
 public:
-    explicit TestRespond(QWidget *parent = nullptr,
+    explicit TestRespond(QWidget *parent = Q_NULLPTR,
                          QString ver = "",
                          QString cfg = "");
     TestWidget     *testWdg;

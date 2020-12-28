@@ -304,7 +304,7 @@ void MainWindow::checkServiceStatus()
     msg.setArguments(_args);
     bool sent = connection.callWithCallback(
                 msg, this, SLOT(receiveServiceStatus(QDBusMessage)));
-    //return sent;
+    Q_UNUSED(sent);
 }
 int  MainWindow::checkSliceStatus()
 {
@@ -598,7 +598,7 @@ void MainWindow::firstServiceStart()
 void MainWindow::startServiceJobFinished(KJob *_job)
 {
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
-    if ( job!=nullptr ) {
+    if ( job!=Q_NULLPTR ) {
         QString code        = job->data().value("code").toString();
         //QString msg         = job->data().value("msg").toString();
         //QString err         = job->data().value("err").toString();
@@ -650,7 +650,7 @@ void MainWindow::startServiceJobFinished(KJob *_job)
 void MainWindow::stopServiceJobFinished(KJob *_job)
 {
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
-    if ( job!=nullptr ) {
+    if ( job!=Q_NULLPTR ) {
         QString code = job->data().value("code").toString();
         QString msg  = job->data().value("msg").toString();
         QString err  = job->data().value("err").toString();
@@ -687,7 +687,7 @@ void MainWindow::stopServiceJobFinished(KJob *_job)
 void MainWindow::restoreSettingsProcessFinished(KJob *_job)
 {
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
-    if ( job!=nullptr ) {
+    if ( job!=Q_NULLPTR ) {
         QString code = job->data().value("code").toString();
         QString msg  = job->data().value("msg").toString();
         QString err  = job->data().value("err").toString();
@@ -1032,7 +1032,7 @@ void MainWindow::getServiceVersion()
 void MainWindow::getServiceVersionFinished(KJob *_job)
 {
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
-    if ( job!=nullptr ) {
+    if ( job!=Q_NULLPTR ) {
         serviceVersion = job->data().value("version").toString();
     };
     if ( serviceVersion.compare("2")<0 ) {
@@ -1081,7 +1081,7 @@ void MainWindow::getListOfServersV2Finished(KJob *_job)
     //QTextStream s(stdout);
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
     QStringList _l;
-    if ( job!=nullptr ) {
+    if ( job!=Q_NULLPTR ) {
         _l = job->data().value("listOfServers").toStringList();
         foreach (QString _s, _l) {
             listOfServers.insert(_s, job->data().value(_s));
@@ -1110,18 +1110,22 @@ void MainWindow::initServiceV2()
 void MainWindow::initServiceV2Finished(KJob *_job)
 {
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
-    if ( job!=nullptr ) {
-        QString _msg;
-        _msg.append(job->data().value("msg").toString());
-        _msg.append("\nMSG: ");
-        _msg.append(job->data().value("output").toString());
-        _msg.append("\nSUCCESS: ");
-        _msg.append(job->data().value("success").toString());
+    QString _msg;
+    if ( job!=Q_NULLPTR ) {
+        _msg.append(job->data().value("installed").toString());
+        _msg.append("\n");
+        _msg.append(job->data().value("preparedCfg").toString());
+        _msg.append("\n");
+        _msg.append(job->data().value("preparedUnit").toString());
+    } else {
+        _msg.append("Error at init service method");
+    };
+    initWidgets();
+    if ( showMessages ) {
         // is a basic message
         KNotification::event(
                     KNotification::Notification,
                     "DNSCryptClient",
                     _msg);
     };
-    initWidgets();
 }

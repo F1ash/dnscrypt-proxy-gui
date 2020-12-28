@@ -11,7 +11,7 @@ class ServerInfo : public QDialog
 {
     Q_OBJECT
 public:
-    explicit ServerInfo(QWidget *parent = nullptr);
+    explicit ServerInfo(QWidget *parent = Q_NULLPTR);
     void         setServerData(const QVariantMap&);
 
 private:

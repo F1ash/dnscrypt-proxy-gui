@@ -13,7 +13,7 @@ class ServerPanel : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ServerPanel(QWidget *parent = nullptr, QString ver = "");
+    explicit ServerPanel(QWidget *parent = Q_NULLPTR, QString ver = "");
     void             setServerDataMap(const QVariantMap);
     void             setLastServer(const QString&);
     QString          getCurrentServer() const;

@@ -125,7 +125,7 @@ void TestWidget::resultCheckServerRespond(KJob *_job)
     QString i = QString("\nIt left about %1 sec...")
             .arg(list.count()-counter-1);
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
-    if ( job!=nullptr ) {
+    if ( job!=Q_NULLPTR ) {
         QString code        = job->data().value("code").toString();
         //QString msg         = job->data().value("msg").toString();
         //QString err         = job->data().value("err").toString();
@@ -152,7 +152,7 @@ void TestWidget::resultStopServiceSlice(KJob *_job)
 {
     //QTextStream s(stdout);
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
-    if ( job!=nullptr ) {
+    if ( job!=Q_NULLPTR ) {
         QString code = job->data().value("code").toString();
         if ( code.toInt()!=0 ) {
             stopServiceSlice();
