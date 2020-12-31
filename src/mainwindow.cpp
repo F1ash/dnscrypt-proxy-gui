@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
                       QIcon(":/DNSCryptClient.png")));
     //setStyleSheet("QWidget {background-color: white;}");
 
+    // 'runAtStart' used once, then check for it appSettings->getRunAtStartState()
     runAtStart = false;
     srvStatus = INACTIVE;
     useActiveService = false;
@@ -31,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     restoreAtClose = false;
     stopForChangeUnits = false;
     restoreResolvFileFlag = false;
+    reinitFlag = false;
     showMessages = false;
     showBasicMsgOnly = false;
     probeCount = 0;
@@ -138,6 +140,7 @@ void MainWindow::initWidgets()
 void MainWindow::readSettings()
 {
     QByteArray _geometry = settings.value("Geometry").toByteArray();
+    // 'runAtStart' used once, then check for it appSettings->getRunAtStartState()
     runAtStart = settings.value("RunAtStart", false).toBool();
     appSettings->setRunAtStartState(runAtStart);
     unhideAtStart = settings.value("UnhideAtStart", true).toBool();
@@ -175,6 +178,7 @@ void MainWindow::readSettings()
 void MainWindow::setSettings()
 {
     settings.setValue("Geometry", saveGeometry());
+     // 'runAtStart' used once, then check for it appSettings->getRunAtStartState()
     settings.setValue("RunAtStart", appSettings->getRunAtStartState());
     settings.setValue("UnhideAtStart", appSettings->getUnhideAtStartState());
     settings.setValue("JobPort", jobPort);
@@ -214,9 +218,11 @@ void MainWindow::setSettings()
 }
 void MainWindow::initTrayIcon()
 {
-    trayIcon = new TrayIcon(this);
+    trayIcon = new TrayIcon(this, serviceVersion);
     connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
             this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
+    connect(trayIcon->reinitAction, SIGNAL(triggered(bool)),
+            this, SLOT(reinitServiceV2()));
     connect(trayIcon->closeAction, SIGNAL(triggered(bool)),
             this, SLOT(close()));
     trayIcon->show();
@@ -509,6 +515,11 @@ void MainWindow::passToNextServer()
                             "DNSCryptClient",
                             "All servers probed and failed");
             };
+            // at reinit: enable MainWindow
+            if ( reinitFlag ) {
+                reinitFlag = false;
+                this->setEnabled(true);
+            };
         };
     } else if ( srvStatus==ACTIVE || srvStatus==RESTORED ) {
         probeCount = 0;
@@ -597,6 +608,11 @@ void MainWindow::firstServiceStart()
 }
 void MainWindow::startServiceJobFinished(KJob *_job)
 {
+    // at reinit: enable MainWindow
+    if ( reinitFlag ) {
+        reinitFlag = false;
+        this->setEnabled(true);
+    };
     ExecuteJob *job = static_cast<ExecuteJob*>(_job);
     if ( job!=Q_NULLPTR ) {
         QString code        = job->data().value("code").toString();
@@ -901,14 +917,24 @@ void MainWindow::changeAppState(SRV_STATUS status)
                                 .arg((status==FAILED)? "failed" : "inactive"));
                 };
             };
-            //s << "INACTIVE/FAILED" << endl;
+            //s << "INACTIVE/FAILED" << Qt::endl;
             trayIcon->setIcon(
                         QIcon::fromTheme("DNSCryptClient_closed",
                                          QIcon(":/closed.png")));
             trayIcon->setToolTip(QString("%1\n%2")
                                  .arg(windowTitle())
                                  .arg("--stopped--"));
-            if ( !stopManually && useActiveService ) {
+            if ( reinitFlag ) {
+                // 'runAtStart' used once, then check for it appSettings->getRunAtStartState()
+                if ( appSettings->getRunAtStartState() ) {
+                    // wait for enable MainWindow
+                    probeNextServer();
+                } else {
+                    // nothing todo: enable the MainWindow
+                    reinitFlag = false;
+                    this->setEnabled(true);
+                };
+            } else if ( !stopManually && useActiveService ) {
                 passToNextServer();
                 emit serviceStateChanged(PROCESSING);
             } else if ( restoreFlag ) {
@@ -987,8 +1013,10 @@ void MainWindow::probeNextServer()
                 return;
             };
         };
+        // at reinit: enable MainWindow after start service
         startServiceProcess();
     } else if ( useActiveService ) {
+        // at reinit: enable MainWindow after start service
         passToNextServer();
     };
 }
@@ -1120,7 +1148,7 @@ void MainWindow::initServiceV2Finished(KJob *_job)
     } else {
         _msg.append("Error at init service method");
     };
-    initWidgets();
+    if ( !reinitFlag ) initWidgets();
     if ( showMessages ) {
         // is a basic message
         KNotification::event(
@@ -1128,4 +1156,42 @@ void MainWindow::initServiceV2Finished(KJob *_job)
                     "DNSCryptClient",
                     _msg);
     };
+}
+void MainWindow::reinitServiceV2()
+{
+    //QTextStream s(stdout);
+    //s << "reinit beginning" << Qt::endl;
+    emit serviceStateChanged(DEACTIVATING);
+    this->setEnabled(false);
+    reinitFlag = true;
+
+    // stop service
+    watcher->removePath(RESOLV_CONF);
+    disconnectFromClientService();
+    QVariantMap args;
+    Action act;
+    args["action"] = "stop";
+    act.setName("pro.russianfedora.dnscryptclient.stopv2");
+    act.setHelperId("pro.russianfedora.dnscryptclient");
+    act.setArguments(args);
+    ExecuteJob *job = act.execute();
+    job->setParent(this);
+    job->setAutoDelete(true);
+    bool ok = job->exec();
+
+    // initialization
+    if ( ok ) {
+        initServiceV2();
+    } else {
+        if ( showMessages ) {
+            // is a basic message
+            KNotification::event(
+                        KNotification::Notification,
+                        "DNSCryptClient",
+                        "Re-initialization is failed.\nTry again.");
+        };
+    };
+    emit serviceStateChanged(INACTIVE);
+    //this->setEnabled(true);
+    //s << "reinit comlete" << Qt::endl;
 }

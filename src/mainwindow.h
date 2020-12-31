@@ -30,7 +30,7 @@ private:
                         useFastOnly, stopManually,
                         restoreFlag, restoreAtClose,
                         stopForChangeUnits, unhideAtStart,
-                        restoreResolvFileFlag,
+                        restoreResolvFileFlag,reinitFlag,
                         showMessages, showBasicMsgOnly;
     int                 probeCount, jobPort, testPort;
     SRV_STATUS          srvStatus;
@@ -109,6 +109,7 @@ private slots:
     void                getListOfServersV2Finished(KJob*);
     void                initServiceV2();
     void                initServiceV2Finished(KJob*);
+    void                reinitServiceV2();
 };
 
 #endif // MAINWINDOW_H

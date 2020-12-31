@@ -4,17 +4,20 @@
 #include <QSystemTrayIcon>
 #include <QMenu>
 #include <QIcon>
-#include <QDebug>
+//#include <QDebug>
 
 class TrayIcon : public QSystemTrayIcon
 {
-  Q_OBJECT
+    Q_OBJECT
 public :
-  explicit TrayIcon(QWidget *parent = Q_NULLPTR);
-  QAction   *closeAction;
+    explicit TrayIcon(
+            QWidget *parent = Q_NULLPTR,
+            QString  ver    = "1.x.x");
+    QAction     *reinitAction;
+    QAction     *closeAction;
 
 private :
-  QMenu     *trayIconMenu;
+    QMenu       *trayIconMenu;
 };
 
 #endif

@@ -11,8 +11,8 @@ class TestRespond : public QWidget
     Q_OBJECT
 public:
     explicit TestRespond(QWidget *parent = Q_NULLPTR,
-                         QString ver = "",
-                         QString cfg = "");
+                         QString  ver = "",
+                         QString  cfg = "");
     TestWidget     *testWdg;
 
 signals:
