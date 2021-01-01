@@ -80,3 +80,7 @@ implemented automated initialization
     of dnscrypt-proxy service;
 fixed respond test for ver.2;
 some fixes;
+
+v.1.24.17 :
+implemented re-initialization action
+    for in tray menu for ver.2;

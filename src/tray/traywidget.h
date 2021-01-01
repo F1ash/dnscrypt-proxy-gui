@@ -4,7 +4,6 @@
 #include <QSystemTrayIcon>
 #include <QMenu>
 #include <QIcon>
-//#include <QDebug>
 
 class TrayIcon : public QSystemTrayIcon
 {
