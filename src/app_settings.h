@@ -9,7 +9,12 @@
 #include <QResizeEvent>
 #include <QScrollArea>
 #include "port_settings.h"
+#include <kauth/kauthcore_export.h>
+#if KAUTHCORE_ENABLE_DEPRECATED_SINCE(5, 92)
+#include <kauth/executejob.h>
+#else
 #include <kauth.h>
+#endif
 #include <knotification.h>
 using namespace KAuth;
 

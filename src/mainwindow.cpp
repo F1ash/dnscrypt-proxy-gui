@@ -713,7 +713,7 @@ void MainWindow::restoreSettingsProcessFinished(KJob *_job)
                 KNotification::event(
                            KNotification::Notification,
                            "DNSCryptClient",
-                           QString("%1 was restored for using with active srvice.")
+                           QString("%1 was restored for using with active service.")
                            .arg(RESOLV_CONF));
             };
         } else {

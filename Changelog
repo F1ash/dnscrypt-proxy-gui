@@ -84,3 +84,6 @@ some fixes;
 v.1.24.17 :
 implemented re-initialization action
     for in tray menu for ver.2;
+
+v.1.24.18 :
+fixed deprecated headers;
