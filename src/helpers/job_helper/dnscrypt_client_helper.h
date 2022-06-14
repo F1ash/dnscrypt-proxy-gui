@@ -1,13 +1,9 @@
-#if defined(KAUTHCORE_ENABLE_DEPRECATED_SINCE)
+#include <kauth_version.h>
+#if KAUTH_VERSION < ((5<<16)|(92<<8)|(0))
     #include <kauth.h>
 #else
-    #include <kauth/kauthcore_export.h>
-    #if KAUTHCORE_ENABLE_DEPRECATED_SINCE(5, 92)
-        #include <kauth/actionreply.h>
-        #include <kauth/helpersupport.h>
-    #else
-        #include <kauth.h>
-    #endif
+    #include <kauth/actionreply.h>
+    #include <kauth/helpersupport.h>
 #endif
 using namespace KAuth;
 

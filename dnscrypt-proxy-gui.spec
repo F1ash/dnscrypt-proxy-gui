@@ -2,7 +2,7 @@
 %global app_name DNSCryptClient
 
 Name:          dnscrypt-proxy-gui
-Version:       1.24.18
+Version:       1.24.20
 Release:       1%{?dist}
 Summary:       GUI wrapper for dnscrypt-proxy
 License:       GPLv2+
@@ -92,6 +92,9 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 %{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog
+* Mon Jun  6 2022 Fl@sh <kaperang07@gmail.com> - 1.24.20-1
+- version updated;
+
 * Mon Jun  6 2022 Fl@sh <kaperang07@gmail.com> - 1.24.18-1
 - version updated;
 

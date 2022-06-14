@@ -85,6 +85,6 @@ v.1.24.17 :
 implemented re-initialization action
     for in tray menu for ver.2;
 
-v.1.24.19 :
+v.1.24.20 :
 fixed deprecated headers;
 some fixes for building with old Kauth releases;
