@@ -92,7 +92,7 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_name}.desktop
 %{_datadir}/icons/hicolor/64x64/apps/%{app_name}.png
 
 %changelog
-* Mon Jun  6 2022 Fl@sh <kaperang07@gmail.com> - 1.24.20-1
+* Tue Jun 14 2022 Fl@sh <kaperang07@gmail.com> - 1.24.20-1
 - version updated;
 
 * Mon Jun  6 2022 Fl@sh <kaperang07@gmail.com> - 1.24.18-1
