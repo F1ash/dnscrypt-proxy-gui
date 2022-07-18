@@ -6,11 +6,11 @@
 #include <QProgressBar>
 #include <QVBoxLayout>
 #include "enums.h"
-#include <kauth/kauthcore_export.h>
-#if KAUTHCORE_ENABLE_DEPRECATED_SINCE(5, 92)
-#include <kauth/executejob.h>
+#include <kauth_version.h>
+#if KAUTH_VERSION < ((5<<16)|(92<<8)|(0))
+    #include <kauth.h>
 #else
-#include <kauth.h>
+    #include <kauth/executejob.h>
 #endif
 using namespace KAuth;
 
